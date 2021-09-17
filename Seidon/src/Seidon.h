@@ -1,4 +1,7 @@
 #pragma once
 
-#include "Seidon/EntryPoint.h"
-#include "Seidon/Application.h"
+#include "Core/Core.h"
+#include "Graphics/Graphics.h"
+#include "Utils/utils.h"
+
+#include "Application.h"

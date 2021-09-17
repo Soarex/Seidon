@@ -20,6 +20,8 @@
 x64/
 x86/
 bld/
+Bin/
+Temp/
 [Bb]in/
 [Oo]bj/
 [Ll]og/

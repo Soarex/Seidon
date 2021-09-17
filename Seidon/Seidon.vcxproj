@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -12,28 +20,49 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{A059914F-B7C2-495F-AA1C-40A8197421D0}</ProjectGuid>
-    <RootNamespace>Seidon</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{b59ab61a-3111-42ee-b392-b5f4cecd2ff8}</ProjectGuid>
+    <RootNamespace>Engine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Seidon</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -42,41 +71,235 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)int\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
-    <IntDir>$(SolutionDir)int\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <Optimization>Disabled</Optimization>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\Core\SystemsManager.cpp" />
+    <ClCompile Include="src\Graphics\Framebuffer.cpp" />
+    <ClCompile Include="src\Core\InputManager.cpp" />
+    <ClCompile Include="src\Graphics\HdrCubemap.cpp" />
+    <ClCompile Include="src\Graphics\Material.cpp" />
+    <ClCompile Include="src\Graphics\Mesh.cpp" />
+    <ClCompile Include="src\Utils\ModelImporter.cpp" />
+    <ClCompile Include="src\Utils\FlyingCameraControlSystem.cpp" />
+    <ClCompile Include="src\Vendor\Glad\glad.c" />
+    <ClCompile Include="src\Graphics\RenderBuffer.cpp" />
+    <ClCompile Include="src\Graphics\RenderSystem.cpp" />
+    <ClCompile Include="src\Core\ResourceManager.cpp" />
+    <ClCompile Include="src\Core\Entity.cpp" />
+    <ClCompile Include="src\Core\EntityManager.cpp" />
+    <ClCompile Include="src\Graphics\Shader.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Vendor\StbImage\stb_image.cpp" />
+    <ClCompile Include="src\Graphics\Texture.cpp" />
+    <ClCompile Include="src\Core\Window.cpp" />
+    <ClCompile Include="src\Core\WorkManager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\Core\Components.h" />
+    <ClInclude Include="src\Core\Core.h" />
+    <ClInclude Include="src\Core\System.h" />
+    <ClInclude Include="src\Core\SystemsManager.h" />
+    <ClInclude Include="src\EntryPoint.h" />
+    <ClInclude Include="src\Graphics\Graphics.h" />
+    <ClInclude Include="src\Graphics\HdrCubemap.h" />
+    <ClInclude Include="src\Graphics\Vertex.h" />
+    <ClInclude Include="src\Utils\ModelImporter.h" />
+    <ClInclude Include="src\Seidon.h" />
+    <ClInclude Include="src\Utils\BlockingQueue.h" />
+    <ClInclude Include="src\Utils\FlyingCameraControlSystem.h" />
+    <ClInclude Include="src\Utils\utils.h" />
+    <ClInclude Include="src\Vendor\entt\config\config.h" />
+    <ClInclude Include="src\Vendor\entt\config\version.h" />
+    <ClInclude Include="src\Vendor\entt\core\algorithm.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\any.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\attribute.h" />
+    <ClInclude Include="src\Vendor\entt\core\family.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\fwd.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\hashed_string.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\ident.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\monostate.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\type_info.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\type_traits.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\utility.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\entity.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\fwd.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\group.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\handle.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\helper.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\observer.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\organizer.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\poly_storage.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\registry.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\runtime_view.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\snapshot.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\sparse_set.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\storage.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\utility.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\view.hpp" />
+    <ClInclude Include="src\Vendor\entt\entt.hpp" />
+    <ClInclude Include="src\Vendor\entt\fwd.hpp" />
+    <ClInclude Include="src\Vendor\entt\locator\locator.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\adl_pointer.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\container.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\ctx.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\factory.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\meta.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\node.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\pointer.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\policy.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\range.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\resolve.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\template.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\type_traits.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\utility.hpp" />
+    <ClInclude Include="src\Vendor\entt\platform\android-ndk-r17.hpp" />
+    <ClInclude Include="src\Vendor\entt\poly\fwd.hpp" />
+    <ClInclude Include="src\Vendor\entt\poly\poly.hpp" />
+    <ClInclude Include="src\Vendor\entt\process\process.hpp" />
+    <ClInclude Include="src\Vendor\entt\process\scheduler.hpp" />
+    <ClInclude Include="src\Vendor\entt\resource\cache.hpp" />
+    <ClInclude Include="src\Vendor\entt\resource\fwd.hpp" />
+    <ClInclude Include="src\Vendor\entt\resource\handle.hpp" />
+    <ClInclude Include="src\Vendor\entt\resource\loader.hpp" />
+    <ClInclude Include="src\Vendor\entt\signal\delegate.hpp" />
+    <ClInclude Include="src\Vendor\entt\signal\dispatcher.hpp" />
+    <ClInclude Include="src\Vendor\entt\signal\emitter.hpp" />
+    <ClInclude Include="src\Vendor\entt\signal\fwd.hpp" />
+    <ClInclude Include="src\Vendor\entt\signal\sigh.hpp" />
+    <ClInclude Include="src\Graphics\Framebuffer.h" />
+    <ClInclude Include="src\Core\InputManager.h" />
+    <ClInclude Include="src\Graphics\Material.h" />
+    <ClInclude Include="src\Graphics\Mesh.h" />
+    <ClInclude Include="src\Graphics\RenderBuffer.h" />
+    <ClInclude Include="src\Graphics\RenderSystem.h" />
+    <ClInclude Include="src\Core\ResourceManager.h" />
+    <ClInclude Include="src\Core\Entity.h" />
+    <ClInclude Include="src\Core\EntityManager.h" />
+    <ClInclude Include="src\Graphics\Shader.h" />
+    <ClInclude Include="src\Vendor\Imgui\imconfig.h" />
+    <ClInclude Include="src\Vendor\Imgui\imgui.h" />
+    <ClInclude Include="src\Vendor\Imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="src\Vendor\Imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="src\Vendor\Imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="src\Vendor\Imgui\imgui_internal.h" />
+    <ClInclude Include="src\Vendor\Imgui\imstb_rectpack.h" />
+    <ClInclude Include="src\Vendor\Imgui\imstb_textedit.h" />
+    <ClInclude Include="src\Vendor\Imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Vendor\StbImage\stb_image.h" />
+    <ClInclude Include="src\Graphics\Texture.h" />
+    <ClInclude Include="src\Core\Window.h" />
+    <ClInclude Include="src\Core\WorkManager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\Default.shader" />
+    <None Include="Shaders\PBR.shader" />
+    <None Include="Shaders\ShadowPass.shader" />
+    <None Include="Shaders\Simple.shader" />
+    <None Include="src\Shaders\Default.shader" />
+    <None Include="src\Shaders\LightCube.shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
