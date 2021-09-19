@@ -80,7 +80,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)Seidon\src;$(SolutionDir)Vendor\Include;$(SolutionDir)Seidon\src\Vendor;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Seidon\src;$(SolutionDir)Vendor\Include;$(SolutionDir)Seidon\src\Vendor;$(SolutionDir)Editor\src;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\Bin\Debug-x64\Seidon;$(SolutionDir)\Vendor\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,8 +154,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Game.cpp" />
-    <ClCompile Include="src\HierarchyPanel.cpp" />
+    <ClCompile Include="src\Editor.cpp" />
+    <ClCompile Include="src\Panels\AssetBrowserPanel.cpp" />
+    <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
+    <ClCompile Include="src\Panels\InspectorPanel.cpp" />
+    <ClCompile Include="src\Utils\DrawFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Seidon\Seidon.vcxproj">
@@ -174,7 +177,10 @@
     <None Include="Shaders\Simple.shader" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\HierarchyPanel.h" />
+    <ClInclude Include="src\Panels\AssetBrowserPanel.h" />
+    <ClInclude Include="src\Panels\HierarchyPanel.h" />
+    <ClInclude Include="src\Panels\InspectorPanel.h" />
+    <ClInclude Include="src\Utils\DrawFunctions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

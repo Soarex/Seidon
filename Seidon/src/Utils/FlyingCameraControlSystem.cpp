@@ -23,8 +23,8 @@ namespace Seidon
 		{
 			glm::vec2 mouseOffset = InputManager::GetMouseOffset();
 
-			pitch += mouseOffset.y * mouseSensitivity * deltaTime;
-			yaw -= mouseOffset.x * mouseSensitivity * deltaTime;
+			pitch += mouseOffset.y * mouseSensitivity;
+			yaw -= mouseOffset.x * mouseSensitivity;
 
 			if (pitch > 89.0f)
 				pitch = 89.0f;

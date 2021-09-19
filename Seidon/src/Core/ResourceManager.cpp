@@ -9,6 +9,8 @@ namespace Seidon
 
     void ResourceManager::Init()
     {
+        stbi_set_flip_vertically_on_load(true);
+
         unsigned char white[] = { 255, 255, 255};
         unsigned char grey[] = { 255 / 2, 255 / 2, 255 / 2};
         unsigned char black[] = { 0, 0, 0};
@@ -42,6 +44,10 @@ namespace Seidon
         materials["default_material"]->metallic = textures["metallic_default"];
         materials["default_material"]->roughness = textures["roughness_default"];
         materials["default_material"]->ao = textures["ao_default"];
+
+        Mesh* mesh = new Mesh();
+        mesh->name = "Empty Mesh";
+        meshes["Empty Mesh"] = mesh;
     }
 
     void ResourceManager::Destroy()

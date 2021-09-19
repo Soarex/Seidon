@@ -110,6 +110,7 @@ namespace Seidon
         WorkManager::Execute([this, path, gammaCorrection]()
             {
                 int width, height, channelCount;
+              
                 unsigned char* data = stbi_load(path.c_str(), &width, &height, &channelCount, 0);
 
                 TextureFormat sourceFormat = TextureFormat::RGB;
