@@ -87,7 +87,7 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
-    <IncludePath>$(SolutionDir)Seidon\src;$(SolutionDir)Vendor\Include;$(SolutionDir)Seidon\src\Vendor;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Seidon\src;$(SolutionDir)Vendor\Include;$(SolutionDir)Seidon\src\Vendor;$(SolutionDir)Editor\src;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\Bin\Release-x64\Seidon;$(SolutionDir)\Vendor\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -154,7 +154,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Dockspace.cpp" />
     <ClCompile Include="src\Editor.cpp" />
+    <ClCompile Include="src\EditorCameraControlSystem.cpp" />
     <ClCompile Include="src\Panels\AssetBrowserPanel.cpp" />
     <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\Panels\InspectorPanel.cpp" />
@@ -177,6 +179,8 @@
     <None Include="Shaders\Simple.shader" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Dockspace.h" />
+    <ClInclude Include="src\EditorCameraControlSystem.h" />
     <ClInclude Include="src\Panels\AssetBrowserPanel.h" />
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />

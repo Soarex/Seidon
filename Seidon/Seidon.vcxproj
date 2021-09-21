@@ -176,6 +176,7 @@
     <ClCompile Include="src\Graphics\HdrCubemap.cpp" />
     <ClCompile Include="src\Graphics\Material.cpp" />
     <ClCompile Include="src\Graphics\Mesh.cpp" />
+    <ClCompile Include="src\Utils\MatrixDecompose.cpp" />
     <ClCompile Include="src\Utils\ModelImporter.cpp" />
     <ClCompile Include="src\Utils\FlyingCameraControlSystem.cpp" />
     <ClCompile Include="src\Vendor\Glad\glad.c" />
@@ -185,6 +186,7 @@
     <ClCompile Include="src\Core\Entity.cpp" />
     <ClCompile Include="src\Core\EntityManager.cpp" />
     <ClCompile Include="src\Graphics\Shader.cpp" />
+    <ClCompile Include="src\Vendor\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_demo.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_draw.cpp" />
@@ -207,6 +209,7 @@
     <ClInclude Include="src\Graphics\Graphics.h" />
     <ClInclude Include="src\Graphics\HdrCubemap.h" />
     <ClInclude Include="src\Graphics\Vertex.h" />
+    <ClInclude Include="src\Utils\MatrixDecompose.h" />
     <ClInclude Include="src\Utils\ModelImporter.h" />
     <ClInclude Include="src\Seidon.h" />
     <ClInclude Include="src\Utils\BlockingQueue.h" />
@@ -280,6 +283,7 @@
     <ClInclude Include="src\Core\Entity.h" />
     <ClInclude Include="src\Core\EntityManager.h" />
     <ClInclude Include="src\Graphics\Shader.h" />
+    <ClInclude Include="src\Vendor\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="src\Vendor\Imgui\imconfig.h" />
     <ClInclude Include="src\Vendor\Imgui\imgui.h" />
     <ClInclude Include="src\Vendor\Imgui\imgui_impl_glfw.h" />

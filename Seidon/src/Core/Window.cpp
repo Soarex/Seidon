@@ -15,7 +15,9 @@ namespace Seidon
     bool Window::fullscreenEnabled = false;
 
     std::vector<std::function<void(int, int)>>		Window::windowSizeCallbacks;
-    std::vector<std::function<void(float, float)>>	Window::mouseCallbacks;
+    std::vector<std::function<void(float, float)>>	Window::cursorCallbacks;
+    std::vector<std::function<void(int, int)>>		Window::mouseButtonCallbacks;
+    std::vector<std::function<void(float, float)>>	Window::mouseWheelCallbacks;
     std::vector<std::function<void(int, int)>>		Window::keyboardCallbacks;
 
     void WindowSizeCallback(GLFWwindow* window, int width, int height)
@@ -23,21 +25,34 @@ namespace Seidon
         Window::width = width;
         Window::height = height;
 
-        for (auto callback : Window::windowSizeCallbacks)
+        for (auto& callback : Window::windowSizeCallbacks)
             callback(width, height);
     }
 
-    void MouseCallback(GLFWwindow* window, double xpos, double ypos)
+    void CursorCallback(GLFWwindow* window, double xpos, double ypos)
     {
-        for (auto callback : Window::mouseCallbacks)
+        for (auto& callback : Window::cursorCallbacks)
             callback(xpos, ypos);
     }
 
     void KeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        for (auto callback : Window::keyboardCallbacks)
+        for (auto& callback : Window::keyboardCallbacks)
             callback(key, action);
     }
+
+    void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+    {
+        for (auto& callback : Window::mouseButtonCallbacks)
+            callback(button, action);
+    }
+
+    void MouseWheelCallback(GLFWwindow* window, double xpos, double ypos)
+    {
+        for (auto& callback : Window::mouseWheelCallbacks)
+            callback(xpos, ypos);
+    }
+
 
     void Window::Init(const std::string& name, unsigned int width, unsigned int height)
     {
@@ -70,7 +85,9 @@ namespace Seidon
 
         glfwSetWindowSizeCallback(handle, WindowSizeCallback);
         glfwSetKeyCallback(handle, KeyboardCallback);
-        glfwSetCursorPosCallback(handle, MouseCallback);
+        glfwSetCursorPosCallback(handle, CursorCallback);
+        glfwSetScrollCallback(handle, MouseWheelCallback);
+        glfwSetMouseButtonCallback(handle, MouseButtonCallback);
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();

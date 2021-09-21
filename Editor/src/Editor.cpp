@@ -1,10 +1,14 @@
 #include <Seidon.h>
 #include <EntryPoint.h>
 #include <glm/glm.hpp>
+#include <ImGuizmo/ImGuizmo.h>
 
 #include "Panels/InspectorPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/AssetBrowserPanel.h"
+#include "Dockspace.h"
+
+#include "EditorCameraControlSystem.h"
 
 using namespace Seidon;
 
@@ -16,7 +20,9 @@ public:
     HierarchyPanel hierarchyPanel;
     InspectorPanel inspectorPanel;
     AssetBrowserPanel assetBrowserPanel;
+    Dockspace dockspace;
 
+    Entity camera;
     Editor()
 	{
 		Window::SetName("Seidon Editor");
@@ -44,7 +50,7 @@ public:
         light.AddComponent<DirectionalLightComponent>(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
         light.GetComponent<TransformComponent>().rotation = glm::vec3(1.0f, 4.0f, 1.0f);
 
-        Entity camera = EntityManager::CreateEntity("Camera");
+        camera = EntityManager::CreateEntity("Camera");
         camera.AddComponent<CameraComponent>().farPlane = 300;
         camera.EditComponent<TransformComponent>([](TransformComponent& t)
             {
@@ -58,69 +64,90 @@ public:
         Entity cubemapEntity = EntityManager::CreateEntity("Cubemap");
         cubemapEntity.AddComponent<CubemapComponent>(cubemap);
 
-        SystemsManager::AddSystem<FlyingCameraControlSystem>(10, 0.5).SetRotationEnabled(false);
+        SystemsManager::AddSystem<EditorCameraControlSystem>(10, 0.5).SetRotationEnabled(true);
 
         selectedEntity = { entt::null, &EntityManager::registry };
         hierarchyPanel.AddSelectionCallback([&](Entity& entity)
             {
                 selectedEntity = entity;
             });
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.Fonts->AddFontFromFileTTF("Assets/Roboto-Regular.ttf", 18);
 	}
 
+    int guizmoOperation = -1;
+    bool local = false;
 	void Run()
 	{
         RenderSystem& renderSystem = SystemsManager::GetSystem<RenderSystem>();
-        FlyingCameraControlSystem& cameraControlSystem = SystemsManager::GetSystem<FlyingCameraControlSystem>();
+        EditorCameraControlSystem& cameraControlSystem = SystemsManager::GetSystem<EditorCameraControlSystem>();
 
         if (InputManager::GetKeyPressed(GET_KEYCODE(BACKSLASH)))
             Window::ToggleFullscreen();
 
-        if (InputManager::GetKeyPressed(GET_KEYCODE(ESCAPE)))
-        {
-            Window::ToggleMouseCursor();
-            cameraControlSystem.ToggleRotation();
-        }
+        if (InputManager::GetKeyPressed(GET_KEYCODE(Q)))
+            guizmoOperation = -1;
 
-        static bool dockspaceOpen = true;
-        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+        if (InputManager::GetKeyPressed(GET_KEYCODE(W)) && !InputManager::GetMouseButton(MouseButton::RIGHT))
+            guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        ImGui::SetNextWindowViewport(viewport->ID);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        if (InputManager::GetKeyPressed(GET_KEYCODE(E)))
+            guizmoOperation = ImGuizmo::OPERATION::ROTATE;
 
-        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            window_flags |= ImGuiWindowFlags_NoBackground;
+        if (InputManager::GetKeyPressed(GET_KEYCODE(R)))
+            guizmoOperation = ImGuizmo::OPERATION::SCALE;
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Window", &dockspaceOpen, window_flags);
-        ImGui::PopStyleVar(3);
+        if (InputManager::GetKeyPressed(GET_KEYCODE(TAB)))
+            local = !local;
 
-        // DockSpace
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiStyle& style = ImGui::GetStyle();
-        float minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x = 370.0f;
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
-            ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        }
+        dockspace.Begin();
 
         ImGui::Begin("Viewport");
         ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
         ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
         ImVec2 viewportOffset = ImGui::GetWindowPos();
 
+        glm::vec2 viewportBounds[2];
+        viewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+        viewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         renderSystem.ResizeFramebuffer(viewportPanelSize.x, viewportPanelSize.y);
 
         ImGui::Image((ImTextureID)renderSystem.GetRenderTarget().GetId(), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+        if (selectedEntity.ID != entt::null && guizmoOperation != -1)
+        {
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+
+            ImGuizmo::SetRect(viewportBounds[0].x, viewportBounds[0].y, viewportBounds[1].x - viewportBounds[0].x, viewportBounds[1].y - viewportBounds[0].y);
+
+            TransformComponent& cameraTransform = camera.GetComponent<TransformComponent>();
+            CameraComponent& cameraComponent = camera.GetComponent<CameraComponent>();
+            glm::mat4 cameraProjection = cameraComponent.GetProjectionMatrix();
+            glm::mat4 cameraView = cameraComponent.GetViewMatrix(cameraTransform);
+
+            TransformComponent& entityTransform = selectedEntity.GetComponent<TransformComponent>();
+            glm::mat4 transform = entityTransform.GetTransformMatrix();
+
+            ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+                (ImGuizmo::OPERATION)guizmoOperation, local ? ImGuizmo::LOCAL : ImGuizmo::WORLD, glm::value_ptr(transform),
+                nullptr, nullptr);
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 position, rotation, scale;
+                DecomposeTransform(transform, position, rotation, scale);
+
+                glm::vec3 deltaRotation = rotation - entityTransform.rotation;
+                entityTransform.position = position;
+                entityTransform.rotation += deltaRotation;
+                entityTransform.scale = scale;
+            }
+        }
+
         ImGui::End();
 
         hierarchyPanel.Draw();
@@ -134,7 +161,8 @@ public:
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
 
-        ImGui::End();
+        
+        dockspace.End();
 	}
 
 	~Editor()

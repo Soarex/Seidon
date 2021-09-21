@@ -23,8 +23,11 @@ namespace Seidon
 		static bool mouseCursorEnabled, fullscreenEnabled;
 
 		static std::vector<std::function<void(int, int)>>		windowSizeCallbacks;
-		static std::vector<std::function<void(float, float)>>	mouseCallbacks;
+		static std::vector<std::function<void(float, float)>>	cursorCallbacks;
+		static std::vector<std::function<void(int, int)>>		mouseButtonCallbacks;
+		static std::vector<std::function<void(float, float)>>	mouseWheelCallbacks;
 		static std::vector<std::function<void(int, int)>>		keyboardCallbacks;
+
 	public:
 		static void Init(const std::string& name, unsigned int width = 800, unsigned int height = 600);
 		static void Destroy();
@@ -47,11 +50,15 @@ namespace Seidon
 		inline static float GetDeltaTime() { return deltaTime; }
 
 		inline static void AddWindowSizeCallback(const std::function<void(int, int)>& callback) { windowSizeCallbacks.push_back(callback); }
-		inline static void AddMouseCallback(const std::function<void(float, float)>& callback) { mouseCallbacks.push_back(callback); }
+		inline static void AddCursorCallback(const std::function<void(float, float)>& callback) { cursorCallbacks.push_back(callback); }
+		inline static void AddMouseButtonCallback(const std::function<void(int, int)>& callback) { mouseButtonCallbacks.push_back(callback); }
+		inline static void AddMouseWheelCallback(const std::function<void(float, float)>& callback) { mouseWheelCallbacks.push_back(callback); }
 		inline static void AddKeyboardCallback(const std::function<void(int, int)>& callback) { keyboardCallbacks.push_back(callback); }
 
 		friend void WindowSizeCallback(GLFWwindow* window, int width, int height);
-		friend void MouseCallback(GLFWwindow* window, double xpos, double ypos);
+		friend void CursorCallback(GLFWwindow* window, double xpos, double ypos);
+		friend void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+		friend void MouseWheelCallback(GLFWwindow* window, double xpos, double ypos);
 		friend void KeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	};
 }
