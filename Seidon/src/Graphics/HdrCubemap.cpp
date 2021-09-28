@@ -10,6 +10,7 @@ namespace Seidon
 
 	void HdrCubemap::LoadFromEquirectangularMap(std::string path)
 	{
+        filepath = path;
         stbi_set_flip_vertically_on_load(true);
         int width, height, channelCount;
         float* data = stbi_loadf(path.c_str(), &width, &height, &channelCount, 0);

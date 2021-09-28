@@ -104,7 +104,6 @@ namespace Seidon
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE"))
 			{
 				std::string path = (const char*)payload->Data;
-				std::cout << path << std::endl;
 				texture = ResourceManager::GetTexture(path);
 			}
 			ImGui::EndDragDropTarget();

@@ -1,0 +1,163 @@
+Scene: Main Scene
+Entities:
+  - ID: 9
+    Name Component:
+      Name: Cubemap
+    Transform Component:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Cubemap Component:
+      Path: Assets/Cubemap.hdr
+  - ID: 8
+    Name Component:
+      Name: Camera
+    Transform Component:
+      Position: [0, 10, 50]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Camera Component:
+      Aspect Ratio: 1.77777779
+      Exposure: 1
+      Near Plane: 0.100000001
+      Far Plane: 300
+      Fov: 45
+      Perspective: true
+  - ID: 7
+    Name Component:
+      Name: Light
+    Transform Component:
+      Position: [0, 0, 0]
+      Rotation: [1, 4, 1]
+      Scale: [1, 1, 1]
+    Directional Light Component:
+      Color: [1, 1, 1]
+      Intensity: 1
+  - ID: 6
+    Name Component:
+      Name: Cube.005
+    Transform Component:
+      Position: [-0.246411324, 1.13966942, 1.57569695]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Render Component:
+      Path: Assets/untitled.fbx
+      Name: Cube.005
+      Materials:
+        - Name: Material.001
+          Tint: [0.800000012, 0.800000012, 0.800000012]
+          Albedo Path: Assets/Metal007_1K_Color.jpg
+          Roughness Path: Assets/Metal007_1K_Roughness.jpg
+          Normal Path: Assets/Metal007_1K_Normal.jpg
+          Metallic Path: Assets/Metal007_1K_Metalness.jpg
+          Ao Path: ao_default
+  - ID: 5
+    Name Component:
+      Name: Cube.004
+    Transform Component:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Render Component:
+      Path: Assets/untitled.fbx
+      Name: Cube.004
+      Materials:
+        - Name: Material.003
+          Tint: [0.800000012, 0.800000012, 0.800000012]
+          Albedo Path: albedo_default
+          Roughness Path: roughness_default
+          Normal Path: normal_default
+          Metallic Path: metallic_default
+          Ao Path: ao_default
+  - ID: 4
+    Name Component:
+      Name: Cube.003
+    Transform Component:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Render Component:
+      Path: Assets/untitled.fbx
+      Name: Cube.003
+      Materials:
+        - Name: Material
+          Tint: [0.800000012, 0.800000012, 0.800000012]
+          Albedo Path: Assets/Grass002_1K_Color.jpg
+          Roughness Path: Assets/Grass002_1K_Roughness.jpg
+          Normal Path: Assets/Grass002_1K_Normal.jpg
+          Metallic Path: metallic_default
+          Ao Path: ao_default
+  - ID: 3
+    Name Component:
+      Name: Cube.002
+    Transform Component:
+      Position: [9.29689026, 1.27379084, 16.496748]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Render Component:
+      Path: Assets/untitled.fbx
+      Name: Cube.002
+      Materials:
+        - Name: Material.003
+          Tint: [0.800000012, 0.800000012, 0.800000012]
+          Albedo Path: albedo_default
+          Roughness Path: roughness_default
+          Normal Path: normal_default
+          Metallic Path: metallic_default
+          Ao Path: ao_default
+  - ID: 2
+    Name Component:
+      Name: Cube.001
+    Transform Component:
+      Position: [-18.7178211, 1.27379084, -17.5305195]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Render Component:
+      Path: Assets/untitled.fbx
+      Name: Cube.001
+      Materials:
+        - Name: Material.002
+          Tint: [0.800000012, 0.800000012, 0.800000012]
+          Albedo Path: albedo_default
+          Roughness Path: roughness_default
+          Normal Path: normal_default
+          Metallic Path: metallic_default
+          Ao Path: ao_default
+  - ID: 1
+    Name Component:
+      Name: Floor
+    Transform Component:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Render Component:
+      Path: Assets/untitled.fbx
+      Name: Floor
+      Materials:
+        - Name: Material
+          Tint: [0.800000012, 0.800000012, 0.800000012]
+          Albedo Path: Assets/Grass002_1K_Color.jpg
+          Roughness Path: Assets/Grass002_1K_Roughness.jpg
+          Normal Path: Assets/Grass002_1K_Normal.jpg
+          Metallic Path: metallic_default
+          Ao Path: ao_default
+  - ID: 0
+    Name Component:
+      Name: RootNode
+    Transform Component:
+      Position: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Render Component:
+      Path: Assets/untitled.fbx
+      Name: RootNode
+      Materials:
+        - {}
+Systems:
+  Render System:
+    {}
+  Editor Camera Control System:
+    Movement Speed: 10
+    Pan Speed: 0.800000012
+    Mouse Sensitivity: 0.5
+    Scrollwheel Sensitivy: 100

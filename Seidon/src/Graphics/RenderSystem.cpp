@@ -1,4 +1,5 @@
 #include "RenderSystem.h"
+#include "Core/Scene.h"
 
 namespace Seidon
 {
@@ -73,7 +74,7 @@ namespace Seidon
 	{
 	}
 
-	void RenderSystem::Setup()
+	void RenderSystem::Init()
 	{
 		framebufferWidth = Window::GetWidth();
 		framebufferHeight = Window::GetHeight();
@@ -146,10 +147,10 @@ namespace Seidon
 
 	void RenderSystem::Update(float deltaTime)
 	{
-		entt::basic_group lights    = EntityManager::registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
-		entt::basic_group cameras   = EntityManager::registry.group<CameraComponent, TransformComponent>();
-		entt::basic_view cubemaps   = EntityManager::registry.view<CubemapComponent>();
-		entt::basic_group renderGroup = EntityManager::registry.group<RenderComponent>(entt::get<TransformComponent>);
+		entt::basic_group lights    = scene->GetRegistry().group<DirectionalLightComponent>(entt::get<TransformComponent>);
+		entt::basic_group cameras   = scene->GetRegistry().group<CameraComponent, TransformComponent>();
+		entt::basic_view cubemaps   = scene->GetRegistry().view<CubemapComponent>();
+		entt::basic_group renderGroup = scene->GetRegistry().group<RenderComponent>(entt::get<TransformComponent>);
 
 		DirectionalLightComponent light;
 		TransformComponent lightTransform;
@@ -344,6 +345,11 @@ namespace Seidon
 		glBindVertexArray(fullscreenQuad->GetVAO());
 		glDrawElements(GL_TRIANGLES, fullscreenQuad->indices.size(), GL_UNSIGNED_INT, 0);
 		renderFramebuffer.Unbind();
+	}
+
+	void RenderSystem::Destroy()
+	{
+		delete fullscreenQuad;
 	}
 
 	void RenderSystem::ResizeFramebuffer(unsigned int width, unsigned int height)

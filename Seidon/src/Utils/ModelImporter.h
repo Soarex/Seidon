@@ -38,6 +38,7 @@ namespace Seidon
 
 	struct ModelImportData
 	{
+		std::string filepath;
 		std::vector<MeshImportData> meshes;
 		std::vector<MaterialImportData> materials;
 		std::vector<glm::mat4> localTransforms;

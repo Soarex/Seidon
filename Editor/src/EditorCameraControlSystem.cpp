@@ -8,14 +8,14 @@ namespace Seidon
 	{
 	}
 
-	void EditorCameraControlSystem::Setup()
+	void EditorCameraControlSystem::Init()
 	{
-		entt::basic_group cameras = EntityManager::registry.group<CameraComponent, TransformComponent>();
+		entt::basic_group cameras = scene->GetRegistry().group<CameraComponent, TransformComponent>();
 
 		if (!cameras.empty())
-		{
-			camera = Entity(cameras.front(), &EntityManager::registry);
-		}
+			camera = Entity(cameras.front(), &scene->GetRegistry());
+		else
+			camera = { entt::null, nullptr };
 	}
 
 	void EditorCameraControlSystem::Update(float deltaTime)
@@ -30,6 +30,11 @@ namespace Seidon
 
 		glm::vec3 up = cameraTransform.GetUpDirection();
 		up = glm::normalize(up);
+
+		if (InputManager::GetMouseButtonDown(MouseButton::RIGHT) || InputManager::GetMouseButtonDown(MouseButton::MIDDLE))
+			Window::EnableMouseCursor(false);
+		else
+			Window::EnableMouseCursor(true);
 
 		if (InputManager::GetMouseButtonDown(MouseButton::RIGHT))
 		{

@@ -41,6 +41,7 @@ namespace Seidon
 		static void ToggleFullscreen();
 
 		inline static bool ShouldClose() { return glfwWindowShouldClose(handle); }
+		inline static void Close() { glfwSetWindowShouldClose(handle, true); }
 
 		inline static void SetSize(unsigned int width, unsigned int height) { Window::width = width; Window::height = height;  glfwSetWindowSize(handle, width, height); }
 		inline static void SetName(std::string name) { glfwSetWindowTitle(handle, name.c_str()); }
@@ -48,6 +49,7 @@ namespace Seidon
 		inline static int GetWidth() { return width; }
 		inline static int GetHeight() { return height; }
 		inline static float GetDeltaTime() { return deltaTime; }
+		inline static GLFWwindow* GetHandle() { return handle; }
 
 		inline static void AddWindowSizeCallback(const std::function<void(int, int)>& callback) { windowSizeCallbacks.push_back(callback); }
 		inline static void AddCursorCallback(const std::function<void(float, float)>& callback) { cursorCallbacks.push_back(callback); }

@@ -135,6 +135,7 @@ namespace Seidon
         for (auto& meshImportData : importData.meshes)
         {
             Mesh* mesh = CreateMesh(meshImportData);
+            mesh->filepath = importData.filepath;
 
             for (int j = 0; j < meshImportData.subMeshes.size(); j++)
                 mesh->subMeshes[j]->material = materials[meshImportData.subMeshes[j].materialId];

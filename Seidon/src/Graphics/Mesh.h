@@ -34,6 +34,7 @@ namespace Seidon
 
     struct Mesh
     {
+        std::string filepath;
         std::string name;
         std::vector<SubMesh*> subMeshes;
 

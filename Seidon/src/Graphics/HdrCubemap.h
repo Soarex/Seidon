@@ -36,6 +36,7 @@ namespace Seidon
 		void BindPrefilteredMap(unsigned int slot = 0);
 		void BindBRDFLookupMap(unsigned int slot = 0);
 
+		inline const std::string& GetPath() { return filepath; }
 	private:
 		void ToCubemap(Texture& equirectangularMap);
 		void GenerateIrradianceMap();

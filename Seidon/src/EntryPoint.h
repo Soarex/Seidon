@@ -2,7 +2,6 @@
 #include "Application.h"
 #include "Core/Window.h"
 #include "Core/InputManager.h"
-#include "Core/SystemsManager.h"
 #include "Core/WorkManager.h"
 #include "Graphics/RenderSystem.h"
 
@@ -15,18 +14,16 @@ int main(int argc, char** argv)
 	Seidon::Window::Init("Seidon", 800, 600);
 	Seidon::ResourceManager::Init();
 	Seidon::InputManager::Init();
-	Seidon::SystemsManager::Init();
 	Seidon::WorkManager::Init();
 	
 	Seidon::Application* app = Seidon::CreateApplication();
 
-	Seidon::SystemsManager::AddSystem<Seidon::RenderSystem>();
 	while (!Seidon::Window::ShouldClose())
 	{
 		Seidon::Window::BeginFrame();
 
 		Seidon::InputManager::Update();
-		Seidon::SystemsManager::Update(deltaTime);
+		Seidon::SceneManager::UpdateActiveScene(deltaTime);
 		Seidon::WorkManager::Update();
 		app->Run();
 

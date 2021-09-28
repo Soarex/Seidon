@@ -1,4 +1,5 @@
 #include "FlyingCameraControlSystem.h"
+#include "../Core/Scene.h"
 
 namespace Seidon
 {
@@ -7,14 +8,12 @@ namespace Seidon
 	{
 	}
 
-	void FlyingCameraControlSystem::Setup()
+	void FlyingCameraControlSystem::Init()
 	{
-		entt::basic_group cameras = EntityManager::registry.group<CameraComponent, TransformComponent>();
+		entt::basic_group cameras = scene->GetRegistry().group<CameraComponent, TransformComponent>();
 
 		if (!cameras.empty())
-		{
-			camera = Entity(cameras.front(), &EntityManager::registry);
-		}
+			camera = Entity(cameras.front(), &scene->GetRegistry());
 	}
 	 
 	void FlyingCameraControlSystem::Update(float deltaTime)
@@ -57,5 +56,10 @@ namespace Seidon
 
 			cameraTransform.position += direction * speed * deltaTime;
 		}
+	}
+
+	void FlyingCameraControlSystem::Destroy()
+	{
+
 	}
 }

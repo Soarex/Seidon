@@ -1,7 +1,6 @@
 #pragma once
 
 #include "entt/entt.hpp"
-#include "EntityManager.h"
 #include "Components.h"
 
 namespace Seidon
@@ -47,6 +46,5 @@ namespace Seidon
 		}
 
 		bool operator ==(const Entity& other) { return ID == other.ID; }
-		friend class EntityManager;
 	};
 }

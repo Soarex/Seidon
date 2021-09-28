@@ -2,19 +2,50 @@
 #include <EntryPoint.h>
 #include <glm/glm.hpp>
 #include <ImGuizmo/ImGuizmo.h>
+#include <filesystem>
 
 #include "Panels/InspectorPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/AssetBrowserPanel.h"
 #include "Dockspace.h"
+#include "SceneSerializer.h"
 
 #include "EditorCameraControlSystem.h"
 
 using namespace Seidon;
 
+#include <Windows.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+std::string SaveFile(const char* filter)
+{
+    OPENFILENAMEA ofn;
+    CHAR szFile[260] = { 0 };
+    CHAR currentDir[256] = { 0 };
+    ZeroMemory(&ofn, sizeof(OPENFILENAME));
+    ofn.lStructSize = sizeof(OPENFILENAME);
+    ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Window::GetHandle());
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile);
+    if (GetCurrentDirectoryA(256, currentDir))
+        ofn.lpstrInitialDir = currentDir;
+    ofn.lpstrFilter = filter;
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
+    // Sets the default extension by extracting it from the filter
+    ofn.lpstrDefExt = strchr(filter, '\0') + 1;
+
+    if (GetSaveFileNameA(&ofn) == TRUE)
+        return ofn.lpstrFile;
+
+    return std::string();
+}
+
 class Editor : public Application
 {
 public:
+    Scene* scene;
     Entity selectedEntity;
 
     HierarchyPanel hierarchyPanel;
@@ -23,11 +54,14 @@ public:
     Dockspace dockspace;
 
     Entity camera;
+
     Editor()
 	{
 		Window::SetName("Seidon Editor");
         Window::SetSize(1280, 720);
 
+        scene = new Scene("Main Scene");
+        
         ModelImporter importer;
         ModelImportData importData = importer.Import("Assets/untitled.fbx");
         std::vector<Mesh*> meshes = ResourceManager::CreateFromImportData(importData);
@@ -35,22 +69,18 @@ public:
         int i = 0;
         for (Mesh* mesh : meshes)
         {
-            Entity e = EntityManager::CreateEntity(mesh->name);
-            e.GetComponent<TransformComponent>().SetFromMatrix(importData.localTransforms[i]);
-            e.AddComponent<RenderComponent>(mesh);
+             Entity e = scene->CreateEntity(mesh->name);
+             e.GetComponent<TransformComponent>().SetFromMatrix(importData.localTransforms[i]);
+             e.AddComponent<RenderComponent>(mesh);
 
-            i++;
+             i++;
         }
         
-
-        importData = importer.Import("Assets/buildings/Assets.fbx");
-        ResourceManager::CreateFromImportData(importData);
-
-        Entity light = EntityManager::CreateEntity("Light");
+        Entity light = scene->CreateEntity("Light");
         light.AddComponent<DirectionalLightComponent>(glm::vec3(1.0f, 1.0f, 1.0f), 1.0f);
         light.GetComponent<TransformComponent>().rotation = glm::vec3(1.0f, 4.0f, 1.0f);
 
-        camera = EntityManager::CreateEntity("Camera");
+        camera = scene->CreateEntity("Camera");
         camera.AddComponent<CameraComponent>().farPlane = 300;
         camera.EditComponent<TransformComponent>([](TransformComponent& t)
             {
@@ -61,12 +91,13 @@ public:
         HdrCubemap* cubemap = new HdrCubemap();
         cubemap->LoadFromEquirectangularMap("Assets/Cubemap.hdr");
 
-        Entity cubemapEntity = EntityManager::CreateEntity("Cubemap");
+        Entity cubemapEntity = scene->CreateEntity("Cubemap");
         cubemapEntity.AddComponent<CubemapComponent>(cubemap);
+        scene->AddSystem<EditorCameraControlSystem>(10, 0.5).SetRotationEnabled(true);
+        scene->AddSystem<RenderSystem>();
+        SceneManager::SetActiveScene(scene);
 
-        SystemsManager::AddSystem<EditorCameraControlSystem>(10, 0.5).SetRotationEnabled(true);
-
-        selectedEntity = { entt::null, &EntityManager::registry };
+        selectedEntity = { entt::null, nullptr };
         hierarchyPanel.AddSelectionCallback([&](Entity& entity)
             {
                 selectedEntity = entity;
@@ -74,14 +105,15 @@ public:
 
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Assets/Roboto-Regular.ttf", 18);
+
 	}
 
     int guizmoOperation = -1;
     bool local = false;
 	void Run()
 	{
-        RenderSystem& renderSystem = SystemsManager::GetSystem<RenderSystem>();
-        EditorCameraControlSystem& cameraControlSystem = SystemsManager::GetSystem<EditorCameraControlSystem>();
+        RenderSystem& renderSystem = scene->GetSystem<RenderSystem>();
+        EditorCameraControlSystem& cameraControlSystem = scene->GetSystem<EditorCameraControlSystem>();
 
         if (InputManager::GetKeyPressed(GET_KEYCODE(BACKSLASH)))
             Window::ToggleFullscreen();
@@ -103,6 +135,34 @@ public:
 
         dockspace.Begin();
 
+        if (ImGui::BeginMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New", "Ctrl+N"))
+                    ;// NewScene();
+
+                if (ImGui::MenuItem("Open...", "Ctrl+O"))
+                    ;//OpenScene();
+
+                if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+                {
+                    std::string filepath = SaveFile("Seidon Scene (*.sdscene)\0*.sdscene\0");
+                    if (!filepath.empty())
+                    {
+                        SceneSerializer serializer;
+                        serializer.Save(SceneManager::GetActiveScene(), filepath);
+                    }
+                }
+                    //SaveSceneAs();
+
+                if (ImGui::MenuItem("Exit")) Window::Close();
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenuBar();
+        }
+
         ImGui::Begin("Viewport");
         ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
         ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -116,6 +176,23 @@ public:
         renderSystem.ResizeFramebuffer(viewportPanelSize.x, viewportPanelSize.y);
 
         ImGui::Image((ImTextureID)renderSystem.GetRenderTarget().GetId(), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE"))
+            {
+                std::string path = (const char*)payload->Data;
+                SceneSerializer serializer;
+                scene = serializer.Load(path);
+
+                if (scene)
+                {
+                    SceneManager::ChangeActiveScene(scene);
+                    selectedEntity = { entt::null, nullptr };
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
 
         if (selectedEntity.ID != entt::null && guizmoOperation != -1)
         {

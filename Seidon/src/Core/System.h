@@ -1,11 +1,18 @@
 #pragma once
-#include <iostream>
+
 namespace Seidon
 {
+	class Scene;
+
 	class System
 	{
+	protected:
+		Scene* scene;
 	public:
-		virtual void Setup() {};
+		virtual void Init() {};
 		virtual void Update(float deltaTime) {};
+		virtual void Destroy() {};
+
+		friend class Scene;
 	};
 }

@@ -78,7 +78,22 @@ namespace Seidon
 
 			}
 			else
+			{
 				ImGui::ImageButton((ImTextureID)fileIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				if (path.extension() == ".sdscene" && ImGui::BeginDragDropSource())
+				{
+					const std::string& itemPath = directoryEntry.path().string();
+					ImGui::SetDragDropPayload("CONTENT_BROWSER_SCENE", itemPath.c_str(), itemPath.length() + 1);
+					ImGui::EndDragDropSource();
+				}
+
+				if (path.extension() == ".fbx" && ImGui::BeginDragDropSource())
+				{
+					const std::string& itemPath = directoryEntry.path().string();
+					ImGui::SetDragDropPayload("CONTENT_BROWSER_MODEL", itemPath.c_str(), itemPath.length() + 1);
+					ImGui::EndDragDropSource();
+				}
+			}
 
 			
 			ImGui::PopStyleColor();

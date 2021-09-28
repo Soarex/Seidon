@@ -17,8 +17,9 @@ namespace Seidon
 		float speed, mouseSensitivity;
 	public:
 		FlyingCameraControlSystem(float speed = 1, float mouseSensitivity = 0.1f);
-		void Setup();
+		void Init();
 		void Update(float deltaTime);
+		void Destroy();
 
 		inline void SetRotationEnabled(bool value) { rotationEnabled = value; };
 		inline void SetMovementEnabled(bool value) { movementEnabled = value; };

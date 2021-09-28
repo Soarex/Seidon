@@ -44,6 +44,12 @@ namespace Seidon
 		static inline void AddShader(const std::string& name, Shader* shader) { shaders[name] = shader; }
 		static inline void AddMaterial(const std::string& name, Material* material) { materials[name] = material; }
 
+		static inline bool IsTextureLoaded(const std::string& name) { return textures.count(name) > 0; }
+		static inline bool IsMeshLoaded(const std::string& name) { return meshes.count(name) > 0; }
+		static inline bool IsShaderLoaded(const std::string& name) { return shaders.count(name) > 0; }
+		static inline bool IsMaterialLoaded(const std::string& name) { return materials.count(name) > 0; }
+
+
 		static std::vector<std::string> GetTextureKeys();
 		static std::vector<std::string> GetMeshKeys();
 		static std::vector<std::string> GetShaderKeys();

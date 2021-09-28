@@ -36,7 +36,6 @@ namespace Seidon
     {
     public:
         std::string path;
-
     private:
         static Texture temporaryTexture;
         unsigned int ID;
@@ -59,6 +58,6 @@ namespace Seidon
         void Destroy();
 
         inline unsigned int GetId() const { return ID; }
-
+        inline const std::string& GetPath() { return path; }
     };
 }

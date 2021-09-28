@@ -6,6 +6,7 @@ namespace Seidon
 	{
         std::string directory;
         ModelImportData res;
+        res.filepath = path;
 
         const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 

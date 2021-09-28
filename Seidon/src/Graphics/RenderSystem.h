@@ -3,7 +3,6 @@
 
 #include "Core/System.h"
 #include "Core/ResourceManager.h"
-#include "Core/EntityManager.h"
 #include "Core/Window.h"
 #include "Core/Entity.h"
 #include "Shader.h"
@@ -44,8 +43,10 @@ namespace Seidon
 		const int SHADOW_MAP_SIZE = 1024;
 	public:
 		RenderSystem();
-		void Setup();
+		void Init();
 		void Update(float deltatime);
+		void Destroy();
+
 		void ResizeFramebuffer(unsigned int width, unsigned int height);
 
 		inline const Texture& GetRenderTarget() { return renderTarget; }
