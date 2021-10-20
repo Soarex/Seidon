@@ -2,7 +2,7 @@
 
 namespace Seidon
 {
-	HierarchyPanel::HierarchyPanel()
+	void HierarchyPanel::Init()
 	{
 		selectedEntity = { entt::null, nullptr };
 	}
@@ -12,16 +12,16 @@ namespace Seidon
 		ImGui::Begin("Hierarchy");
 		static int selected = -1;
 
-		SceneManager::GetActiveScene()->GetRegistry().each([&](auto entityID)
+		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityID)
 			{
-				Entity entity(entityID, &SceneManager::GetActiveScene()->GetRegistry());
+				Entity entity(entityID, &Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry());
 				DrawEntityNode(entity);
 			});
 
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
-				SceneManager::GetActiveScene()->CreateEntity();
+				Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
 
 			ImGui::EndPopup();
 		}
@@ -60,7 +60,7 @@ namespace Seidon
 
 		if (entityDeleted)
 		{
-			SceneManager::GetActiveScene()->DestroyEntity(entity);
+			Application::Get()->GetSceneManager()->GetActiveScene()->DestroyEntity(entity);
 			if (selectedEntity == entity)
 			{
 				selectedEntity = {};

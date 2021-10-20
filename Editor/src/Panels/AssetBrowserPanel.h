@@ -11,7 +11,8 @@ namespace Seidon
 		Texture fileIcon, folderIcon;
 
 	public:
-		AssetBrowserPanel();
+		AssetBrowserPanel() = default;
+		void Init();
 		void Draw();
 	};
 }

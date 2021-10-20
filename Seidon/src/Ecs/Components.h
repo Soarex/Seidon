@@ -140,4 +140,22 @@ namespace Seidon
 			return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);;
 		}
 	};
+
+
+	struct CubeColliderComponent
+	{
+		glm::vec3 halfExtents = { 0.5f, 0.5f, 0.5f };
+
+		CubeColliderComponent() = default;
+		CubeColliderComponent(const CubeColliderComponent&) = default;
+	};
+
+
+	struct RigidbodyComponent
+	{
+		float mass = 0;
+
+		RigidbodyComponent() = default;
+		RigidbodyComponent(const RigidbodyComponent&) = default;
+	};
 }

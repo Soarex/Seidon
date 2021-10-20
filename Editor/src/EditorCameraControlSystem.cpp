@@ -31,14 +31,14 @@ namespace Seidon
 		glm::vec3 up = cameraTransform.GetUpDirection();
 		up = glm::normalize(up);
 
-		if (InputManager::GetMouseButtonDown(MouseButton::RIGHT) || InputManager::GetMouseButtonDown(MouseButton::MIDDLE))
-			Window::EnableMouseCursor(false);
+		if (inputManager->GetMouseButtonDown(MouseButton::RIGHT) || inputManager->GetMouseButtonDown(MouseButton::MIDDLE))
+			window->EnableMouseCursor(false);
 		else
-			Window::EnableMouseCursor(true);
+			window->EnableMouseCursor(true);
 
-		if (InputManager::GetMouseButtonDown(MouseButton::RIGHT))
+		if (inputManager->GetMouseButtonDown(MouseButton::RIGHT))
 		{
-			glm::vec2 mouseOffset = InputManager::GetMouseOffset();
+			glm::vec2 mouseOffset = inputManager->GetMouseOffset();
 
 			pitch += mouseOffset.y * mouseSensitivity;
 			yaw -= mouseOffset.x * mouseSensitivity;
@@ -53,10 +53,10 @@ namespace Seidon
 		}
 
 		glm::vec3 input = { 0, 0, 0 };
-		if (InputManager::GetMouseButtonDown(MouseButton::RIGHT))
+		if (inputManager->GetMouseButtonDown(MouseButton::RIGHT))
 		{
-			input.x = -InputManager::GetKey(GET_KEYCODE(A)) + InputManager::GetKey(GET_KEYCODE(D));
-			input.z = -InputManager::GetKey(GET_KEYCODE(S)) + InputManager::GetKey(GET_KEYCODE(W));
+			input.x = -inputManager->GetKey(GET_KEYCODE(A)) + inputManager->GetKey(GET_KEYCODE(D));
+			input.z = -inputManager->GetKey(GET_KEYCODE(S)) + inputManager->GetKey(GET_KEYCODE(W));
 
 			glm::vec3 direction = forward * input.z + right * input.x;
 
@@ -64,10 +64,10 @@ namespace Seidon
 		}
 
 
-		if (InputManager::GetMouseButtonDown(MouseButton::MIDDLE))
+		if (inputManager->GetMouseButtonDown(MouseButton::MIDDLE))
 		{
-			input.x = -InputManager::GetMouseOffset().x;
-			input.y = -InputManager::GetMouseOffset().y;
+			input.x = -inputManager->GetMouseOffset().x;
+			input.y = -inputManager->GetMouseOffset().y;
 
 			glm::vec3 direction = input.x * right + input.y * up;
 
@@ -75,7 +75,7 @@ namespace Seidon
 		}
 
 		input.x = input.y = 0;
-		input.z = InputManager::GetMouseWheelOffset().y;
+		input.z = inputManager->GetMouseWheelOffset().y;
 
 		glm::vec3 direction = forward * input.z;
 

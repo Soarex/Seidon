@@ -10,8 +10,9 @@ namespace Seidon
 		std::vector<std::function<void(Entity&)>> onEntitySelectionCallbacks;
 
 	public:
-		HierarchyPanel();
+		HierarchyPanel() = default;
 
+		void Init();
 		void Draw();
 		void AddSelectionCallback(const std::function<void(Entity&)>& callback);
 		void SetSelectedEntity(Entity& entity);

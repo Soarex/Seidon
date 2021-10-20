@@ -1,7 +1,12 @@
 #include "Shader.h"
 
+#include "Core/Application.h"
+#include "Core/WorkManager.h"
+
 namespace Seidon
 {
+    Shader* Shader::temporaryShader = nullptr;
+
     Shader::Shader(const std::string& vertexShaderCode, const std::string& fragmentShaderCode)
     {
         CreateFromSource(vertexShaderCode, fragmentShaderCode);
@@ -54,23 +59,22 @@ namespace Seidon
         CreateFromSource(vShaderCode, fShaderCode);
     }
 
-    Shader temporaryShader;
-
     void Shader::LoadFromFileAsync(const std::string& path)
     {
         this->path = path;
 
-        if (temporaryShader.path == "")
+        if (!temporaryShader)
         {
+            temporaryShader = new Shader();
             std::string vertexSource = "#version 330 core\n void main() { gl_Position = vec4(0); } ";
             std::string fragmentSource = "#version 330 core\n void main() { } ";
 
-            temporaryShader.path = "Temp";
-            temporaryShader.CreateFromSource(vertexSource, fragmentSource);
+            temporaryShader->path = "Temp";
+            temporaryShader->CreateFromSource(vertexSource, fragmentSource);
         }
 
-        ID = temporaryShader.ID;
-        WorkManager::Execute([this, path]()
+        ID = temporaryShader->ID;
+        Application::Get()->GetWorkManager()->Execute([this, path]()
             {
                 std::stringstream vertexStream;
                 std::stringstream fragmentStream;
@@ -109,7 +113,7 @@ namespace Seidon
                 std::string fShaderCode = fragmentStream.str();
 
                 
-                WorkManager::ExecuteOnMainThread([this, vShaderCode, fShaderCode]()
+                Application::Get()->GetWorkManager()->ExecuteOnMainThread([this, vShaderCode, fShaderCode]()
                     {
                         CreateFromSource(vShaderCode, fShaderCode);
                     }

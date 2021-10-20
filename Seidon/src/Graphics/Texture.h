@@ -1,4 +1,5 @@
 #pragma once
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <StbImage/stb_image.h> 
@@ -6,7 +7,6 @@
 #include <string>
 #include <iostream>
 
-#include "Core/WorkManager.h"
 
 namespace Seidon
 {
@@ -37,7 +37,7 @@ namespace Seidon
     public:
         std::string path;
     private:
-        static Texture temporaryTexture;
+        static Texture* temporaryTexture;
         unsigned int ID;
 
     public:

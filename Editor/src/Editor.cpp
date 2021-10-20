@@ -9,6 +9,7 @@
 #include "Panels/AssetBrowserPanel.h"
 #include "Dockspace.h"
 #include "SceneSerializer.h"
+#include "Extensions/Extension.h"
 
 #include "EditorCameraControlSystem.h"
 
@@ -24,7 +25,7 @@ std::string SaveFile(const char* filter)
     CHAR currentDir[256] = { 0 };
     ZeroMemory(&ofn, sizeof(OPENFILENAME));
     ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Window::GetHandle());
+    ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)Application::Get()->GetWindow()->GetHandle());
     ofn.lpstrFile = szFile;
     ofn.nMaxFile = sizeof(szFile);
     if (GetCurrentDirectoryA(256, currentDir))
@@ -52,19 +53,26 @@ public:
     InspectorPanel inspectorPanel;
     AssetBrowserPanel assetBrowserPanel;
     Dockspace dockspace;
+    Extension e;
 
     Entity camera;
 
-    Editor()
+    void Init() override
 	{
-		Window::SetName("Seidon Editor");
-        Window::SetSize(1280, 720);
+        e.Bind(L"../Bin/Debug-x64/GameDll/GameDll.dll");
+      
+        hierarchyPanel.Init();
+        inspectorPanel.Init();
+        assetBrowserPanel.Init();
+        
+		window->SetName("Seidon Editor");
+        window->SetSize(1280, 720);
 
         scene = new Scene("Main Scene");
         
         ModelImporter importer;
         ModelImportData importData = importer.Import("Assets/untitled.fbx");
-        std::vector<Mesh*> meshes = ResourceManager::CreateFromImportData(importData);
+        std::vector<Mesh*> meshes = resourceManager->CreateFromImportData(importData);
 
         int i = 0;
         for (Mesh* mesh : meshes)
@@ -72,7 +80,13 @@ public:
              Entity e = scene->CreateEntity(mesh->name);
              e.GetComponent<TransformComponent>().SetFromMatrix(importData.localTransforms[i]);
              e.AddComponent<RenderComponent>(mesh);
+             e.AddComponent<CubeColliderComponent>();
+             e.AddComponent<RigidbodyComponent>();
 
+             if(mesh->name != "Floor")
+                 e.GetComponent<RigidbodyComponent>().mass = 1;
+             else
+                 e.GetComponent<CubeColliderComponent>().halfExtents = { 100, 0.5f, 100 };
              i++;
         }
         
@@ -93,9 +107,12 @@ public:
 
         Entity cubemapEntity = scene->CreateEntity("Cubemap");
         cubemapEntity.AddComponent<CubemapComponent>(cubemap);
+
         scene->AddSystem<EditorCameraControlSystem>(10, 0.5).SetRotationEnabled(true);
         scene->AddSystem<RenderSystem>();
-        SceneManager::SetActiveScene(scene);
+        scene->AddSystem<PhysicSystem>();
+
+        sceneManager->SetActiveScene(scene);
 
         selectedEntity = { entt::null, nullptr };
         hierarchyPanel.AddSelectionCallback([&](Entity& entity)
@@ -105,32 +122,36 @@ public:
 
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Assets/Roboto-Regular.ttf", 18);
+        e.Init();
 
+        for (auto& [key, value] : registeredSystems)
+            value(*scene);
 	}
 
-    int guizmoOperation = -1;
+    int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
     bool local = false;
-	void Run()
+
+	void Update() override
 	{
         RenderSystem& renderSystem = scene->GetSystem<RenderSystem>();
         EditorCameraControlSystem& cameraControlSystem = scene->GetSystem<EditorCameraControlSystem>();
 
-        if (InputManager::GetKeyPressed(GET_KEYCODE(BACKSLASH)))
-            Window::ToggleFullscreen();
+        if (inputManager->GetKeyPressed(GET_KEYCODE(BACKSLASH)))
+            window->ToggleFullscreen();
 
-        if (InputManager::GetKeyPressed(GET_KEYCODE(Q)))
+        if (inputManager->GetKeyPressed(GET_KEYCODE(Q)))
             guizmoOperation = -1;
 
-        if (InputManager::GetKeyPressed(GET_KEYCODE(W)) && !InputManager::GetMouseButton(MouseButton::RIGHT))
+        if (inputManager->GetKeyPressed(GET_KEYCODE(W)) && !inputManager->GetMouseButton(MouseButton::RIGHT))
             guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 
-        if (InputManager::GetKeyPressed(GET_KEYCODE(E)))
+        if (inputManager->GetKeyPressed(GET_KEYCODE(E)))
             guizmoOperation = ImGuizmo::OPERATION::ROTATE;
 
-        if (InputManager::GetKeyPressed(GET_KEYCODE(R)))
+        if (inputManager->GetKeyPressed(GET_KEYCODE(R)))
             guizmoOperation = ImGuizmo::OPERATION::SCALE;
 
-        if (InputManager::GetKeyPressed(GET_KEYCODE(TAB)))
+        if (inputManager->GetKeyPressed(GET_KEYCODE(TAB)))
             local = !local;
 
         dockspace.Begin();
@@ -151,12 +172,12 @@ public:
                     if (!filepath.empty())
                     {
                         SceneSerializer serializer;
-                        serializer.Save(SceneManager::GetActiveScene(), filepath);
+                        serializer.Save(sceneManager->GetActiveScene(), filepath);
                     }
                 }
                     //SaveSceneAs();
 
-                if (ImGui::MenuItem("Exit")) Window::Close();
+                if (ImGui::MenuItem("Exit")) window->Close();
                 ImGui::EndMenu();
             }
 
@@ -187,7 +208,7 @@ public:
 
                 if (scene)
                 {
-                    SceneManager::ChangeActiveScene(scene);
+                    sceneManager->ChangeActiveScene(scene);
                     selectedEntity = { entt::null, nullptr };
                 }
             }
@@ -242,9 +263,10 @@ public:
         dockspace.End();
 	}
 
-	~Editor()
+	void Destroy() override
 	{
-
+        e.Destroy();
+        e.Unbind();
 	}
 };
 

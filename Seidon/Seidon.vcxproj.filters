@@ -30,7 +30,7 @@
     <ClCompile Include="src\Graphics\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Entity.cpp">
+    <ClCompile Include="src\Ecs\Entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Graphics\Material.cpp">
@@ -57,7 +57,7 @@
     <ClCompile Include="src\Core\WorkManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Application.cpp">
+    <ClCompile Include="src\Core\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Utils\FlyingCameraControlSystem.cpp">
@@ -189,10 +189,19 @@
     <ClCompile Include="src\Vendor\yaml-cpp\tag.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\Scene.cpp">
+    <ClCompile Include="src\Ecs\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Core\SceneManager.cpp">
+    <ClCompile Include="src\Ecs\SceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PhysicSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ecs\System.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extensions\Extension.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -383,7 +392,7 @@
     <ClInclude Include="src\Vendor\entt\fwd.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Entity.h">
+    <ClInclude Include="src\Ecs\Entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Graphics\Material.h">
@@ -428,13 +437,13 @@
     <ClInclude Include="src\EntryPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Application.h">
+    <ClInclude Include="src\Core\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Components.h">
+    <ClInclude Include="src\Ecs\Components.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\System.h">
+    <ClInclude Include="src\Ecs\System.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Utils\FlyingCameraControlSystem.h">
@@ -659,10 +668,31 @@
     <ClInclude Include="src\Vendor\yaml-cpp\yaml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\Scene.h">
+    <ClInclude Include="src\Ecs\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Core\SceneManager.h">
+    <ClInclude Include="src\Ecs\SceneManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\Physics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ecs\EcsContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extensions\Extension.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extensions\Extensions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ExtensionEntryPoint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ecs\Ecs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -673,5 +703,11 @@
     <None Include="Shaders\Default.shader" />
     <None Include="Shaders\Simple.shader" />
     <None Include="Shaders\PBR.shader" />
+    <None Include="src\Vendor\Physx\filebuf\include\PsAsciiConversion.inl">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="src\Vendor\Physx\filebuf\include\PsIOStream.inl">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

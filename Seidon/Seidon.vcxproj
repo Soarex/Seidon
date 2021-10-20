@@ -79,14 +79,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(ProjectDir)src\Vendor\Bullet3D;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(ProjectDir)src\Vendor\Bullet3D;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
@@ -139,6 +139,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -169,14 +170,17 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Application.cpp" />
-    <ClCompile Include="src\Core\Scene.cpp" />
-    <ClCompile Include="src\Core\SceneManager.cpp" />
+    <ClCompile Include="src\Core\Application.cpp" />
+    <ClCompile Include="src\Ecs\Scene.cpp" />
+    <ClCompile Include="src\Ecs\SceneManager.cpp" />
+    <ClCompile Include="src\Extensions\Extension.cpp" />
     <ClCompile Include="src\Graphics\Framebuffer.cpp" />
     <ClCompile Include="src\Core\InputManager.cpp" />
     <ClCompile Include="src\Graphics\HdrCubemap.cpp" />
     <ClCompile Include="src\Graphics\Material.cpp" />
     <ClCompile Include="src\Graphics\Mesh.cpp" />
+    <ClCompile Include="src\Physics\PhysicSystem.cpp" />
+    <ClCompile Include="src\Ecs\System.cpp" />
     <ClCompile Include="src\Utils\MatrixDecompose.cpp" />
     <ClCompile Include="src\Utils\ModelImporter.cpp" />
     <ClCompile Include="src\Utils\FlyingCameraControlSystem.cpp" />
@@ -184,7 +188,7 @@
     <ClCompile Include="src\Graphics\RenderBuffer.cpp" />
     <ClCompile Include="src\Graphics\RenderSystem.cpp" />
     <ClCompile Include="src\Core\ResourceManager.cpp" />
-    <ClCompile Include="src\Core\Entity.cpp" />
+    <ClCompile Include="src\Ecs\Entity.cpp" />
     <ClCompile Include="src\Graphics\Shader.cpp" />
     <ClCompile Include="src\Vendor\ImGuizmo\ImGuizmo.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui.cpp" />
@@ -231,16 +235,22 @@
     <ClCompile Include="src\Vendor\yaml-cpp\tag.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Application.h" />
-    <ClInclude Include="src\Core\Components.h" />
+    <ClInclude Include="src\Core\Application.h" />
+    <ClInclude Include="src\Ecs\Components.h" />
     <ClInclude Include="src\Core\Core.h" />
-    <ClInclude Include="src\Core\Scene.h" />
-    <ClInclude Include="src\Core\SceneManager.h" />
-    <ClInclude Include="src\Core\System.h" />
+    <ClInclude Include="src\Ecs\Ecs.h" />
+    <ClInclude Include="src\Ecs\Scene.h" />
+    <ClInclude Include="src\Ecs\SceneManager.h" />
+    <ClInclude Include="src\Ecs\System.h" />
     <ClInclude Include="src\EntryPoint.h" />
+    <ClInclude Include="src\ExtensionEntryPoint.h" />
+    <ClInclude Include="src\Extensions\Extension.h" />
+    <ClInclude Include="src\Extensions\Extensions.h" />
     <ClInclude Include="src\Graphics\Graphics.h" />
     <ClInclude Include="src\Graphics\HdrCubemap.h" />
     <ClInclude Include="src\Graphics\Vertex.h" />
+    <ClInclude Include="src\Physics\Physics.h" />
+    <ClInclude Include="src\Physics\PhysicSystem.h" />
     <ClInclude Include="src\Utils\MatrixDecompose.h" />
     <ClInclude Include="src\Utils\ModelImporter.h" />
     <ClInclude Include="src\Seidon.h" />
@@ -312,7 +322,7 @@
     <ClInclude Include="src\Graphics\RenderBuffer.h" />
     <ClInclude Include="src\Graphics\RenderSystem.h" />
     <ClInclude Include="src\Core\ResourceManager.h" />
-    <ClInclude Include="src\Core\Entity.h" />
+    <ClInclude Include="src\Ecs\Entity.h" />
     <ClInclude Include="src\Graphics\Shader.h" />
     <ClInclude Include="src\Vendor\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="src\Vendor\Imgui\imconfig.h" />
@@ -387,6 +397,7 @@
     <ClInclude Include="src\Vendor\yaml-cpp\token.h" />
     <ClInclude Include="src\Vendor\yaml-cpp\traits.h" />
     <ClInclude Include="src\Vendor\yaml-cpp\yaml.h" />
+    <ClInclude Include="src\Ecs\EcsContext.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Default.shader" />
@@ -395,6 +406,8 @@
     <None Include="Shaders\Simple.shader" />
     <None Include="src\Shaders\Default.shader" />
     <None Include="src\Shaders\LightCube.shader" />
+    <None Include="src\Vendor\Physx\filebuf\include\PsAsciiConversion.inl" />
+    <None Include="src\Vendor\Physx\filebuf\include\PsIOStream.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 #include "FlyingCameraControlSystem.h"
-#include "../Core/Scene.h"
+#include "../Ecs/Scene.h"
 
 namespace Seidon
 {
@@ -20,7 +20,7 @@ namespace Seidon
 	{
 		if (rotationEnabled)
 		{
-			glm::vec2 mouseOffset = InputManager::GetMouseOffset();
+			glm::vec2 mouseOffset = inputManager->GetMouseOffset();
 
 			pitch += mouseOffset.y * mouseSensitivity;
 			yaw -= mouseOffset.x * mouseSensitivity;
@@ -34,8 +34,8 @@ namespace Seidon
 		glm::vec3 input;
 		if(movementEnabled)
 		{
-			input.x = -InputManager::GetKey(GET_KEYCODE(A)) + InputManager::GetKey(GET_KEYCODE(D));
-			input.z = -InputManager::GetKey(GET_KEYCODE(S)) + InputManager::GetKey(GET_KEYCODE(W));
+			input.x = -inputManager->GetKey(GET_KEYCODE(A)) + inputManager->GetKey(GET_KEYCODE(D));
+			input.z = -inputManager->GetKey(GET_KEYCODE(S)) + inputManager->GetKey(GET_KEYCODE(W));
 		}
 		
 

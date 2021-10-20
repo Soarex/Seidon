@@ -1,8 +1,11 @@
 #include "Texture.h"
 
+#include "Core/Application.h"
+#include "Core/WorkManager.h"
+
 namespace Seidon
 {
-    Texture Texture::temporaryTexture;
+    Texture* Texture::temporaryTexture = nullptr;
     Texture::Texture()
     {
         path = "";
@@ -98,16 +101,17 @@ namespace Seidon
     {
         this->path = path;
 
-        if (temporaryTexture.path == "")
+        if (!temporaryTexture)
         {
+            temporaryTexture = new Texture();
             unsigned char white[] = { 255, 255, 255 };
 
-            temporaryTexture.path = "Temp";
-            temporaryTexture.Create(1, 1, white);
+            temporaryTexture->path = "Temp";
+            temporaryTexture->Create(1, 1, white);
         }
 
-        ID = temporaryTexture.ID;
-        WorkManager::Execute([this, path, gammaCorrection]()
+        ID = temporaryTexture->ID;
+        Application::Get()->GetWorkManager()->Execute([this, path, gammaCorrection]()
             {
                 int width, height, channelCount;
               
@@ -131,7 +135,7 @@ namespace Seidon
 
                 if (data)
                 {
-                    WorkManager::ExecuteOnMainThread([this, width, height, sourceFormat, storageFormat, data]()
+                    Application::Get()->GetWorkManager()->ExecuteOnMainThread([this, width, height, sourceFormat, storageFormat, data]()
                         {
                             Create(width, height, data, sourceFormat, storageFormat);
                             stbi_image_free(data);

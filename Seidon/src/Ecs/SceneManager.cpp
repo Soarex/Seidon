@@ -2,8 +2,6 @@
 
 namespace Seidon
 {
-	Scene* SceneManager::activeScene;
-
 	Scene* SceneManager::GetActiveScene()
 	{
 		return activeScene;

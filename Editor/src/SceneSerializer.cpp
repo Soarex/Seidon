@@ -195,19 +195,20 @@ namespace Seidon
 
 		AddDeserializeFunction<RenderComponent>([](YAML::Node& node, Entity& entity)
 			{
+				ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 				RenderComponent& renderComponent = entity.AddComponent<RenderComponent>();
 				std::string meshName = node["Name"].as<std::string>();
 				std::string modelPath = node["Path"].as<std::string>();
 
-				if (!ResourceManager::IsMeshLoaded(meshName))
+				if (!resourceManager->IsMeshLoaded(meshName))
 				{
 					ModelImporter importer;
 					ModelImportData importData = importer.Import("Assets/untitled.fbx");
-					ResourceManager::CreateFromImportData(importData);
+					resourceManager->CreateFromImportData(importData);
 
 				}
 				
-				renderComponent.mesh = ResourceManager::GetMesh(meshName);
+				renderComponent.mesh = resourceManager->GetMesh(meshName);
 			});
 	}
 

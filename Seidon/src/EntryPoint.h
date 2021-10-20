@@ -1,5 +1,5 @@
 #pragma once
-#include "Application.h"
+#include "Core/Application.h"
 #include "Core/Window.h"
 #include "Core/InputManager.h"
 #include "Core/WorkManager.h"
@@ -7,32 +7,25 @@
 
 extern Seidon::Application* Seidon::CreateApplication();
 
+template<typename Type>
+struct entt::type_seq<Type> 
+{
+	[[nodiscard]] static id_type value() ENTT_NOEXCEPT 
+	{
+		static const entt::id_type value = EcsContext::Instance()->value(entt::type_hash<Type>::value());
+		return value;
+	}
+};
+
 int main(int argc, char** argv) 
 {
-	float deltaTime = 0;
-
-	Seidon::Window::Init("Seidon", 800, 600);
-	Seidon::ResourceManager::Init();
-	Seidon::InputManager::Init();
-	Seidon::WorkManager::Init();
-	
 	Seidon::Application* app = Seidon::CreateApplication();
+	app->AppInit();
 
-	while (!Seidon::Window::ShouldClose())
-	{
-		Seidon::Window::BeginFrame();
+	while (!app->GetWindow()->ShouldClose())
+		app->AppUpdate();
 
-		Seidon::InputManager::Update();
-		Seidon::SceneManager::UpdateActiveScene(deltaTime);
-		Seidon::WorkManager::Update();
-		app->Run();
-
-		deltaTime = Seidon::Window::EndFrame();
-	}
-
+	app->AppDestroy();
 	delete app;
-	Seidon::ResourceManager::Destroy();
-	Seidon::WorkManager::Destroy();
-	Seidon::Window::Destroy();
 	return 0;
 }

@@ -11,8 +11,6 @@
 #include <sstream>
 #include <iostream>
 
-#include "Core/WorkManager.h"
-
 namespace Seidon
 {
     class Shader
@@ -21,6 +19,7 @@ namespace Seidon
         std::string path;
         unsigned int ID;
 
+        static Shader* temporaryShader;
     public:
         Shader() = default;
         Shader(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);

@@ -2,11 +2,6 @@
 
 namespace Seidon
 {
-    std::map<std::string, Texture*>		ResourceManager::textures;
-    std::map<std::string, Material*>	ResourceManager::materials;
-    std::map<std::string, Mesh*>		ResourceManager::meshes;
-    std::map<std::string, Shader*>		ResourceManager::shaders;
-
     void ResourceManager::Init()
     {
         stbi_set_flip_vertically_on_load(true);

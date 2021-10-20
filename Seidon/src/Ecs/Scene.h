@@ -40,7 +40,7 @@ namespace Seidon
 		{
 			systems[typeid(T).name()] = new T(std::forward<Args>(args)...);
 			systems[typeid(T).name()]->scene = this;
-			systems[typeid(T).name()]->Init();
+			systems[typeid(T).name()]->SysInit();
 			return *((T*)systems[typeid(T).name()]);
 		}
 

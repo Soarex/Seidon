@@ -2,7 +2,7 @@
 
 namespace Seidon
 {
-	InspectorPanel::InspectorPanel()
+	void InspectorPanel::Init()
 	{
 		AddDrawFunction<NameComponent>([](Entity& entity)
 			{
@@ -56,8 +56,23 @@ namespace Seidon
 				ImGui::Columns(1);
 			});
 
+        AddDrawFunction<RigidbodyComponent>([](Entity& entity)
+            {
+                RigidbodyComponent& rigidbody = entity.GetComponent<RigidbodyComponent>();
+
+                DrawFloatControl("Mass", rigidbody.mass);
+            });
+
+        AddDrawFunction<CubeColliderComponent>([](Entity& entity)
+            {
+                CubeColliderComponent& collider = entity.GetComponent<CubeColliderComponent>();
+
+                DrawVec3Control("Half Extents", collider.halfExtents);
+            });
+
 		AddDrawFunction<RenderComponent>([](Entity& entity)
 			{
+                ResourceManager* resourceManager = Application::Get()->GetResourceManager();
                 RenderComponent& renderComponent = entity.GetComponent<RenderComponent>();
 
                 ImGui::Columns(2);
@@ -70,12 +85,12 @@ namespace Seidon
                 {
                     static std::string& selection = renderComponent.mesh->name;
 
-                    for (std::string& meshName : ResourceManager::GetMeshKeys())
+                    for (std::string& meshName : resourceManager->GetMeshKeys())
                     {
                         const bool is_selected = (renderComponent.mesh->name == selection);
                         if (ImGui::Selectable(meshName.c_str(), is_selected))
                         {
-                            renderComponent.mesh = ResourceManager::GetMesh(meshName);
+                            renderComponent.mesh = resourceManager->GetMesh(meshName);
                             selection = meshName;
                         }
 
@@ -97,14 +112,14 @@ namespace Seidon
                     {
                         static int selection = -1;
 
-                        for (std::string& materialName : ResourceManager::GetMaterialKeys())
+                        for (std::string& materialName : resourceManager->GetMaterialKeys())
                         {
                             if (selection == -1 && materialName == subMesh->material->name) selection = i;
 
                             const bool is_selected = (i == selection);
                             if (ImGui::Selectable(materialName.c_str(), is_selected))
                             {
-                                subMesh->material = ResourceManager::GetMaterial(materialName);
+                                subMesh->material = resourceManager->GetMaterial(materialName);
                                 selection = i;
                             }
 
@@ -180,32 +195,35 @@ namespace Seidon
 		if (selectedEntity.HasComponent<RenderComponent>() && ImGui::CollapsingHeader("Render Component", ImGuiTreeNodeFlags_DefaultOpen))
 			DrawComponent<RenderComponent>(selectedEntity);
 
+        if (selectedEntity.HasComponent<RigidbodyComponent>() && ImGui::CollapsingHeader("Rigidbody Component", ImGuiTreeNodeFlags_DefaultOpen))
+            DrawComponent<RigidbodyComponent>(selectedEntity);
+
+        if (selectedEntity.HasComponent<CubeColliderComponent>() && ImGui::CollapsingHeader("Cube Collider Component", ImGuiTreeNodeFlags_DefaultOpen))
+            DrawComponent<CubeColliderComponent>(selectedEntity);
+
         
         ImGui::Spacing();
         ImGui::Spacing();
+
         if (ImGui::Button("Add Component"))
             ImGui::OpenPopup("AddComponent");
 
         if (ImGui::BeginPopup("AddComponent"))
         {
-            if (!selectedEntity.HasComponent<CameraComponent>() && ImGui::MenuItem("Camera Component"))
+            for (auto metaType : entt::resolve())
             {
-                selectedEntity.AddComponent<CameraComponent>();
-                ImGui::CloseCurrentPopup();
-            }
+                std::string name(metaType.info().name());
+                entt::meta_func hasFunction = metaType.func(entt::hashed_string("HasComponent"));
+                entt::registry& r = *selectedEntity.registry;
+                
+                bool hasComponent = hasFunction.invoke({}, entt::forward_as_meta<entt::registry&>(r), selectedEntity.ID).cast<bool>();
 
-            if (!selectedEntity.HasComponent<DirectionalLightComponent>() && ImGui::MenuItem("Directional Light Component"))
-            {
-                selectedEntity.AddComponent<DirectionalLightComponent>();
-                ImGui::CloseCurrentPopup();
+                if (!hasComponent && ImGui::MenuItem(name.c_str()))
+                {
+                    entt::meta_func addFunction = metaType.func(entt::hashed_string("AddComponent"));
+                    addFunction.invoke({}, entt::forward_as_meta<entt::registry&>(r), selectedEntity.ID);
+                }
             }
-
-            if (!selectedEntity.HasComponent<RenderComponent>() && ImGui::MenuItem("Render Component"))
-            {
-                selectedEntity.AddComponent<RenderComponent>(ResourceManager::GetMesh("Empty Mesh"));
-                ImGui::CloseCurrentPopup();
-            }
-
             ImGui::EndPopup();
         }
     }

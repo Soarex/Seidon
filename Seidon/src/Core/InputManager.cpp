@@ -2,22 +2,7 @@
 
 namespace Seidon
 {
-	constexpr unsigned int InputManager::KEY_STATE_COUNT;
-	constexpr unsigned int InputManager::MOUSE_BUTTON_COUNT;
-
-	glm::vec2 InputManager::mousePosition;
-	glm::vec2 InputManager::mouseOffset;
-	glm::vec2 InputManager::mouseWheelPosition;
-	glm::vec2 InputManager::mouseWheelOffset;
-	bool InputManager::cursorReceivedThisFrame;
-	bool InputManager::wheelReceivedThisFrame;
-
-	KeyState InputManager::keyStates[KEY_STATE_COUNT];
-	KeyState InputManager::mouseButtonStates[MOUSE_BUTTON_COUNT];
-	bool InputManager::keysPressedThisFrame[KEY_STATE_COUNT];
-	bool InputManager::mouseButtonsPressedThisFrame[MOUSE_BUTTON_COUNT];
-
-	void InputManager::Init()
+	void InputManager::Init(Window* window)
 	{
 		for (int i = 0; i < KEY_STATE_COUNT; i++)
 			keyStates[i] = KeyState::RELEASED;
@@ -25,7 +10,7 @@ namespace Seidon
 		for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
 			mouseButtonStates[i] = KeyState::RELEASED;
 
-		Window::AddKeyboardCallback([](int keycode, int action)
+		window->AddKeyboardCallback([&](int keycode, int action)
 			{
 				if (action == GLFW_PRESS)
 				{
@@ -37,7 +22,7 @@ namespace Seidon
 					keyStates[keycode] = KeyState::RELEASED;
 			});
 
-		Window::AddCursorCallback([](float posX, float posY)
+		window->AddCursorCallback([&](float posX, float posY)
 			{
 				mouseOffset.x = posX - mousePosition.x;
 				mouseOffset.y = mousePosition.y - posY;
@@ -48,7 +33,7 @@ namespace Seidon
 				cursorReceivedThisFrame = true;
 			});
 
-		Window::AddMouseWheelCallback([](float posX, float posY)
+		window->AddMouseWheelCallback([&](float posX, float posY)
 			{
 				mouseWheelOffset.x = posX;
 				mouseWheelOffset.y = posY;
@@ -59,7 +44,7 @@ namespace Seidon
 				wheelReceivedThisFrame = true;
 			});
 
-		Window::AddMouseButtonCallback([](int button, int action)
+		window->AddMouseButtonCallback([&](int button, int action)
 			{
 				if (button > 2) return;
 

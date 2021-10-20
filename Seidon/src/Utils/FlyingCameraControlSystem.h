@@ -1,8 +1,9 @@
 #pragma once
 
-#include "../Core/System.h"
-#include "../Core/Entity.h"
+#include "../Core/Application.h"
 #include "../Core/InputManager.h"
+#include "../Ecs/System.h"
+#include "../Ecs/Entity.h"
 
 namespace Seidon
 {
@@ -10,6 +11,7 @@ namespace Seidon
 	{
 	private:
 		Entity camera;
+
 
 		bool rotationEnabled = true, movementEnabled = true;
 

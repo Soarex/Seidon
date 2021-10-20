@@ -27,36 +27,36 @@ namespace Seidon
 		static constexpr unsigned int KEY_STATE_COUNT = 1024;
 		static constexpr unsigned int MOUSE_BUTTON_COUNT = 3;
 
-		static glm::vec2 mousePosition;
-		static glm::vec2 mouseOffset;
-		static glm::vec2 mouseWheelPosition;
-		static glm::vec2 mouseWheelOffset;
-		static bool cursorReceivedThisFrame;
-		static bool wheelReceivedThisFrame;
+		glm::vec2 mousePosition;
+		glm::vec2 mouseOffset;
+		glm::vec2 mouseWheelPosition;
+		glm::vec2 mouseWheelOffset;
+		bool cursorReceivedThisFrame;
+		bool wheelReceivedThisFrame;
 
-		static KeyState keyStates[KEY_STATE_COUNT];
-		static KeyState mouseButtonStates[MOUSE_BUTTON_COUNT];
-		static bool keysPressedThisFrame[KEY_STATE_COUNT];
-		static bool mouseButtonsPressedThisFrame[MOUSE_BUTTON_COUNT];
+		KeyState keyStates[KEY_STATE_COUNT];
+		KeyState mouseButtonStates[MOUSE_BUTTON_COUNT];
+		bool keysPressedThisFrame[KEY_STATE_COUNT];
+		bool mouseButtonsPressedThisFrame[MOUSE_BUTTON_COUNT];
 	public:
-		static void Init();
+		void Init(Window* window);
+		void Update();
 
-		static bool GetKey(int keyCode);
-		static bool GetKeyPressed(int keyCode);
-		static bool GetKeyDown(int keyCode);
-		static bool GetKeyReleased(int keyCode);
+		bool GetKey(int keyCode);
+		bool GetKeyPressed(int keyCode);
+		bool GetKeyDown(int keyCode);
+		bool GetKeyReleased(int keyCode);
 
-		static bool GetMouseButton(MouseButton button);
-		static bool GetMouseButtonPressed(MouseButton button);
-		static bool GetMouseButtonDown(MouseButton button);
-		static bool GetMouseButtonReleased(MouseButton button);
+		bool GetMouseButton(MouseButton button);
+		bool GetMouseButtonPressed(MouseButton button);
+		bool GetMouseButtonDown(MouseButton button);
+		bool GetMouseButtonReleased(MouseButton button);
 
-		static const glm::vec2& GetMousePosition();
-		static const glm::vec2& GetMouseOffset();
+		const glm::vec2& GetMousePosition();
+		const glm::vec2& GetMouseOffset();
 
-		static const glm::vec2& GetMouseWheelPosition();
-		static const glm::vec2& GetMouseWheelOffset();
+		const glm::vec2& GetMouseWheelPosition();
+		const glm::vec2& GetMouseWheelOffset();
 
-		static void Update();
 	};
 }

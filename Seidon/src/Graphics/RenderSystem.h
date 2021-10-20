@@ -1,10 +1,10 @@
 #pragma once
 #include <glad/glad.h>
 
-#include "Core/System.h"
 #include "Core/ResourceManager.h"
 #include "Core/Window.h"
-#include "Core/Entity.h"
+#include "Ecs/System.h"
+#include "Ecs/Entity.h"
 #include "Shader.h"
 #include "Framebuffer.h"
 

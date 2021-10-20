@@ -2,15 +2,9 @@
 
 namespace Seidon
 {
-    std::vector<std::thread> WorkManager::threads;
-    BlockingQueue<std::function<void(void)>> WorkManager::tasks;
-    std::queue<std::function<void(void)>> WorkManager::mainThreadTasks;
-
-    std::mutex WorkManager::mutex;
-
     void WorkManager::Init()
     {
-        auto threadFunction = []()
+        auto threadFunction = [&]()
         {
             while (true)
             {

@@ -13,8 +13,9 @@ namespace Seidon
 		std::map<std::string, ComponentDrawFunction> componentDrawFunctions;
 
 	public:
-		InspectorPanel();
+		InspectorPanel() = default;
 
+		void Init();
 		void Draw();
 		void SetSelectedEntity(Entity& entity);
 		void DrawComponents();

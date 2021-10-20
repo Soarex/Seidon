@@ -93,6 +93,7 @@ namespace Seidon
 
 	void DrawTextureControl(const std::string& label, Texture*& texture, float size)
 	{
+		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		ImGui::PushID(label.c_str());
 
 		ImGui::Text(label.c_str());
@@ -104,7 +105,7 @@ namespace Seidon
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE"))
 			{
 				std::string path = (const char*)payload->Data;
-				texture = ResourceManager::GetTexture(path);
+				texture = resourceManager->GetTexture(path);
 			}
 			ImGui::EndDragDropTarget();
 		}

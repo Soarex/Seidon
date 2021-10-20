@@ -4,7 +4,7 @@ namespace Seidon
 {
 	extern const std::filesystem::path assetsPath = "Assets";
 
-	AssetBrowserPanel::AssetBrowserPanel()
+	void AssetBrowserPanel::Init()
 	{
 		fileIcon.LoadFromFileAsync("Assets/FileIcon.png");
 		folderIcon.LoadFromFileAsync("Assets/FolderIcon.png");
@@ -68,7 +68,7 @@ namespace Seidon
 
 			if (path.extension() == ".png" || path.extension() == ".jpg")
 			{
-				ImGui::ImageButton((ImTextureID)ResourceManager::LoadTexture(directoryEntry.path().string())->GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				ImGui::ImageButton((ImTextureID)Application::Get()->GetResourceManager()->LoadTexture(directoryEntry.path().string())->GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 				if (ImGui::BeginDragDropSource())
 				{
 					const std::string& itemPath = directoryEntry.path().string();

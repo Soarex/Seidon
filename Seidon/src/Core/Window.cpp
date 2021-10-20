@@ -2,63 +2,49 @@
 
 namespace Seidon
 {
-    std::string Window::name;
-    GLFWwindow* Window::handle;
-
-    float Window::deltaTime;
-    float Window::lastFrameTime;
-
-    unsigned int Window::width;
-    unsigned int Window::height;
-
-    bool Window::mouseCursorEnabled = true;
-    bool Window::fullscreenEnabled = false;
-
-    std::vector<std::function<void(int, int)>>		Window::windowSizeCallbacks;
-    std::vector<std::function<void(float, float)>>	Window::cursorCallbacks;
-    std::vector<std::function<void(int, int)>>		Window::mouseButtonCallbacks;
-    std::vector<std::function<void(float, float)>>	Window::mouseWheelCallbacks;
-    std::vector<std::function<void(int, int)>>		Window::keyboardCallbacks;
+    Window* instance;
 
     void WindowSizeCallback(GLFWwindow* window, int width, int height)
     {
-        Window::width = width;
-        Window::height = height;
+        instance->width = width;
+        instance->height = height;
 
-        for (auto& callback : Window::windowSizeCallbacks)
+        for (auto& callback : instance->windowSizeCallbacks)
             callback(width, height);
     }
 
     void CursorCallback(GLFWwindow* window, double xpos, double ypos)
     {
-        for (auto& callback : Window::cursorCallbacks)
+        for (auto& callback : instance->cursorCallbacks)
             callback(xpos, ypos);
     }
 
     void KeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        for (auto& callback : Window::keyboardCallbacks)
+        for (auto& callback : instance->keyboardCallbacks)
             callback(key, action);
     }
 
     void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
     {
-        for (auto& callback : Window::mouseButtonCallbacks)
+        for (auto& callback : instance->mouseButtonCallbacks)
             callback(button, action);
     }
 
     void MouseWheelCallback(GLFWwindow* window, double xpos, double ypos)
     {
-        for (auto& callback : Window::mouseWheelCallbacks)
+        for (auto& callback : instance->mouseWheelCallbacks)
             callback(xpos, ypos);
     }
 
 
     void Window::Init(const std::string& name, unsigned int width, unsigned int height)
     {
-        Window::name = name;
-        Window::width = width;
-        Window::height = height;
+        instance = this;
+
+        this->name = name;
+        this->width = width;
+        this->height = height;
 
         deltaTime = 0;
         lastFrameTime = 0;

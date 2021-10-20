@@ -10,17 +10,17 @@ namespace Seidon
 	class WorkManager
 	{
 	private: 
-		static  std::vector<std::thread> threads;
-		static  BlockingQueue<std::function<void(void)>> tasks;
-		static  std::queue<std::function<void(void)>> mainThreadTasks;
+		std::vector<std::thread> threads;
+		BlockingQueue<std::function<void(void)>> tasks;
+		std::queue<std::function<void(void)>> mainThreadTasks;
 		
-		static  std::mutex mutex;
+		std::mutex mutex;
 
 	public:
-		static void Init();
-		static void Destroy();
-		static void Execute(const std::function<void(void)>& task);
-		static void ExecuteOnMainThread(const std::function<void(void)>& task);
-		static void Update();
+		void Init();
+		void Destroy();
+		void Execute(const std::function<void(void)>& task);
+		void ExecuteOnMainThread(const std::function<void(void)>& task);
+		void Update();
 	};
 }

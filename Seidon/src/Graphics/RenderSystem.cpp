@@ -1,5 +1,7 @@
 #include "RenderSystem.h"
-#include "Core/Scene.h"
+#include "Ecs/Scene.h"
+
+#include "Core/Application.h"
 
 namespace Seidon
 {
@@ -76,11 +78,11 @@ namespace Seidon
 
 	void RenderSystem::Init()
 	{
-		framebufferWidth = Window::GetWidth();
-		framebufferHeight = Window::GetHeight();
+		framebufferWidth = window->GetWidth();
+		framebufferHeight = window->GetHeight();
 
-		hdrMap.Create(Window::GetWidth(), Window::GetHeight(), (unsigned char*)NULL, TextureFormat::FLOAT16_ALPHA, TextureFormat::RGBA);
-		hdrDepthStencilBuffer.Create(Window::GetWidth(), Window::GetHeight(), RenderBufferType::DEPTH_STENCIL);
+		hdrMap.Create(window->GetWidth(), window->GetHeight(), (unsigned char*)NULL, TextureFormat::FLOAT16_ALPHA, TextureFormat::RGBA);
+		hdrDepthStencilBuffer.Create(window->GetWidth(), window->GetHeight(), RenderBufferType::DEPTH_STENCIL);
 
 		hdrFramebuffer.Create();
 		hdrFramebuffer.SetColorTexture(hdrMap);
@@ -92,8 +94,8 @@ namespace Seidon
 		depthFramebuffer.DisableColorBuffer();
 		depthFramebuffer.SetDepthTexture(shadowMap);
 
-		renderTarget.Create(Window::GetWidth(), Window::GetHeight(), (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::RGBA);
-		renderDepthStencilBuffer.Create(Window::GetWidth(), Window::GetHeight(), RenderBufferType::DEPTH_STENCIL);
+		renderTarget.Create(window->GetWidth(), window->GetHeight(), (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::RGBA);
+		renderDepthStencilBuffer.Create(window->GetWidth(), window->GetHeight(), RenderBufferType::DEPTH_STENCIL);
 		renderFramebuffer.Create();
 		renderFramebuffer.SetColorTexture(renderTarget);
 		renderFramebuffer.SetDepthStencilRenderBuffer(renderDepthStencilBuffer);
@@ -141,7 +143,7 @@ namespace Seidon
 				ResizeFramebuffer(width, height);
 		};
 
-		Window::AddWindowSizeCallback(windowResizeCallback);
+		window->AddWindowSizeCallback(windowResizeCallback);
 
 	}
 
@@ -359,8 +361,8 @@ namespace Seidon
 		if (width == 0 && height == 0)
 		{
 			useFullWindow = true;
-			width = Window::GetWidth();
-			height = Window::GetHeight();
+			width = window->GetWidth();
+			height = window->GetHeight();
 		}
 		else
 			useFullWindow = false;
