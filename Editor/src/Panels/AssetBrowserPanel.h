@@ -8,7 +8,7 @@ namespace Seidon
 	{
 	private:
 		std::filesystem::path currentDirectory;
-		Texture fileIcon, folderIcon;
+		Texture fileIcon, folderIcon, modelIcon, materialIcon;
 
 	public:
 		AssetBrowserPanel() = default;

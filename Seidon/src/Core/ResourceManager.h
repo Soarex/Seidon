@@ -15,10 +15,12 @@ namespace Seidon
 	{
 	private:
 		std::map<std::string, Texture*>		textures;
-		std::map<std::string, Material*>		materials;
-		std::map<std::string, Mesh*>			meshes;
+		std::map<std::string, Material*>	materials;
+		std::map<std::string, Mesh*>		meshes;
 		std::map<std::string, Shader*>		shaders;
 
+		std::map<std::string, std::vector<std::string>>	loadedModelFileMeshes;
+		std::map<std::string, std::vector<std::string>>	loadedModelFileMaterials;
 	public:
 		void Init();
 		void Destroy();
@@ -31,9 +33,12 @@ namespace Seidon
 		std::vector<Mesh*> CreateFromImportData(ModelImportData& importData);
 
 		inline Texture*	GetTexture(const std::string& name) { return textures.at(name); }
-		inline Mesh*		GetMesh(const std::string& name) { return meshes.at(name); }
+		inline Mesh*	GetMesh(const std::string& name) { return meshes.at(name); }
 		inline Shader*	GetShader(const std::string& name) { return shaders.at(name); }
 		inline Material* GetMaterial(const std::string& name) { return materials.at(name); }
+
+		inline std::vector<std::string>& GetModelFileMeshNames(const std::string& name) { return loadedModelFileMeshes.at(name); }
+		inline std::vector<std::string>& GetModelFileMaterialNames(const std::string& name) { return loadedModelFileMaterials.at(name); }
 
 		inline void AddTexture(const std::string& name, Texture* texture) { textures[name] = texture; }
 		inline void AddMesh(const std::string& name, Mesh* mesh) { meshes[name] = mesh; }
@@ -45,6 +50,7 @@ namespace Seidon
 		inline bool IsShaderLoaded(const std::string& name) { return shaders.count(name) > 0; }
 		inline bool IsMaterialLoaded(const std::string& name) { return materials.count(name) > 0; }
 
+		inline bool IsModelLoaded(const std::string& name) { return loadedModelFileMeshes.count(name) > 0; }
 
 		std::vector<std::string> GetTextureKeys();
 		std::vector<std::string> GetMeshKeys();

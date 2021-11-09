@@ -144,7 +144,6 @@ namespace Seidon
 		};
 
 		window->AddWindowSizeCallback(windowResizeCallback);
-
 	}
 
 	void RenderSystem::Update(float deltaTime)

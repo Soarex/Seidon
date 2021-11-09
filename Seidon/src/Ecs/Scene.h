@@ -1,11 +1,13 @@
 #pragma once
 
+#include "Core/UUID.h"
+#include "System.h"
+
 #include <map>
 #include <string>
 #include <typeinfo>
 
 #include <entt/entt.hpp>
-#include "System.h"
 
 
 namespace Seidon
@@ -27,7 +29,9 @@ namespace Seidon
 		void Update(float deltaTime);
 		void Destroy();
 
-		Entity CreateEntity(const std::string& name = std::string());
+		Scene* Duplicate();
+
+		Entity CreateEntity(const std::string& name = std::string(), const UUID& id = UUID());
 		void DestroyEntity(const Entity& entity);
 
 		inline void SetName(const std::string& name) { this->name = name; }

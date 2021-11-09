@@ -1,12 +1,14 @@
 #pragma once
 
+#include "../Reflection/Reflection.h"
+
 #include "Window.h"
 #include "InputManager.h"
 #include "ResourceManager.h"
 #include "WorkManager.h"
+#include "Ecs/Components.h"
 #include "Ecs/SceneManager.h"
 #include "Ecs/Scene.h"
-#include "Ecs/EcsContext.h"
 
 #include <entt/entt.hpp>
 #include <unordered_map>
@@ -16,8 +18,9 @@ namespace Seidon
 	class Application
 	{
 	public:
-		EcsContext* ecsContext;
 		std::unordered_map<std::string, void(*)(Scene& scene)> registeredSystems;
+		//std::unordered_map<std::string, MetaType> registeredComponents;
+		std::vector<MetaType> registeredComponents;
 
 		static Application* instance;
 	protected:
@@ -45,7 +48,6 @@ namespace Seidon
 		inline ResourceManager* GetResourceManager() { return resourceManager; }
 		inline WorkManager* GetWorkManager() { return workManager; }
 		inline SceneManager* GetSceneManager() { return sceneManager; }
-		inline EcsContext* GetEcsContext() { return ecsContext; }
 
 		static inline Application* Get() { return instance; }
 
@@ -69,6 +71,20 @@ namespace Seidon
 		}
 
 		template<typename Type>
+		static void CopyComponent(entt::registry& src, entt::registry& dst, const std::unordered_map<UUID, entt::entity>& enttMap)
+		{
+			auto view = src.view<Type>();
+			for (auto e : view)
+			{
+				UUID uuid = src.get<IDComponent>(e).ID;
+				entt::entity dstEnttID = enttMap.at(uuid);
+
+				Type& component = src.get<Type>(e);
+				dst.emplace_or_replace<Type>(dstEnttID, component);
+			}
+		}
+
+		template<typename Type>
 		static void AddSystem(Scene& scene)
 		{
 			scene.AddSystem<Type>();
@@ -76,13 +92,37 @@ namespace Seidon
 
 	public:
 		template<typename Type>
-		void RegisterComponent()
+		MetaType& RegisterComponent()
 		{
-			entt::meta<Type>()
-				.type(entt::type_id<Type>().hash())
-				.func<&Application::GetComponent<Type>>(entt::hashed_string("GetComponent"))
-				.func<&Application::AddComponent<Type>>(entt::hashed_string("AddComponent"))
-				.func<&Application::HasComponent<Type>>(entt::hashed_string("HasComponent"));
+			MetaType t;
+			t.name = typeid(Type).name();
+			t.Get	= (void*(*)(entt::registry &,entt::entity))&Application::GetComponent<Type>;
+			t.Add	= (void*(*)(entt::registry &,entt::entity))&Application::AddComponent<Type>;
+			t.Has	= &Application::HasComponent<Type>;
+			t.Copy	= &Application::CopyComponent<Type>;
+
+			//registeredComponents[typeid(Type).name()] = t;
+			registeredComponents.push_back(t);
+			//return registeredComponents[typeid(Type).name()];
+			return registeredComponents.back();
+		}
+		/*
+		template<typename Type>
+		MetaType& GetComponentMetaType()
+		{
+			return registeredComponents[typeid(Type).name()];
+		}
+		*/
+		std::vector<MetaType> GetComponentMetaTypes()
+		{
+			/*
+			std::vector<MetaType> res;
+			for (auto& [name, metaType] : registeredComponents)
+				res.push_back(metaType);
+
+			return res;
+			*/
+			return registeredComponents;
 		}
 
 		template<typename Type>

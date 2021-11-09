@@ -8,12 +8,15 @@ namespace Seidon
 	{
 		fileIcon.LoadFromFileAsync("Assets/FileIcon.png");
 		folderIcon.LoadFromFileAsync("Assets/FolderIcon.png");
+		modelIcon.LoadFromFileAsync("Assets/ModelIcon.png");
+		materialIcon.LoadFromFileAsync("Assets/MaterialIcon.png");
 
 		currentDirectory = assetsPath;
 	}
 
 	void AssetBrowserPanel::Draw()
 	{
+		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		ImGui::Begin("Content Browser");
 
 		if (currentDirectory != std::filesystem::path(assetsPath) && ImGui::Button("<-"))
@@ -68,14 +71,66 @@ namespace Seidon
 
 			if (path.extension() == ".png" || path.extension() == ".jpg")
 			{
-				ImGui::ImageButton((ImTextureID)Application::Get()->GetResourceManager()->LoadTexture(directoryEntry.path().string())->GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				ImGui::ImageButton((ImTextureID)resourceManager->LoadTexture(directoryEntry.path().string())->GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 				if (ImGui::BeginDragDropSource())
 				{
 					const std::string& itemPath = directoryEntry.path().string();
 					ImGui::SetDragDropPayload("CONTENT_BROWSER_TEXTURE", itemPath.c_str(), itemPath.length() + 1);
 					ImGui::EndDragDropSource();
 				}
+				
+				ImGui::TextWrapped(filenameString.c_str());
+				ImGui::NextColumn();
+			}
+			else if (path.extension() == ".fbx")
+			{
+				static bool show = false;
+				if (ImGui::ImageButton((ImTextureID)modelIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 }))
+					show = !show;
 
+				ImGui::TextWrapped(filenameString.c_str());
+				ImGui::NextColumn();
+
+				if (show)
+				{
+					if (!resourceManager->IsModelLoaded(directoryEntry.path().string()))
+					{
+						ModelImporter importer;
+						ModelImportData importData = importer.Import(directoryEntry.path().string());
+						resourceManager->CreateFromImportData(importData);
+
+					}
+
+					for (auto& meshName : resourceManager->GetModelFileMeshNames(directoryEntry.path().string()))
+					{
+						ImGui::PushID(meshName.c_str());
+						ImGui::ImageButton((ImTextureID)modelIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+						if (ImGui::BeginDragDropSource())
+						{
+							ImGui::SetDragDropPayload("CONTENT_BROWSER_MESH", meshName.c_str(), meshName.length() + 1);
+							ImGui::EndDragDropSource();
+						}
+
+						ImGui::TextWrapped(meshName.c_str());
+						ImGui::NextColumn();
+						ImGui::PopID();
+					}
+
+					for (auto& materialName : resourceManager->GetModelFileMaterialNames(directoryEntry.path().string()))
+					{
+						ImGui::PushID(materialName.c_str());
+						ImGui::ImageButton((ImTextureID)materialIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+						if (ImGui::BeginDragDropSource())
+						{
+							ImGui::SetDragDropPayload("CONTENT_BROWSER_MATERIAL", materialName.c_str(), materialName.length() + 1);
+							ImGui::EndDragDropSource();
+						}
+
+						ImGui::TextWrapped(materialName.c_str());
+						ImGui::NextColumn();
+						ImGui::PopID();
+					}
+				}
 			}
 			else
 			{
@@ -86,20 +141,12 @@ namespace Seidon
 					ImGui::SetDragDropPayload("CONTENT_BROWSER_SCENE", itemPath.c_str(), itemPath.length() + 1);
 					ImGui::EndDragDropSource();
 				}
-
-				if (path.extension() == ".fbx" && ImGui::BeginDragDropSource())
-				{
-					const std::string& itemPath = directoryEntry.path().string();
-					ImGui::SetDragDropPayload("CONTENT_BROWSER_MODEL", itemPath.c_str(), itemPath.length() + 1);
-					ImGui::EndDragDropSource();
-				}
+				ImGui::TextWrapped(filenameString.c_str());
+				ImGui::NextColumn();
 			}
 
 			
 			ImGui::PopStyleColor();
-
-			ImGui::TextWrapped(filenameString.c_str());
-			ImGui::NextColumn();
 
 			ImGui::PopID();
 		}

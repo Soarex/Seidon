@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/UUID.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
 #include "Graphics/HdrCubemap.h"
@@ -12,6 +13,26 @@
 
 namespace Seidon
 {
+	struct IDComponent
+	{
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+		IDComponent(const UUID id)
+			: ID(id) {}
+	};
+
+	struct NameComponent
+	{
+		std::string name;
+
+		NameComponent() = default;
+		NameComponent(const NameComponent&) = default;
+		NameComponent(const std::string name)
+			: name(name) {}
+	};
+
 	struct TransformComponent
 	{
 		glm::vec3 position = { 0.0f, 0.0f, 0.0f };
@@ -93,16 +114,6 @@ namespace Seidon
 
 		CubemapComponent(HdrCubemap* cubemap)
 			:cubemap(cubemap) {}
-	};
-
-	struct NameComponent
-	{
-		std::string name;
-
-		NameComponent() = default;
-		NameComponent(const NameComponent&) = default;
-		NameComponent(const std::string name)
-			: name(name) {}
 	};
 
 	struct DirectionalLightComponent

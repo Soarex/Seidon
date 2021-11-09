@@ -47,6 +47,7 @@ class Editor : public Application
 {
 public:
     Scene* scene;
+    Scene* runtimeScene;
     Entity selectedEntity;
 
     HierarchyPanel hierarchyPanel;
@@ -59,10 +60,11 @@ public:
 
     void Init() override
 	{
+        RegisterSystem<RenderSystem>();
         e.Bind(L"../Bin/Debug-x64/GameDll/GameDll.dll");
       
-        hierarchyPanel.Init();
-        inspectorPanel.Init();
+        hierarchyPanel.Init();           
+        inspectorPanel.Init();           
         assetBrowserPanel.Init();
         
 		window->SetName("Seidon Editor");
@@ -71,7 +73,7 @@ public:
         scene = new Scene("Main Scene");
         
         ModelImporter importer;
-        ModelImportData importData = importer.Import("Assets/untitled.fbx");
+        ModelImportData importData = importer.Import("Assets\\untitled.fbx");
         std::vector<Mesh*> meshes = resourceManager->CreateFromImportData(importData);
 
         int i = 0;
@@ -123,9 +125,6 @@ public:
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Assets/Roboto-Regular.ttf", 18);
         e.Init();
-
-        for (auto& [key, value] : registeredSystems)
-            value(*scene);
 	}
 
     int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
@@ -133,11 +132,14 @@ public:
 
 	void Update() override
 	{
-        RenderSystem& renderSystem = scene->GetSystem<RenderSystem>();
+        RenderSystem& renderSystem = sceneManager->GetActiveScene()->GetSystem<RenderSystem>();
         EditorCameraControlSystem& cameraControlSystem = scene->GetSystem<EditorCameraControlSystem>();
 
         if (inputManager->GetKeyPressed(GET_KEYCODE(BACKSLASH)))
             window->ToggleFullscreen();
+
+        if (inputManager->GetKeyPressed(GET_KEYCODE(ESCAPE)))
+            window->ToggleMouseCursor();
 
         if (inputManager->GetKeyPressed(GET_KEYCODE(Q)))
             guizmoOperation = -1;
@@ -184,7 +186,29 @@ public:
             ImGui::EndMenuBar();
         }
 
+        
+
         ImGui::Begin("Viewport");
+
+        if (ImGui::Button("Start"))
+        {
+            guizmoOperation = -1;
+
+            runtimeScene = scene->Duplicate();
+            for (auto& [key, value] : registeredSystems)
+                value(*runtimeScene);
+
+            sceneManager->SetActiveScene(runtimeScene);
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Stop"))
+        {
+            sceneManager->SetActiveScene(scene);
+            delete runtimeScene;
+        }
+
         ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
         ImVec2 viewportMaxRegion = ImGui::GetWindowContentRegionMax();
         ImVec2 viewportOffset = ImGui::GetWindowPos();

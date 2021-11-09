@@ -1,4 +1,5 @@
 #include "ModelImporter.h"
+#include <filesystem>
 
 namespace Seidon
 {
@@ -16,7 +17,7 @@ namespace Seidon
             return res;
         }
 
-        directory = path.substr(0, path.find_last_of('/'));
+        directory = path.substr(0, path.find_last_of('\\'));
 
         for (int i = 0; i < scene->mNumMaterials; i++)
         {
@@ -111,41 +112,37 @@ namespace Seidon
 
         importData.name = std::string(material->GetName().C_Str());
 
-        aiColor3D color;
-        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS)
-            importData.tint = glm::vec3(color.r, color.g, color.b);
-        else
-            importData.tint = glm::vec3(1.0f);
+        importData.tint = glm::vec3(1.0f);
 ;
         aiString str;
         if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
             material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
-            importData.albedoMapPath = directory + "/" + std::string(str.C_Str());
+            importData.albedoMapPath = directory + "\\" + std::string(str.C_Str());
         }
 
         if (material->GetTextureCount(aiTextureType_SHININESS) > 0)
         {
             material->GetTexture(aiTextureType_SHININESS, 0, &str);
-            importData.roughnessMapPath = directory + "/" + std::string(str.C_Str());
+            importData.roughnessMapPath = directory + "\\" + std::string(str.C_Str());
         }
 
         if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
         {
             material->GetTexture(aiTextureType_NORMALS, 0, &str);
-            importData.normalMapPath = directory + "/" + std::string(str.C_Str());
+            importData.normalMapPath = directory + "\\" + std::string(str.C_Str());
         }
 
         if (material->GetTextureCount(aiTextureType_SPECULAR) > 0)
         {
             material->GetTexture(aiTextureType_SPECULAR, 0, &str);
-            importData.metallicMapPath = directory + "/" + std::string(str.C_Str());
+            importData.metallicMapPath = directory + "\\" + std::string(str.C_Str());
         }
 
         if (material->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION) > 0)
         {
             material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &str);
-            importData.aoMapPath = directory + "/" + std::string(str.C_Str());
+            importData.aoMapPath = directory + "\\" + std::string(str.C_Str());
         }
        
         return importData;

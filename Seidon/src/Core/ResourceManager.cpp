@@ -104,6 +104,8 @@ namespace Seidon
 
     Material* ResourceManager::CreateMaterial(MaterialImportData& importData)
     {
+        if (materials.count(importData.name) > 0) return materials[importData.name];
+
         Material* material = new Material();
         material->name = importData.name;
         material->tint = importData.tint;
@@ -114,18 +116,30 @@ namespace Seidon
         material->ao = LoadTexture(importData.aoMapPath == "" ? "ao_default" : importData.aoMapPath);
 
         materials[importData.name] = material;
-
         return material;
     }
 
     std::vector<Mesh*> ResourceManager::CreateFromImportData(ModelImportData& importData)
     {
+        if (loadedModelFileMeshes.count(importData.filepath) > 0)
+        {
+            std::vector<Mesh*> res;
+
+            for (auto& name : loadedModelFileMeshes[importData.filepath])
+                res.push_back(GetMesh(name));
+
+            return res;
+        }
+
         std::vector<Mesh*> res;
 
         std::vector<Material*> materials;
         for (auto materialImportData : importData.materials)
+        {
             materials.push_back(CreateMaterial(materialImportData));
-
+            loadedModelFileMaterials[importData.filepath].push_back(materialImportData.name);
+        }
+        
         int i = 0;
         for (auto& meshImportData : importData.meshes)
         {
@@ -137,6 +151,7 @@ namespace Seidon
 
 
             res.push_back(mesh);
+            loadedModelFileMeshes[importData.filepath].push_back(mesh->name);
         }
 
         return res;

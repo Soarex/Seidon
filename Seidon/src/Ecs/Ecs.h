@@ -5,4 +5,3 @@
 #include "Scene.h"
 #include "SceneManager.h"
 #include "System.h"
-#include "EcsContext.h"

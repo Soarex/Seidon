@@ -171,6 +171,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Core\Application.cpp" />
+    <ClCompile Include="src\Core\UUID.cpp" />
     <ClCompile Include="src\Ecs\Scene.cpp" />
     <ClCompile Include="src\Ecs\SceneManager.cpp" />
     <ClCompile Include="src\Extensions\Extension.cpp" />
@@ -236,6 +237,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Application.h" />
+    <ClInclude Include="src\Core\UUID.h" />
     <ClInclude Include="src\Ecs\Components.h" />
     <ClInclude Include="src\Core\Core.h" />
     <ClInclude Include="src\Ecs\Ecs.h" />
@@ -251,25 +253,43 @@
     <ClInclude Include="src\Graphics\Vertex.h" />
     <ClInclude Include="src\Physics\Physics.h" />
     <ClInclude Include="src\Physics\PhysicSystem.h" />
+    <ClInclude Include="src\Reflection\Reflection.h" />
     <ClInclude Include="src\Utils\MatrixDecompose.h" />
     <ClInclude Include="src\Utils\ModelImporter.h" />
     <ClInclude Include="src\Seidon.h" />
     <ClInclude Include="src\Utils\BlockingQueue.h" />
     <ClInclude Include="src\Utils\FlyingCameraControlSystem.h" />
     <ClInclude Include="src\Utils\utils.h" />
+    <ClInclude Include="src\Graphics\Framebuffer.h" />
+    <ClInclude Include="src\Core\InputManager.h" />
+    <ClInclude Include="src\Graphics\Material.h" />
+    <ClInclude Include="src\Graphics\Mesh.h" />
+    <ClInclude Include="src\Graphics\RenderBuffer.h" />
+    <ClInclude Include="src\Graphics\RenderSystem.h" />
+    <ClInclude Include="src\Core\ResourceManager.h" />
+    <ClInclude Include="src\Ecs\Entity.h" />
+    <ClInclude Include="src\Graphics\Shader.h" />
     <ClInclude Include="src\Vendor\entt\config\config.h" />
     <ClInclude Include="src\Vendor\entt\config\version.h" />
+    <ClInclude Include="src\Vendor\entt\container\dense_hash_map.hpp" />
+    <ClInclude Include="src\Vendor\entt\container\fwd.hpp" />
     <ClInclude Include="src\Vendor\entt\core\algorithm.hpp" />
     <ClInclude Include="src\Vendor\entt\core\any.hpp" />
     <ClInclude Include="src\Vendor\entt\core\attribute.h" />
+    <ClInclude Include="src\Vendor\entt\core\compressed_pair.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\enum.hpp" />
     <ClInclude Include="src\Vendor\entt\core\family.hpp" />
     <ClInclude Include="src\Vendor\entt\core\fwd.hpp" />
     <ClInclude Include="src\Vendor\entt\core\hashed_string.hpp" />
     <ClInclude Include="src\Vendor\entt\core\ident.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\iterator.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\memory.hpp" />
     <ClInclude Include="src\Vendor\entt\core\monostate.hpp" />
+    <ClInclude Include="src\Vendor\entt\core\tuple.hpp" />
     <ClInclude Include="src\Vendor\entt\core\type_info.hpp" />
     <ClInclude Include="src\Vendor\entt\core\type_traits.hpp" />
     <ClInclude Include="src\Vendor\entt\core\utility.hpp" />
+    <ClInclude Include="src\Vendor\entt\entity\component.hpp" />
     <ClInclude Include="src\Vendor\entt\entity\entity.hpp" />
     <ClInclude Include="src\Vendor\entt\entity\fwd.hpp" />
     <ClInclude Include="src\Vendor\entt\entity\group.hpp" />
@@ -292,6 +312,7 @@
     <ClInclude Include="src\Vendor\entt\meta\container.hpp" />
     <ClInclude Include="src\Vendor\entt\meta\ctx.hpp" />
     <ClInclude Include="src\Vendor\entt\meta\factory.hpp" />
+    <ClInclude Include="src\Vendor\entt\meta\fwd.hpp" />
     <ClInclude Include="src\Vendor\entt\meta\meta.hpp" />
     <ClInclude Include="src\Vendor\entt\meta\node.hpp" />
     <ClInclude Include="src\Vendor\entt\meta\pointer.hpp" />
@@ -315,15 +336,6 @@
     <ClInclude Include="src\Vendor\entt\signal\emitter.hpp" />
     <ClInclude Include="src\Vendor\entt\signal\fwd.hpp" />
     <ClInclude Include="src\Vendor\entt\signal\sigh.hpp" />
-    <ClInclude Include="src\Graphics\Framebuffer.h" />
-    <ClInclude Include="src\Core\InputManager.h" />
-    <ClInclude Include="src\Graphics\Material.h" />
-    <ClInclude Include="src\Graphics\Mesh.h" />
-    <ClInclude Include="src\Graphics\RenderBuffer.h" />
-    <ClInclude Include="src\Graphics\RenderSystem.h" />
-    <ClInclude Include="src\Core\ResourceManager.h" />
-    <ClInclude Include="src\Ecs\Entity.h" />
-    <ClInclude Include="src\Graphics\Shader.h" />
     <ClInclude Include="src\Vendor\ImGuizmo\ImGuizmo.h" />
     <ClInclude Include="src\Vendor\Imgui\imconfig.h" />
     <ClInclude Include="src\Vendor\Imgui\imgui.h" />
@@ -397,7 +409,6 @@
     <ClInclude Include="src\Vendor\yaml-cpp\token.h" />
     <ClInclude Include="src\Vendor\yaml-cpp\traits.h" />
     <ClInclude Include="src\Vendor\yaml-cpp\yaml.h" />
-    <ClInclude Include="src\Ecs\EcsContext.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Default.shader" />
