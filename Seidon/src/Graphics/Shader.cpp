@@ -185,6 +185,11 @@ namespace Seidon
         glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
     }
 
+    void Shader::SetInts(const std::string& name, int* values, int count) const
+    {
+        glUniform1iv(glGetUniformLocation(ID, name.c_str()), count, values);
+    }
+
     void Shader::SetFloat(const std::string& name, float value) const
     {
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);

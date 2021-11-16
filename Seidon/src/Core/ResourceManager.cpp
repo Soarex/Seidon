@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 
+#include <unordered_set>
+
 namespace Seidon
 {
     void ResourceManager::Init()
@@ -40,9 +42,15 @@ namespace Seidon
         materials["default_material"]->roughness = textures["roughness_default"];
         materials["default_material"]->ao = textures["ao_default"];
 
+        Texture t;
+        t.Create(1, 1, black);
+        t.path = "default_cubemap";
+        cubemaps["default_cubemap"] = new HdrCubemap();
+        cubemaps["default_cubemap"]->CreateFromEquirectangularMap(&t);
+
         Mesh* mesh = new Mesh();
         mesh->name = "Empty Mesh";
-        meshes["Empty Mesh"] = mesh;
+        meshes["empty_mesh"] = mesh;
     }
 
     void ResourceManager::Destroy()
@@ -84,7 +92,17 @@ namespace Seidon
         return shaders[path];
     }
 
-    Mesh* ResourceManager::CreateMesh(MeshImportData& importData)
+    HdrCubemap* ResourceManager::LoadCubemap(const std::string& path)
+    {
+        if (cubemaps.count(path) > 0) return cubemaps[path];
+
+        cubemaps[path] = new HdrCubemap();
+        cubemaps[path]->LoadFromEquirectangularMap(path);
+
+        return cubemaps[path];
+    }
+
+    Mesh* ResourceManager::CreateMesh(const MeshImportData& importData)
     {
         Mesh* mesh = new Mesh();
         mesh->name = importData.name;
@@ -92,7 +110,7 @@ namespace Seidon
         for (auto& m : importData.subMeshes)
         {
             SubMesh* subMesh = new SubMesh();
-            subMesh->Create(m.vertices, m.indices, GetMaterial("default_material"), m.name);
+            subMesh->Create(m.vertices, m.indices, m.name);
       
             mesh->subMeshes.push_back(subMesh);
         }
@@ -102,7 +120,7 @@ namespace Seidon
         return mesh;
     }
 
-    Material* ResourceManager::CreateMaterial(MaterialImportData& importData)
+    Material* ResourceManager::CreateMaterial(const MaterialImportData& importData)
     {
         if (materials.count(importData.name) > 0) return materials[importData.name];
 
@@ -119,26 +137,22 @@ namespace Seidon
         return material;
     }
 
-    std::vector<Mesh*> ResourceManager::CreateFromImportData(ModelImportData& importData)
+    const ModelFileInfo& ResourceManager::LoadModelFile(const std::string& path)
     {
-        if (loadedModelFileMeshes.count(importData.filepath) > 0)
-        {
-            std::vector<Mesh*> res;
+        if (loadedModelFiles.count(path) > 0) return loadedModelFiles[path];
 
-            for (auto& name : loadedModelFileMeshes[importData.filepath])
-                res.push_back(GetMesh(name));
+        ModelImporter importer;
+        return CreateFromImportData(importer.Import(path));
+    }
 
-            return res;
-        }
+    ModelFileInfo ResourceManager::CreateFromImportData(const ModelImportData& importData)
+    {
+        ModelFileInfo res;
+        res.filePath = importData.filepath;
 
-        std::vector<Mesh*> res;
-
-        std::vector<Material*> materials;
+        std::vector<Material*> modelMaterials;
         for (auto materialImportData : importData.materials)
-        {
-            materials.push_back(CreateMaterial(materialImportData));
-            loadedModelFileMaterials[importData.filepath].push_back(materialImportData.name);
-        }
+            modelMaterials.push_back(CreateMaterial(materialImportData));
         
         int i = 0;
         for (auto& meshImportData : importData.meshes)
@@ -146,14 +160,15 @@ namespace Seidon
             Mesh* mesh = CreateMesh(meshImportData);
             mesh->filepath = importData.filepath;
 
+            std::vector<Material*> materials;
             for (int j = 0; j < meshImportData.subMeshes.size(); j++)
-                mesh->subMeshes[j]->material = materials[meshImportData.subMeshes[j].materialId];
+                materials.push_back(modelMaterials[meshImportData.subMeshes[j].materialId]);
 
 
-            res.push_back(mesh);
-            loadedModelFileMeshes[importData.filepath].push_back(mesh->name);
+            res.content.push_back({ mesh, materials });
         }
 
+        loadedModelFiles[importData.filepath] = res;
         return res;
     }
 
@@ -195,5 +210,40 @@ namespace Seidon
             keys.push_back(key);
 
         return keys;
+    }
+
+    std::vector<std::string> ResourceManager::GetCubemapKeys()
+    {
+        std::vector<std::string> keys;
+
+        for (auto& [key, cubemap] : cubemaps)
+            keys.push_back(key);
+
+        return keys;
+    }
+
+    std::vector<Mesh*> ResourceManager::GetModelFileMeshes(const std::string& name)
+    {
+        std::vector<Mesh*> res;
+
+        for (const auto& [mesh, materials] : loadedModelFiles[name].content)
+            res.push_back(mesh);
+
+        return res;
+    }
+
+    std::vector<Material*> ResourceManager::GetModelFileMaterials(const std::string& name)
+    {
+        std::unordered_set<Material*> set;
+        std::vector<Material*> res;
+
+        for (const auto& [mesh, materials] : loadedModelFiles[name].content)
+            for(const auto& material : materials)
+                set.insert(material);
+
+        for (const auto& material : set)
+            res.push_back(material);
+
+        return res;
     }
 }

@@ -38,6 +38,8 @@ namespace Seidon
 		KeyState mouseButtonStates[MOUSE_BUTTON_COUNT];
 		bool keysPressedThisFrame[KEY_STATE_COUNT];
 		bool mouseButtonsPressedThisFrame[MOUSE_BUTTON_COUNT];
+
+		bool blockInput;
 	public:
 		void Init(Window* window);
 		void Update();
@@ -58,5 +60,6 @@ namespace Seidon
 		const glm::vec2& GetMouseWheelPosition();
 		const glm::vec2& GetMouseWheelOffset();
 
+		void BlockInput(bool value) { blockInput = value; };
 	};
 }

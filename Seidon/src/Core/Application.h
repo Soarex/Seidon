@@ -6,6 +6,7 @@
 #include "InputManager.h"
 #include "ResourceManager.h"
 #include "WorkManager.h"
+
 #include "Ecs/Components.h"
 #include "Ecs/SceneManager.h"
 #include "Ecs/Scene.h"
@@ -19,7 +20,6 @@ namespace Seidon
 	{
 	public:
 		std::unordered_map<std::string, void(*)(Scene& scene)> registeredSystems;
-		//std::unordered_map<std::string, MetaType> registeredComponents;
 		std::vector<MetaType> registeredComponents;
 
 		static Application* instance;
@@ -101,27 +101,13 @@ namespace Seidon
 			t.Has	= &Application::HasComponent<Type>;
 			t.Copy	= &Application::CopyComponent<Type>;
 
-			//registeredComponents[typeid(Type).name()] = t;
 			registeredComponents.push_back(t);
-			//return registeredComponents[typeid(Type).name()];
 			return registeredComponents.back();
 		}
-		/*
-		template<typename Type>
-		MetaType& GetComponentMetaType()
-		{
-			return registeredComponents[typeid(Type).name()];
-		}
-		*/
+
 		std::vector<MetaType> GetComponentMetaTypes()
 		{
-			/*
-			std::vector<MetaType> res;
-			for (auto& [name, metaType] : registeredComponents)
-				res.push_back(metaType);
 
-			return res;
-			*/
 			return registeredComponents;
 		}
 

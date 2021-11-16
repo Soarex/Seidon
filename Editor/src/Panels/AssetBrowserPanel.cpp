@@ -1,4 +1,5 @@
 #include "AssetBrowserPanel.h"
+#include <Debug/Timer.h>
 
 namespace Seidon
 {
@@ -32,14 +33,13 @@ namespace Seidon
 		if (columnCount < 1) columnCount = 1;
 
 		ImGui::Columns(columnCount, 0, false);
-
+		Timer t("Folders");
 		for (auto& directoryEntry : std::filesystem::directory_iterator(currentDirectory))
 		{
 			if (!directoryEntry.is_directory()) continue;
 			const std::filesystem::path& path = directoryEntry.path();
 
-			const std::filesystem::path& relativePath = std::filesystem::relative(path, assetsPath);
-			std::string filenameString = relativePath.filename().string();
+			std::string filenameString = path.filename().string();
 
 			ImGui::PushID(filenameString.c_str());
 
@@ -62,9 +62,7 @@ namespace Seidon
 
 			const std::filesystem::path& path = directoryEntry.path();
 
-			const std::filesystem::path& relativePath = std::filesystem::relative(path, assetsPath);
-			std::string filenameString = relativePath.filename().string();
-
+			std::string filenameString = path.filename().string();
 			ImGui::PushID(filenameString.c_str());
 
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
@@ -79,6 +77,19 @@ namespace Seidon
 					ImGui::EndDragDropSource();
 				}
 				
+				ImGui::TextWrapped(filenameString.c_str());
+				ImGui::NextColumn();
+			}
+			else if (path.extension() == ".hdr")
+			{
+				ImGui::ImageButton((ImTextureID)fileIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				if (ImGui::BeginDragDropSource())
+				{
+					const std::string& itemPath = directoryEntry.path().string();
+					ImGui::SetDragDropPayload("CONTENT_BROWSER_CUBEMAP", itemPath.c_str(), itemPath.length() + 1);
+					ImGui::EndDragDropSource();
+				}
+
 				ImGui::TextWrapped(filenameString.c_str());
 				ImGui::NextColumn();
 			}
@@ -98,35 +109,34 @@ namespace Seidon
 						ModelImporter importer;
 						ModelImportData importData = importer.Import(directoryEntry.path().string());
 						resourceManager->CreateFromImportData(importData);
-
 					}
 
-					for (auto& meshName : resourceManager->GetModelFileMeshNames(directoryEntry.path().string()))
+					for (const auto& mesh : resourceManager->GetModelFileMeshes(directoryEntry.path().string()))
 					{
-						ImGui::PushID(meshName.c_str());
+						ImGui::PushID(mesh->name.c_str());
 						ImGui::ImageButton((ImTextureID)modelIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 						if (ImGui::BeginDragDropSource())
 						{
-							ImGui::SetDragDropPayload("CONTENT_BROWSER_MESH", meshName.c_str(), meshName.length() + 1);
+							ImGui::SetDragDropPayload("CONTENT_BROWSER_MESH", mesh->name.c_str(), mesh->name.length() + 1);
 							ImGui::EndDragDropSource();
 						}
 
-						ImGui::TextWrapped(meshName.c_str());
+						ImGui::TextWrapped(mesh->name.c_str());
 						ImGui::NextColumn();
 						ImGui::PopID();
 					}
 
-					for (auto& materialName : resourceManager->GetModelFileMaterialNames(directoryEntry.path().string()))
+					for (const auto& material : resourceManager->GetModelFileMaterials(directoryEntry.path().string()))
 					{
-						ImGui::PushID(materialName.c_str());
+						ImGui::PushID(material->name.c_str());
 						ImGui::ImageButton((ImTextureID)materialIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 						if (ImGui::BeginDragDropSource())
 						{
-							ImGui::SetDragDropPayload("CONTENT_BROWSER_MATERIAL", materialName.c_str(), materialName.length() + 1);
+							ImGui::SetDragDropPayload("CONTENT_BROWSER_MATERIAL", material->name.c_str(), material->name.length() + 1);
 							ImGui::EndDragDropSource();
 						}
 
-						ImGui::TextWrapped(materialName.c_str());
+						ImGui::TextWrapped(material->name.c_str());
 						ImGui::NextColumn();
 						ImGui::PopID();
 					}

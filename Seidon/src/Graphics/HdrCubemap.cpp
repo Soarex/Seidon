@@ -8,12 +8,22 @@ namespace Seidon
 
     }
 
+    void HdrCubemap::CreateFromEquirectangularMap(Texture* texture)
+    {
+        filepath = texture->GetPath();
+        ToCubemap(*texture);
+        GenerateIrradianceMap();
+        GeneratePrefilteredMap();
+        GenerateBRDFLookupMap();
+    }
+
 	void HdrCubemap::LoadFromEquirectangularMap(std::string path)
 	{
         filepath = path;
         stbi_set_flip_vertically_on_load(true);
         int width, height, channelCount;
         float* data = stbi_loadf(path.c_str(), &width, &height, &channelCount, 0);
+
         if (data)
         {
             Texture hdrTexture;
@@ -23,12 +33,14 @@ namespace Seidon
             GenerateIrradianceMap();
             GeneratePrefilteredMap();
             GenerateBRDFLookupMap();
+
             stbi_image_free(data);
         }
         else
         {
             std::cout << "Failed to load HDR image." << std::endl;
         }
+
         stbi_set_flip_vertically_on_load(false);
 	}
 

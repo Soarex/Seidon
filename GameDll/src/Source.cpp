@@ -20,6 +20,8 @@ public:
         auto players = scene->GetRegistry().group<PlayerComponent>(entt::get<Seidon::TransformComponent>);
         auto cameras = scene->GetRegistry().view<Seidon::CameraComponent>();
 
+        if (players.empty()) return;
+
         for (auto e : cameras)
         {
             auto& cameraTransform = scene->GetRegistry().get<Seidon::TransformComponent>(e);
@@ -53,6 +55,7 @@ public:
         auto players = scene->GetRegistry().group<PlayerComponent>(entt::get<Seidon::TransformComponent>);
         auto cameras = scene->GetRegistry().view<Seidon::CameraComponent>();
 
+        if (players.empty()) return;
         for (auto e : cameras)
         {
             auto& cameraTransform = scene->GetRegistry().get<Seidon::TransformComponent>(e);

@@ -26,6 +26,9 @@ namespace Seidon
 		VECTOR3_ANGLES,
 		VECTOR4,
 		VECTOR4_COLOR,
+		MATERIAL_VECTOR,
+		MESH_VECTOR,
+		TEXTURE_VECTOR,
 		TEXTURE,
 		CUBEMAP,
 		MESH
@@ -81,6 +84,15 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(glm::vec3).hash_code())
 				data.type = Types::VECTOR3;
+
+			if (typeid(U).hash_code() == typeid(std::vector<Mesh*>).hash_code())
+				data.type = Types::MESH_VECTOR;
+
+			if (typeid(U).hash_code() == typeid(std::vector<Material*>).hash_code())
+				data.type = Types::MATERIAL_VECTOR;
+
+			if (typeid(U).hash_code() == typeid(std::vector<Texture*>).hash_code())
+				data.type = Types::TEXTURE_VECTOR;
 
 			if (typeid(U).hash_code() == typeid(Texture*).hash_code())
 				data.type = Types::TEXTURE;

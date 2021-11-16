@@ -5,9 +5,10 @@
 
 namespace Seidon
 {
-	void DrawCaptureCube()
+	unsigned int cubeVAO = 0;
+	void SetupCaptureCube()
 	{
-		const float cubeVertices[] = {
+		static const float cubeVertices[] = {
 			// positions          
 			-1.0f,  1.0f, -1.0f,
 			-1.0f, -1.0f, -1.0f,
@@ -52,7 +53,7 @@ namespace Seidon
 			 1.0f, -1.0f,  1.0f
 		};
 
-		unsigned int cubeVAO = 0;
+		
 		unsigned int cubeVBO = 0;
 		glGenVertexArrays(1, &cubeVAO);
 		glGenBuffers(1, &cubeVBO);
@@ -66,7 +67,10 @@ namespace Seidon
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+	}
 
+	void DrawCaptureCube()
+	{
 		glBindVertexArray(cubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
@@ -88,11 +92,15 @@ namespace Seidon
 		hdrFramebuffer.SetColorTexture(hdrMap);
 		hdrFramebuffer.SetDepthStencilRenderBuffer(hdrDepthStencilBuffer);
 
-		shadowMap.Create(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, (unsigned char*)NULL, TextureFormat::DEPTH, TextureFormat::DEPTH, ClampingMode::BORDER);
-
-		depthFramebuffer.Create();
-		depthFramebuffer.DisableColorBuffer();
-		depthFramebuffer.SetDepthTexture(shadowMap);
+		int shadowSamplers[CASCADE_COUNT];
+		for (int i = 0; i < CASCADE_COUNT; i++)
+		{
+			shadowMaps[i].Create(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, (unsigned char*)NULL, TextureFormat::DEPTH, TextureFormat::DEPTH, ClampingMode::BORDER);
+			depthFramebuffers[i].Create();
+			depthFramebuffers[i].SetDepthTexture(shadowMaps[i]);
+			depthFramebuffers[i].DisableColorBuffer();
+			shadowSamplers[i] = 8 + i;
+		}
 
 		renderTarget.Create(window->GetWidth(), window->GetHeight(), (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::RGBA);
 		renderDepthStencilBuffer.Create(window->GetWidth(), window->GetHeight(), RenderBufferType::DEPTH_STENCIL);
@@ -107,10 +115,11 @@ namespace Seidon
 		shader.SetInt("normalMap", 2);
 		shader.SetInt("metallicMap", 3);
 		shader.SetInt("aoMap", 4);
-		shader.SetInt("shadowMap", 5);
-		shader.SetInt("irradianceMap", 6);
-		shader.SetInt("prefilterMap", 7);
-		shader.SetInt("BRDFLookupMap", 8);
+		shader.SetInt("irradianceMap", 5);
+		shader.SetInt("prefilterMap", 6);
+		shader.SetInt("BRDFLookupMap", 7);
+
+		shader.SetInts("shadowMaps", shadowSamplers, CASCADE_COUNT);
 
 		depthShader.LoadFromFileAsync("Shaders/ShadowPass.shader");
 		quadShader.LoadFromFileAsync("Shaders/Simple.shader");
@@ -130,7 +139,8 @@ namespace Seidon
 
 		std::vector<unsigned int> indices = { 0, 1, 2, 3, 4, 5 };
 		fullscreenQuad = new SubMesh();
-		fullscreenQuad->Create(quadVertices, indices, NULL);
+		fullscreenQuad->Create(quadVertices, indices, "");
+		SetupCaptureCube();
 
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
@@ -180,99 +190,57 @@ namespace Seidon
 		camera.aspectRatio = (float)framebufferWidth / framebufferHeight;
 
 		//Shadow Pass
-		glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-		depthFramebuffer.Bind();
-		glClear(GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
 		//glCullFace(GL_FRONT);
+		glEnable(GL_DEPTH_CLAMP);
 
-		
-		glm::mat4 lightView = glm::lookAt(lightTransform.GetForwardDirection(),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.0f));
-
-		float near_plane = -100.0f, far_plane = 100.0f;
-
-		glm::mat4 lightProjection = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, near_plane, far_plane);
-		glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-		
-		
-		/*
-		//Shadow bounds calulation
-		glm::mat4 inverseViewMatrix = glm::inverse(camera.GetViewMatrix(cameraTransform));
-		glm::mat4 lightViewMatrix = glm::lookAt(lightTransform.GetForwardDirection(),
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.0f));
-
-		float tanHalfHFOV = tanf(glm::radians(camera.fov / 2.0f));
-		float tanHalfVFOV = tanf(glm::radians((camera.fov * camera.aspectRatio) / 2.0f));
-
-		float xn = camera.nearPlane * tanHalfHFOV;
-		float xf = camera.farPlane * tanHalfHFOV;
-		float yn = camera.nearPlane * tanHalfVFOV;
-		float yf = camera.farPlane * tanHalfVFOV;
-
-		glm::vec4 frustumCorners[8] = {
-			// near face
-			glm::vec4(xn, yn, camera.nearPlane, 1.0),
-			glm::vec4(-xn, yn, camera.nearPlane, 1.0),
-			glm::vec4(xn, -yn, camera.nearPlane, 1.0),
-			glm::vec4(-xn, -yn, camera.nearPlane, 1.0),
-
-			// far face
-			glm::vec4(xf, yf, camera.farPlane, 1.0),
-			glm::vec4(-xf, yf, camera.farPlane, 1.0),
-			glm::vec4(xf, -yf, camera.farPlane, 1.0),
-			glm::vec4(-xf, -yf, camera.farPlane, 1.0)
+		glm::mat4 lightSpaceMatrices[CASCADE_COUNT];
+		float farPlanes[CASCADE_COUNT] =
+		{
+			camera.farPlane / 24.0f, camera.farPlane / 7.0f, camera.farPlane / 2.0f, camera.farPlane
 		};
 
-		float minX = std::numeric_limits<int>::max();
-		float maxX = std::numeric_limits<int>::min();
-		float minY = std::numeric_limits<int>::max();
-		float maxY = std::numeric_limits<int>::min();
-		float minZ = std::numeric_limits<int>::max();
-		float maxZ = std::numeric_limits<int>::min();
-		
-		glm::vec4 frustumCornersL[8];
-		for (unsigned int j = 0; j < 8; j++) {
-
-			glm::vec4 vW = inverseViewMatrix * frustumCorners[j];
-
-			frustumCornersL[j] = lightViewMatrix * vW;
-
-			minX = std::min(minX, frustumCornersL[j].x);
-			maxX = std::max(maxX, frustumCornersL[j].x);
-			minY = std::min(minY, frustumCornersL[j].y);
-			maxY = std::max(maxY, frustumCornersL[j].y);
-			minZ = std::min(minZ, frustumCornersL[j].z);
-			maxZ = std::max(maxZ, frustumCornersL[j].z);
-			
-		}
-
-		ImGui::Text("%f, %f, %f, %f, %f, %f", minX, maxX, minY, maxY, minZ, maxZ);
-		glm::mat4 lightProjectionMatrix = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
-		glm::mat4 lightSpaceMatrix = lightProjectionMatrix * lightViewMatrix;
-		*/
-		depthShader.Use();
-		depthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
-
-		for (entt::entity e : renderGroup)
+		for (int i = 0; i < CASCADE_COUNT; i++)
 		{
-			RenderComponent r = renderGroup.get<RenderComponent>(e);
-			TransformComponent t = renderGroup.get<TransformComponent>(e);
-			glm::mat4 modelMatrix = t.GetTransformMatrix();
-			depthShader.SetMat4("modelMatrix", modelMatrix);
-
-			for (int i = 0; i < r.mesh->subMeshes.size(); i++)
+			depthFramebuffers[i].Bind();
+			glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			
+			float nearPlane, farPlane;
+			if (i == 0)
 			{
-				glBindVertexArray(r.mesh->subMeshes[i]->GetVAO());
-
-				glDrawElements(GL_TRIANGLES, r.mesh->subMeshes[i]->indices.size(), GL_UNSIGNED_INT, 0);
+				nearPlane = camera.nearPlane;
+				farPlane = farPlanes[i];
 			}
+			else if (i < CASCADE_COUNT)
+			{
+				nearPlane = farPlanes[i - 1];
+				farPlane = farPlanes[i];
+			}
+			
+			lightSpaceMatrices[i] = CalculateCsmMatrix(camera, cameraTransform, light, lightTransform, nearPlane, farPlane);
+
+			depthShader.Use();
+			depthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
+
+			for (entt::entity e : renderGroup)
+			{
+				RenderComponent r = renderGroup.get<RenderComponent>(e);
+				TransformComponent t = renderGroup.get<TransformComponent>(e);
+				glm::mat4 modelMatrix = t.GetTransformMatrix();
+				depthShader.SetMat4("modelMatrix", modelMatrix);
+
+				for (SubMesh* subMesh : r.mesh->subMeshes)
+				{
+					glBindVertexArray(subMesh->GetVAO());
+					glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0);
+				}
+			}
+
+			depthFramebuffers[i].Unbind();
 		}
 
-		depthFramebuffer.Unbind();
-
+		glDisable(GL_DEPTH_CLAMP);
 		//Hdr Pass
 		glEnable(GL_CULL_FACE);
 		hdrFramebuffer.Bind();
@@ -288,18 +256,25 @@ namespace Seidon
 
 		shader.SetMat4("viewMatrix", camera.GetViewMatrix(cameraTransform));
 		shader.SetMat4("projectionMatrix", camera.GetProjectionMatrix());
-		shader.SetMat4("lightSpaceMatrix", lightSpaceMatrix);
+
 		shader.SetVec3("cameraPosition", cameraTransform.position);
 
-		shadowMap.Bind(5);
-		cubemap.cubemap->BindIrradianceMap(6);
-		cubemap.cubemap->BindPrefilteredMap(7);
-		cubemap.cubemap->BindBRDFLookupMap(8);
+		cubemap.cubemap->BindIrradianceMap(5);
+		cubemap.cubemap->BindPrefilteredMap(6);
+		cubemap.cubemap->BindBRDFLookupMap(7);
+
+		for (int i = 0; i < CASCADE_COUNT; i++)
+		{
+			shader.SetMat4("lightSpaceMatrices[" + std::to_string(i) + "]", lightSpaceMatrices[i]);
+			shader.SetFloat("cascadeFarPlaneDistances[" + std::to_string(i) + "]", farPlanes[i]);
+			shader.SetInt("cascadeCount", CASCADE_COUNT);
+			shadowMaps[i].Bind(8 + i);
+		}
 
 		for (entt::entity e : renderGroup)
 		{
-			RenderComponent r = renderGroup.get<RenderComponent>(e);
-			TransformComponent t = renderGroup.get<TransformComponent>(e);
+			RenderComponent& r = renderGroup.get<RenderComponent>(e);
+			TransformComponent& t = renderGroup.get<TransformComponent>(e);
 
 			glm::mat4 modelMatrix = t.GetTransformMatrix();
 
@@ -308,18 +283,23 @@ namespace Seidon
 			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
 			shader.SetMat3("normalMatrix", normalMatrix);
 
+			int i = 0;
 			for (SubMesh* subMesh : r.mesh->subMeshes)
 			{
-				shader.SetVec3("tint", subMesh->material->tint);
-				subMesh->material->albedo->Bind(0);
-				subMesh->material->roughness->Bind(1);
-				subMesh->material->normal->Bind(2);
-				subMesh->material->metallic->Bind(3);
-				subMesh->material->ao->Bind(4);
+				if (r.materials.size() <= i) r.materials.push_back(resourceManager->GetMaterial("default_material"));
+
+				shader.SetVec3("tint", r.materials[i]->tint);
+				r.materials[i]->albedo->Bind(0);
+				r.materials[i]->roughness->Bind(1);
+				r.materials[i]->normal->Bind(2);
+				r.materials[i]->metallic->Bind(3);
+				r.materials[i]->ao->Bind(4);
 
 				glBindVertexArray(subMesh->GetVAO());
 
 				glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0);
+
+				i++;
 			}
 		}
 
@@ -342,7 +322,7 @@ namespace Seidon
 		quadShader.SetFloat("exposure", camera.exposure);
 
 		hdrMap.Bind(0);
-
+		
 		glBindVertexArray(fullscreenQuad->GetVAO());
 		glDrawElements(GL_TRIANGLES, fullscreenQuad->indices.size(), GL_UNSIGNED_INT, 0);
 		renderFramebuffer.Unbind();
@@ -386,5 +366,81 @@ namespace Seidon
 
 		renderFramebuffer.SetColorTexture(renderTarget);
 		renderFramebuffer.SetDepthStencilRenderBuffer(renderDepthStencilBuffer);
+	}
+
+	std::vector<glm::vec4> RenderSystem::CalculateFrustumCorners(CameraComponent& camera, TransformComponent& cameraTransform, float nearPlane, float farPlane)
+	{
+		glm::mat4 projectionMatrix = glm::perspective(camera.fov, camera.aspectRatio, nearPlane, farPlane);
+		const glm::mat4& inv = glm::inverse(projectionMatrix * camera.GetViewMatrix(cameraTransform));
+
+		std::vector<glm::vec4> frustumCorners;
+		for (int x = 0; x < 2; ++x)
+			for (int y = 0; y < 2; ++y)
+				for (int z = 0; z < 2; ++z)
+				{
+					const glm::vec4 point = inv *
+						glm::vec4
+						(
+							2.0f * x - 1.0f,
+							2.0f * y - 1.0f,
+							2.0f * z - 1.0f,
+							1.0f
+						);
+
+					frustumCorners.push_back(point / point.w);
+				}
+
+		return frustumCorners;
+	}
+
+	const glm::mat4& RenderSystem::CalculateCsmMatrix(CameraComponent& camera, TransformComponent& cameraTransform, 
+		DirectionalLightComponent& light, TransformComponent& lightTransform, float nearPlane, float farPlane)
+	{
+		const std::vector<glm::vec4>& corners = CalculateFrustumCorners(camera, cameraTransform, nearPlane, farPlane);
+
+		glm::vec3 frustumCenter = glm::vec3(0, 0, 0);
+
+		for (const auto& v : corners)
+			frustumCenter += glm::vec3(v);
+
+		frustumCenter /= corners.size();
+
+		const glm::mat4 lightView = glm::lookAt(
+			frustumCenter + lightTransform.GetForwardDirection(),
+			frustumCenter,
+			glm::vec3(0.0f, 1.0f, 0.0f)
+		);
+
+		float minX = std::numeric_limits<float>::max();
+		float maxX = std::numeric_limits<float>::min();
+		float minY = std::numeric_limits<float>::max();
+		float maxY = std::numeric_limits<float>::min();
+		float minZ = std::numeric_limits<float>::max();
+		float maxZ = std::numeric_limits<float>::min();
+
+		for (const glm::vec4& corner : corners)
+		{
+			const auto transformedCorner = lightView * corner;
+			minX = std::min(minX, transformedCorner.x);
+			maxX = std::max(maxX, transformedCorner.x);
+			minY = std::min(minY, transformedCorner.y);
+			maxY = std::max(maxY, transformedCorner.y);
+			minZ = std::min(minZ, transformedCorner.z);
+			maxZ = std::max(maxZ, transformedCorner.z);
+		}
+		
+		constexpr float zMult = 10.0f;
+		if (minZ < 0)
+			minZ *= zMult;
+		else
+			minZ /= zMult;
+
+		if (maxZ < 0)
+			maxZ /= zMult;
+		else
+			maxZ *= zMult;
+		
+		const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+		return lightProjection * lightView;
 	}
 }

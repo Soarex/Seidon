@@ -76,5 +76,11 @@
     <ClInclude Include="src\Extensions\Extension.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\Dialogs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

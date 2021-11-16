@@ -172,6 +172,7 @@
   <ItemGroup>
     <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Core\UUID.cpp" />
+    <ClCompile Include="src\Ecs\Components.cpp" />
     <ClCompile Include="src\Ecs\Scene.cpp" />
     <ClCompile Include="src\Ecs\SceneManager.cpp" />
     <ClCompile Include="src\Extensions\Extension.cpp" />
@@ -238,6 +239,7 @@
   <ItemGroup>
     <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Core\UUID.h" />
+    <ClInclude Include="src\Debug\Timer.h" />
     <ClInclude Include="src\Ecs\Components.h" />
     <ClInclude Include="src\Core\Core.h" />
     <ClInclude Include="src\Ecs\Ecs.h" />

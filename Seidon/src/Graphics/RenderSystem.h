@@ -13,6 +13,9 @@ namespace Seidon
 	class RenderSystem : public System
 	{
 	private:
+		constexpr static int SHADOW_MAP_SIZE = 1024;
+		constexpr static int CASCADE_COUNT = 4;
+
 		std::function<void(int, int)> windowResizeCallback;
 
 		Shader shader;
@@ -21,12 +24,13 @@ namespace Seidon
 		Shader quadShader;
 
 		Framebuffer hdrFramebuffer;
-		Framebuffer depthFramebuffer;
+		Framebuffer depthFramebuffers[CASCADE_COUNT];
 		Framebuffer renderFramebuffer;
 
 		Texture hdrMap;
 		Texture bloomMap;
-		Texture shadowMap;
+		
+		Texture shadowMaps[CASCADE_COUNT];
 
 		Texture renderTarget;
 
@@ -40,7 +44,6 @@ namespace Seidon
 		bool useFullWindow = true;
 		unsigned int framebufferWidth, framebufferHeight;
 
-		const int SHADOW_MAP_SIZE = 1024;
 	public:
 		RenderSystem();
 		void Init();
@@ -51,6 +54,10 @@ namespace Seidon
 
 		inline const Texture& GetRenderTarget() { return renderTarget; }
 
+	private:
+		std::vector<glm::vec4> CalculateFrustumCorners(CameraComponent& camera, TransformComponent& cameraTransform, float nearPlane, float farPlane);
 
+		const glm::mat4& CalculateCsmMatrix(CameraComponent& camera, TransformComponent& cameraTransform, 
+			DirectionalLightComponent& light, TransformComponent& lightTransform, float nearPlane, float farPlane);
 	};
 }

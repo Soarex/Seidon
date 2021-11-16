@@ -14,9 +14,8 @@ namespace Seidon
     public:
         std::string name;
         std::vector<Vertex> vertices;
-        std::vector<unsigned int> indices;
+        std::vector<unsigned int> indices;    
 
-        Material* material;
     private:
         unsigned int VBO, EBO, VAO;
 
@@ -24,7 +23,7 @@ namespace Seidon
         SubMesh();
         ~SubMesh();
 
-        void Create(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, Material* material, const std::string& name = "");
+        void Create(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::string& name = "");
 
         unsigned int GetVAO() { return VAO; };
 
@@ -38,6 +37,8 @@ namespace Seidon
         std::string name;
         std::vector<SubMesh*> subMeshes;
 
+        Mesh() = default;
+        Mesh(const std::string& name) : name(name) {};
         ~Mesh();
     };
 }

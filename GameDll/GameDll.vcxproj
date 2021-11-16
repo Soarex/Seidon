@@ -87,6 +87,7 @@
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
     <IncludePath>$(SolutionDir)Seidon\src;$(SolutionDir)Vendor\Include;$(SolutionDir)Seidon\src\Vendor;$(SolutionDir)Editor\src;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Bin\Release-x64\Seidon;$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -146,7 +147,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Bin\Debug-x64\Seidon;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Bin\Release-x64\Seidon;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Seidon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

@@ -207,6 +207,9 @@
     <ClCompile Include="src\Core\UUID.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Ecs\Components.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Shader.h">
@@ -726,6 +729,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Reflection\Reflection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Debug\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

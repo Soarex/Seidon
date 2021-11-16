@@ -198,11 +198,36 @@ namespace Seidon
 		ImGui::PopID();
 	}
 
+	void DrawCubemapControl(const std::string& label, HdrCubemap** cubemap, float size)
+	{
+		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
+		ImGui::PushID(label.c_str());
+
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/FileIcon.png")->GetId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_CUBEMAP"))
+			{
+				std::string path = (const char*)payload->Data;
+				*cubemap = resourceManager->LoadCubemap(path);
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::NextColumn();
+
+		std::filesystem::path path = std::string((*cubemap)->GetPath());
+		ImGui::Text(path.filename().string().c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+
 	void DrawMeshControl(const std::string& label, Mesh** mesh, float size)
 	{
-		static Material* selectedMaterial = nullptr;
-		static bool open = true;
-
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		ImGui::PushID(label.c_str());
 
@@ -226,30 +251,13 @@ namespace Seidon
 
 		ImGui::Columns(1);
 		ImGui::PopID();
-
-		int i = 0;
-		for (SubMesh* subMesh : (*mesh)->subMeshes)
-		{
-			if (DrawMaterialControl("Material " + std::to_string(i), &subMesh->material))
-				if (selectedMaterial == subMesh->material)
-					open = !open;
-				else
-				{
-					selectedMaterial = subMesh->material;
-					open = true;
-				}
-
-			i++;
-		}
-
-		if (selectedMaterial && open)
-			DrawMaterialEditor("Material Editor", selectedMaterial, &open);
 	}
 
 	bool DrawMaterialControl(const std::string& label, Material** material, float size)
 	{
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		bool clicked = false;
+		static Material* selectedMaterial = nullptr;
 
 		ImGui::PushID(label.c_str());
 
@@ -278,7 +286,7 @@ namespace Seidon
 		ImGui::Columns(1);
 
 		ImGui::PopID();
-
+		
 		return clicked;
 	}
 

@@ -1,5 +1,6 @@
 ~VERTEX SHADER
 #version 330 core
+#define MAX_CASCADE_COUNT 8
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexNormal;
@@ -11,7 +12,8 @@ out VS_OUT
     vec3 worldSpaceFragmentPosition;
     vec3 normal;
     vec2 UV;
-    vec4 lightSpaceFragmentPosition;
+    vec4 lightSpaceFragmentPositions[MAX_CASCADE_COUNT];
+    float viewSpaceZ;
     mat3 TBN;
 } vs_out;
 
@@ -21,7 +23,7 @@ uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
 uniform mat3 normalMatrix;
-uniform mat4 lightSpaceMatrix;
+uniform mat4 lightSpaceMatrices[MAX_CASCADE_COUNT];
 
 void main()
 {
@@ -35,7 +37,12 @@ void main()
     vs_out.worldSpaceFragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0));
     vs_out.normal = normalMatrix * vertexNormal;
     vs_out.UV = vertexUV;
-    vs_out.lightSpaceFragmentPosition = lightSpaceMatrix * vec4(vs_out.worldSpaceFragmentPosition, 1.0);
+
+    for(int i = 0; i < MAX_CASCADE_COUNT; i++)
+        vs_out.lightSpaceFragmentPositions[i] = lightSpaceMatrices[i] * vec4(vs_out.worldSpaceFragmentPosition, 1.0);
+    
+    vs_out.viewSpaceZ = (viewMatrix * vec4(vs_out.worldSpaceFragmentPosition, 1)).z;
+
     vs_out.TBN = mat3(T, B, N);
 
     gl_Position = projectionMatrix * viewMatrix * vec4(vs_out.worldSpaceFragmentPosition, 1.0);
@@ -44,6 +51,7 @@ void main()
 
 ~FRAGMENT SHADER
 #version 330 core
+#define MAX_CASCADE_COUNT 8
 
 layout(location = 0) out vec4 fragmentColor;
 
@@ -52,7 +60,8 @@ in VS_OUT
     vec3 worldSpaceFragmentPosition;
     vec3 normal;
     vec2 UV;
-    vec4 lightSpaceFragmentPosition;
+    vec4 lightSpaceFragmentPositions[MAX_CASCADE_COUNT];
+    float viewSpaceZ;
     mat3 TBN;
 } fs_in;
 
@@ -63,6 +72,7 @@ struct DirectionalLight
 };
 
 uniform vec3 cameraPosition;
+uniform mat4 viewMatrix;
 
 uniform DirectionalLight directionalLight;
 
@@ -72,7 +82,10 @@ uniform sampler2D roughnessMap;
 uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D aoMap;
-uniform sampler2D shadowMap;
+
+uniform sampler2D shadowMaps[MAX_CASCADE_COUNT];
+uniform float cascadeFarPlaneDistances[MAX_CASCADE_COUNT + 1];
+uniform int cascadeCount;
 
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
@@ -145,7 +158,7 @@ void main()
 
     float shadow = shadowCalculation(NdotL);
     vec3 color = ambient + (1 - shadow) * Lo;
-
+    
     fragmentColor = vec4(color, 1.0f);
 }
 
@@ -196,30 +209,36 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 float shadowCalculation(float NdotL)
 {
+    int cascadeIndex = cascadeCount - 1;
+    for (int i = 0; i < cascadeCount - 1; ++i)
+        if (abs(fs_in.viewSpaceZ) < cascadeFarPlaneDistances[i])
+        {
+            cascadeIndex = i;
+            break;
+        }
 
-    vec3 projectedCoordinates = fs_in.lightSpaceFragmentPosition.xyz / fs_in.lightSpaceFragmentPosition.w;
+    vec3 projectedCoordinates = fs_in.lightSpaceFragmentPositions[cascadeIndex].xyz / fs_in.lightSpaceFragmentPositions[cascadeIndex].w;
     projectedCoordinates = projectedCoordinates * 0.5 + 0.5;
 
-    float closestDepth = texture(shadowMap, projectedCoordinates.xy).r;
+    float closestDepth = texture(shadowMaps[cascadeIndex], projectedCoordinates.xy).r;
     float currentDepth = projectedCoordinates.z;
 
+    if (currentDepth > 1.0)
+        return 0.0;
+
     float bias = max(0.05 * (1.0 - NdotL), 0.005);
+    bias *= 1 / (cascadeFarPlaneDistances[cascadeIndex] * 0.5f);
 
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    vec2 texelSize = 1.0 / textureSize(shadowMaps[cascadeIndex], 0);
     for (int x = -1; x <= 1; ++x)
-    {
         for (int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(shadowMap, projectedCoordinates.xy + vec2(x, y) * texelSize).r;
+            float pcfDepth = texture(shadowMaps[cascadeIndex], projectedCoordinates.xy + vec2(x, y) * texelSize).r;
             shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
         }
-    }
+
     shadow /= 9.0;
-
-
-    if (projectedCoordinates.z > 1.0)
-        shadow = 0.0;
 
     return shadow;
 }

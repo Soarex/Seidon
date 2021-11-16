@@ -29,7 +29,7 @@ namespace Seidon
 		unsigned int BRDFLookupSize;
 	public:
 		HdrCubemap(unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
-		void Load();
+		void CreateFromEquirectangularMap(Texture* texture);
 		void LoadFromEquirectangularMap(std::string path);
 		void BindSkybox(unsigned int slot = 0);
 		void BindIrradianceMap(unsigned int slot = 0);
@@ -37,6 +37,7 @@ namespace Seidon
 		void BindBRDFLookupMap(unsigned int slot = 0);
 
 		inline const std::string& GetPath() { return filepath; }
+		inline unsigned int GetSkyboxID() { return skyboxID; }
 	private:
 		void ToCubemap(Texture& equirectangularMap);
 		void GenerateIrradianceMap();

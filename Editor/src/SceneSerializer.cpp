@@ -174,7 +174,7 @@ namespace Seidon
 				out << YAML::Key << "Name" << YAML::Value << renderComponent.mesh->name;
 
 				out << YAML::Key << "Materials" << YAML::Value << YAML::BeginSeq;
-
+				/*
 				out << YAML::BeginMap;
 				for (SubMesh* submesh : renderComponent.mesh->subMeshes)
 				{
@@ -188,7 +188,7 @@ namespace Seidon
 					out << YAML::Key << "Ao Path" << material->ao->path;
 				}
 				out << YAML::EndMap;
-
+				*/
 				out << YAML::EndSeq;
 				out << YAML::EndMap;
 			});

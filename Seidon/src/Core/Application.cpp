@@ -37,7 +37,8 @@ namespace Seidon
 			.AddMember("Scale", &TransformComponent::scale);
 
 		RegisterComponent<RenderComponent>()
-			.AddMember("Mesh", &RenderComponent::mesh);
+			.AddMember("Mesh", &RenderComponent::mesh)
+			.AddMember("Materials", &RenderComponent::materials);
 
 		RegisterComponent<CubemapComponent>()
 			.AddMember("Cubemap", &CubemapComponent::cubemap);

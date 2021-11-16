@@ -97,19 +97,25 @@ namespace Seidon
 	struct RenderComponent
 	{
 		Mesh* mesh;
+		std::vector<Material*> materials;
 
-		RenderComponent() = default;
+		RenderComponent();
 		RenderComponent(const RenderComponent&) = default;
 
-		RenderComponent(Mesh* mesh)
-			:mesh(mesh) {}
+		RenderComponent(Mesh* mesh, const std::vector<Material*>& materials)
+		{
+			this->materials = materials;
+			SetMesh(mesh);
+		}
+
+		void SetMesh(Mesh* mesh);
 	};
 
 	struct CubemapComponent
 	{
 		HdrCubemap* cubemap;
 
-		CubemapComponent() = default;
+		CubemapComponent();
 		CubemapComponent(const CubemapComponent&) = default;
 
 		CubemapComponent(HdrCubemap* cubemap)
@@ -148,7 +154,7 @@ namespace Seidon
 
 		glm::mat4 GetProjectionMatrix()
 		{
-			return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);;
+			return glm::perspective(glm::radians(fov), aspectRatio, nearPlane, farPlane);
 		}
 	};
 

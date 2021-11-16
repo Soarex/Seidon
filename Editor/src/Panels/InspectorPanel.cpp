@@ -78,10 +78,33 @@ namespace Seidon
                         DrawMeshControl(member.name.c_str(), m);
                     }
 
+                    if (member.type == Types::MATERIAL_VECTOR)
+                    {
+                        std::vector<Material*>* v = (std::vector<Material*>*)(component + member.offset);
+
+                        static bool open;
+                        static int selected;
+
+                        for (int i = 0; i < v->size(); i++)
+                            if (DrawMaterialControl(member.name.c_str(), &v->at(i)))
+                            {
+                                if (selected == i && open)
+                                    open = false;
+                                else
+                                {
+                                    selected = i;
+                                    open = true;
+                                }
+                            }
+
+                        if (open && selected < v->size())
+                            DrawMaterialEditor("Material Editor", v->at(selected), &open);
+                    }
+
                     if (member.type == Types::CUBEMAP)
                     {
-                        HdrCubemap* c = *(HdrCubemap**)(component + member.offset);
-                        //DrawTextureControl(member.name.c_str(), t, 0.0f);
+                        HdrCubemap** c = (HdrCubemap**)(component + member.offset);
+                        DrawCubemapControl(member.name.c_str(), c);
                     }
 
                 }

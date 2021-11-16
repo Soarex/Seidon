@@ -182,12 +182,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Dockspace.h" />
+    <ClInclude Include="src\Editor.h" />
     <ClInclude Include="src\EditorCameraControlSystem.h" />
     <ClInclude Include="src\Extensions\Extension.h" />
     <ClInclude Include="src\Panels\AssetBrowserPanel.h" />
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />
     <ClInclude Include="src\SceneSerializer.h" />
+    <ClInclude Include="src\Utils\Dialogs.h" />
     <ClInclude Include="src\Utils\DrawFunctions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

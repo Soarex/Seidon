@@ -14,12 +14,11 @@ namespace Seidon
         glDeleteVertexArrays(1, &VAO);
     }
 
-    void SubMesh::Create(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices, Material* material, const std::string& name)
+    void SubMesh::Create(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::string& name)
     {
         this->vertices = vertices;
         this->indices = indices;
         this->name = name;
-        this->material = material;
 
         SetupMesh();
     }

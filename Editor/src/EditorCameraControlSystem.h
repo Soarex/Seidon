@@ -8,8 +8,6 @@ namespace Seidon
 	public:
 		float movementSpeed, mouseSensitivity, scrollWheelSensitivity, panSpeed;
 	private:
-		Entity camera;
-
 		bool rotationEnabled = true, movementEnabled = true;
 
 		float pitch = 0, yaw = 0;

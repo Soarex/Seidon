@@ -61,61 +61,85 @@ namespace Seidon
 
 	bool InputManager::GetKey(int keycode)
 	{
+		if (blockInput) return false;
+
 		return keyStates[keycode] == KeyState::PRESSED || keyStates[keycode] == KeyState::DOWN;
 	}
 
 	bool InputManager::GetKeyPressed(int keycode)
 	{
+		if (blockInput) return false;
+
 		return keyStates[keycode] == KeyState::PRESSED;
 	}
 
 	bool InputManager::GetKeyDown(int keycode)
 	{
+		if (blockInput) return false;
+
 		return keyStates[keycode] == KeyState::DOWN;
 	}
 
 	bool InputManager::GetKeyReleased(int keycode)
 	{
+		if (blockInput) return false;
+
 		return keyStates[keycode] == KeyState::RELEASED;
 	}
 
 	bool InputManager::GetMouseButton(MouseButton button)
 	{
+		if (blockInput) return false;
+
 		return mouseButtonStates[(int)button] == KeyState::PRESSED || mouseButtonStates[(int)button] == KeyState::DOWN;
 	}
 
 	bool InputManager::GetMouseButtonPressed(MouseButton button)
 	{
+		if (blockInput) return false;
+
 		return mouseButtonStates[(int)button] == KeyState::PRESSED;
 	}
 
 	bool InputManager::GetMouseButtonDown(MouseButton button)
 	{
+		if (blockInput) return false;
+
 		return mouseButtonStates[(int)button] == KeyState::DOWN;
 	}
 
 	bool InputManager::GetMouseButtonReleased(MouseButton button)
 	{
+		if (blockInput) return false;
+
 		return mouseButtonStates[(int)button] == KeyState::RELEASED;
 	}
 
 	const glm::vec2& InputManager::GetMousePosition()
 	{
+		if (blockInput) return { 0, 0 };
+
 		return mousePosition;
 	}
 
 	const glm::vec2& InputManager::GetMouseOffset()
 	{
+		if (blockInput) return { 0, 0 };
+
 		return mouseOffset;
 	}
 
 	const glm::vec2& InputManager::GetMouseWheelPosition()
 	{
+		if (blockInput) return { 0, 0 };
+
 		return mouseWheelPosition;
 	}
 
 	const glm::vec2& InputManager::GetMouseWheelOffset()
 	{
+		if (blockInput) return { 0, 0 };
+
 		return mouseWheelOffset;
 	}
 
