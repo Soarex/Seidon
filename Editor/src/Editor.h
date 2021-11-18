@@ -1,9 +1,9 @@
 #pragma once
 #include <Seidon.h>
-#include <EntryPoint.h>
 
 #include "Panels/InspectorPanel.h"
 #include "Panels/HierarchyPanel.h"
+#include "Panels/SystemsPanel.h"
 #include "Panels/AssetBrowserPanel.h"
 #include "Dockspace.h"
 
@@ -18,9 +18,13 @@ namespace Seidon
         Scene* runtimeScene;
         Entity selectedEntity;
 
+        Scene editorSystems;
+        Scene runtimeSystems;
+
         HierarchyPanel hierarchyPanel;
         InspectorPanel inspectorPanel;
         AssetBrowserPanel assetBrowserPanel;
+        SystemsPanel systemsPanel;
         Dockspace dockspace;
         Extension e;
 

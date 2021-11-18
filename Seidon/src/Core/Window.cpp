@@ -148,4 +148,14 @@ namespace Seidon
         fullscreenEnabled = !fullscreenEnabled;
         EnableFullscreen(fullscreenEnabled);
     }
+
+    void Window::SetIcon(unsigned char* data, int width, int height)
+    {
+        GLFWimage image;
+        image.pixels = data;
+        image.height = height;
+        image.width = width;
+        
+        glfwSetWindowIcon(handle, 1, &image);
+    }
 }

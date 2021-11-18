@@ -37,16 +37,16 @@ namespace Seidon
             name = std::string(buffer);
         ImGui::PopItemWidth();
 
-        const std::vector<MetaType>& components = Application::Get()->GetComponentMetaTypes();
+        const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
 
         for (auto& metaType : components)
         {
             if (metaType.name == typeid(IDComponent).name() || metaType.name == typeid(NameComponent).name()) continue;
 
-            bool hasComponent = metaType.Has(*selectedEntity.registry, selectedEntity.ID);
+            bool hasComponent = metaType.Has(selectedEntity);
             if (hasComponent && ImGui::CollapsingHeader(metaType.name.c_str() + 7, ImGuiTreeNodeFlags_DefaultOpen))
             {
-                char* component = (char*)metaType.Get(*selectedEntity.registry, selectedEntity.ID);
+                char* component = (char*)metaType.Get(selectedEntity);
                 
                 for (const MemberData& member : metaType.members)
                 {
@@ -122,10 +122,10 @@ namespace Seidon
         {
             for (auto& metaType : components)
             {
-                bool hasComponent = metaType.Has(*selectedEntity.registry, selectedEntity.ID);
+                bool hasComponent = metaType.Has(selectedEntity);
 
                 if (!hasComponent && ImGui::MenuItem(metaType.name.c_str() + 7))
-                    metaType.Add(*selectedEntity.registry, selectedEntity.ID);
+                    metaType.Add(selectedEntity);
             }
 
             ImGui::EndPopup();

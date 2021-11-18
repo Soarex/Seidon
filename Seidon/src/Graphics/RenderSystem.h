@@ -57,7 +57,7 @@ namespace Seidon
 	private:
 		std::vector<glm::vec4> CalculateFrustumCorners(CameraComponent& camera, TransformComponent& cameraTransform, float nearPlane, float farPlane);
 
-		const glm::mat4& CalculateCsmMatrix(CameraComponent& camera, TransformComponent& cameraTransform, 
+		glm::mat4 CalculateCsmMatrix(CameraComponent& camera, TransformComponent& cameraTransform, 
 			DirectionalLightComponent& light, TransformComponent& lightTransform, float nearPlane, float farPlane);
 	};
 }

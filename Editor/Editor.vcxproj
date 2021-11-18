@@ -161,6 +161,7 @@
     <ClCompile Include="src\Panels\AssetBrowserPanel.cpp" />
     <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\Panels\InspectorPanel.cpp" />
+    <ClCompile Include="src\Panels\SystemsPanel.cpp" />
     <ClCompile Include="src\SceneSerializer.cpp" />
     <ClCompile Include="src\Utils\DrawFunctions.cpp" />
   </ItemGroup>
@@ -181,6 +182,7 @@
     <None Include="Shaders\Simple.shader" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\Dockspace.h" />
     <ClInclude Include="src\Editor.h" />
     <ClInclude Include="src\EditorCameraControlSystem.h" />
@@ -188,9 +190,16 @@
     <ClInclude Include="src\Panels\AssetBrowserPanel.h" />
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />
+    <ClInclude Include="src\Panels\SystemsPanel.h" />
     <ClInclude Include="src\SceneSerializer.h" />
     <ClInclude Include="src\Utils\Dialogs.h" />
     <ClInclude Include="src\Utils\DrawFunctions.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Editor.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

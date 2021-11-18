@@ -12,7 +12,7 @@ namespace Seidon
 
 		float pitch = 0, yaw = 0;
 	public:
-		EditorCameraControlSystem(float movementSpeed = 1, float mouseSensitivity = 0.1f, float scrollWheelSensitivity = 100, float panSpeed = 0.8f);
+		EditorCameraControlSystem(float movementSpeed = 10, float mouseSensitivity = 0.5f, float scrollWheelSensitivity = 100, float panSpeed = 0.8f);
 		void Init();
 		void Update(float deltaTime);
 

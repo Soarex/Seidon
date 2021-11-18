@@ -45,9 +45,16 @@ namespace Seidon
 	{
 		Scene* newScene = new Scene();
 
-		auto& srcRegistry = registry;
-		auto& dstRegistry = newScene->registry;
+		CopyEntities(newScene);
+		CopySystems(newScene);
 
+		return newScene;
+	}
+
+	void Scene::CopyEntities(Scene* other)
+	{
+		auto& srcRegistry = registry;
+		auto& dstRegistry = other->registry;
 		std::unordered_map<UUID, entt::entity> enttMap;
 
 		auto idView = srcRegistry.view<IDComponent>();
@@ -56,15 +63,21 @@ namespace Seidon
 			UUID uuid = srcRegistry.get<IDComponent>(e).ID;
 			std::string& name = srcRegistry.get<NameComponent>(e).name;
 
-			Entity newEntity = newScene->CreateEntity(name, uuid);
+			Entity newEntity = other->CreateEntity(name, uuid);
 			enttMap[uuid] = newEntity.ID;
 		}
 
-		const std::vector<MetaType>& components = Application::Get()->GetComponentMetaTypes();
+		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
 		for (auto& metaType : components)
-			metaType.Copy( srcRegistry, dstRegistry, enttMap);
+			metaType.Copy(srcRegistry, dstRegistry, enttMap);
+	}
 
-		return newScene;
+	void Scene::CopySystems(Scene* other)
+	{
+		const std::vector<SystemMetaType>& systems = Application::Get()->GetSystemsMetaTypes();
+		for (auto& metaType : systems)
+			if (metaType.Has(*this))
+				metaType.Copy(*this, *other);
 	}
 
 	Entity Scene::CreateEntity(const std::string& name, const UUID& id)

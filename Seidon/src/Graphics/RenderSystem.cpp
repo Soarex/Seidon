@@ -154,6 +154,7 @@ namespace Seidon
 		};
 
 		window->AddWindowSizeCallback(windowResizeCallback);
+		renderFramebuffer.Unbind();
 	}
 
 	void RenderSystem::Update(float deltaTime)
@@ -393,7 +394,7 @@ namespace Seidon
 		return frustumCorners;
 	}
 
-	const glm::mat4& RenderSystem::CalculateCsmMatrix(CameraComponent& camera, TransformComponent& cameraTransform, 
+	glm::mat4 RenderSystem::CalculateCsmMatrix(CameraComponent& camera, TransformComponent& cameraTransform, 
 		DirectionalLightComponent& light, TransformComponent& lightTransform, float nearPlane, float farPlane)
 	{
 		const std::vector<glm::vec4>& corners = CalculateFrustumCorners(camera, cameraTransform, nearPlane, farPlane);

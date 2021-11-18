@@ -45,6 +45,7 @@ namespace Seidon
 
 		inline void SetSize(unsigned int width, unsigned int height) { Window::width = width; Window::height = height;  glfwSetWindowSize(handle, width, height); }
 		inline void SetName(std::string name) { glfwSetWindowTitle(handle, name.c_str()); }
+		void SetIcon(unsigned char* data, int width, int height);
 
 		inline int GetWidth() { return width; }
 		inline int GetHeight() { return height; }

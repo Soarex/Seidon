@@ -3,7 +3,7 @@
 #include "Core/UUID.h"
 #include "System.h"
 
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <typeinfo>
 
@@ -19,7 +19,7 @@ namespace Seidon
 	private:
 		std::string name;
 		entt::registry registry;
-		std::map<std::string, System*> systems;
+		std::unordered_map<std::string, System*> systems;
 
 	public:
 		Scene(const std::string& name = "Scene");
@@ -30,6 +30,8 @@ namespace Seidon
 		void Destroy();
 
 		Scene* Duplicate();
+		void CopyEntities(Scene* other);
+		void CopySystems(Scene* other);
 
 		Entity CreateEntity(const std::string& name = std::string(), const UUID& id = UUID());
 		void DestroyEntity(const Entity& entity);

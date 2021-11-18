@@ -121,4 +121,5 @@ void Init(Seidon::Application& app)
 void Destroy(Seidon::Application& app)
 {
     app.UnregisterSystem<CameraSystem>();
+    app.UnregisterSystem<PlayerSystem>();
 }

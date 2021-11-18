@@ -1,4 +1,5 @@
 #include "Editor.h"
+#include <EntryPoint.h>
 
 #include <glm/glm.hpp>
 
@@ -10,21 +11,30 @@ namespace Seidon
 {
     void Editor::Init()
 	{
-        RegisterSystem<RenderSystem>();
+        int width, height, channelCount;
+        unsigned char* data = stbi_load("Assets/ModelIcon.png", &width, &height, &channelCount, 0);
+        window->SetIcon(data, width, height);
+        delete data;
+        RegisterSystem<RenderSystem>(); 
+        RegisterSystem<EditorCameraControlSystem>()
+            .AddMember("Mouse Sensitivity", &EditorCameraControlSystem::mouseSensitivity)
+            .AddMember("Movement Speed", &EditorCameraControlSystem::movementSpeed);
+        RegisterSystem<PhysicSystem>();
+
+#ifdef NDEBUG
+        e.Bind(L"../Bin/Release-x64/GameDll/GameDll.dll");
+#else
         e.Bind(L"../Bin/Debug-x64/GameDll/GameDll.dll");
-      
+#endif
+
         hierarchyPanel.Init();           
         inspectorPanel.Init();           
         assetBrowserPanel.Init();
         
 		window->SetName("Seidon Editor");
         window->SetSize(1280, 720);
-
+        RenderSystem* er = new RenderSystem();
         scene = new Scene("Main Scene");
-
-        scene->AddSystem<EditorCameraControlSystem>(10, 0.5).SetRotationEnabled(true);
-        scene->AddSystem<RenderSystem>();
-        //scene->AddSystem<PhysicSystem>();
 
         sceneManager->SetActiveScene(scene);
 
@@ -98,27 +108,30 @@ namespace Seidon
 
         inputManager->BlockInput(!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered());
 
-        if (ImGui::Button("Start"))
+        if (!isPlaying)
         {
-            guizmoOperation = -1;
+            if (ImGui::Button("Start"))
+            {
+                guizmoOperation = -1;
 
-            runtimeScene = scene->Duplicate();
-            for (auto& [key, value] : registeredSystems)
-                value(*runtimeScene);
+                runtimeScene = new Scene(scene->GetName());
+                scene->CopyEntities(runtimeScene);
+                runtimeSystems.CopySystems(runtimeScene);
 
-            sceneManager->SetActiveScene(runtimeScene);
-            selectedEntity = { entt::null, nullptr };
-            isPlaying = true;
-        }
-
-        ImGui::SameLine();
-
-        if (ImGui::Button("Stop"))
+                sceneManager->SetActiveScene(runtimeScene);
+                selectedEntity = { entt::null, nullptr };
+                isPlaying = true;
+            }
+        } 
+        else
         {
-            sceneManager->SetActiveScene(scene);
-            delete runtimeScene;
-            selectedEntity = { entt::null, nullptr };
-            isPlaying = false;
+            if (ImGui::Button("Stop"))
+            {
+                sceneManager->SetActiveScene(scene);
+                delete runtimeScene;
+                selectedEntity = { entt::null, nullptr };
+                isPlaying = false;
+            }
         }
 
         ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -130,7 +143,7 @@ namespace Seidon
         viewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
         
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-
+        
         if (sceneManager->GetActiveScene()->HasSystem<RenderSystem>())
         {
             RenderSystem& renderSystem = sceneManager->GetActiveScene()->GetSystem<RenderSystem>();
@@ -142,7 +155,7 @@ namespace Seidon
         {
             ImGui::Image((ImTextureID)0, ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }
-
+        
         if (ImGui::BeginDragDropTarget())
         {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE"))
@@ -204,8 +217,9 @@ namespace Seidon
         inspectorPanel.Draw();
        
         assetBrowserPanel.Draw();
-
+        systemsPanel.Draw();
         hierarchyPanel.Draw();
+
         ImGui::Begin("Stats"); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
@@ -216,6 +230,8 @@ namespace Seidon
 
 	void Editor::Destroy()
 	{
+        editorSystems.Destroy();
+        runtimeSystems.Destroy();
         e.Destroy();
         e.Unbind();
 	}

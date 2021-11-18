@@ -10,6 +10,7 @@
 #include "Ecs/Components.h"
 #include "Ecs/SceneManager.h"
 #include "Ecs/Scene.h"
+#include "Ecs/Entity.h"
 
 #include <entt/entt.hpp>
 #include <unordered_map>
@@ -19,8 +20,8 @@ namespace Seidon
 	class Application
 	{
 	public:
-		std::unordered_map<std::string, void(*)(Scene& scene)> registeredSystems;
-		std::vector<MetaType> registeredComponents;
+		std::unordered_map<std::string, SystemMetaType> registeredSystems;
+		std::vector<ComponentMetaType> registeredComponents;
 
 		static Application* instance;
 	protected:
@@ -53,21 +54,21 @@ namespace Seidon
 
 	private:
 		template<typename Type>
-		static Type& GetComponent(entt::registry& registry, entt::entity entity)
+		static Type& GetComponent(Entity& entity)
 		{
-			return registry.get<Type>(entity);
+			return entity.GetComponent<Type>();
 		}
 
 		template<typename Type>
-		static Type& AddComponent(entt::registry& registry, entt::entity entity)
+		static Type& AddComponent(Entity& entity)
 		{
-			return registry.emplace<Type>(entity);
+			return entity.AddComponent<Type>();
 		}
 
 		template<typename Type>
-		static bool HasComponent(entt::registry& registry, entt::entity entity)
+		static bool HasComponent(Entity& entity)
 		{
-			return registry.all_of<Type>(entity);
+			return entity.HasComponent<Type>();
 		}
 
 		template<typename Type>
@@ -85,36 +86,79 @@ namespace Seidon
 		}
 
 		template<typename Type>
-		static void AddSystem(Scene& scene)
+		static Type& AddSystem(Scene& scene)
 		{
-			scene.AddSystem<Type>();
+			return scene.AddSystem<Type>();
+		}
+
+		template<typename Type>
+		static bool HasSystem(Scene& scene)
+		{
+			return scene.HasSystem<Type>();
+		}
+
+		template<typename Type>
+		static Type& GetSystem(Scene& scene)
+		{
+			return scene.GetSystem<Type>();
+		}
+
+		template<typename Type>
+		static void DeleteSystem(Scene& scene)
+		{
+			scene.DeleteSystem<Type>();
+		}
+
+		template<typename Type>
+		static void CopySystem(Scene& src, Scene& dst)
+		{
+			dst.AddSystem<Type>(src.GetSystem<Type>());
 		}
 
 	public:
 		template<typename Type>
-		MetaType& RegisterComponent()
+		ComponentMetaType& RegisterComponent()
 		{
-			MetaType t;
+			ComponentMetaType t;
 			t.name = typeid(Type).name();
-			t.Get	= (void*(*)(entt::registry &,entt::entity))&Application::GetComponent<Type>;
-			t.Add	= (void*(*)(entt::registry &,entt::entity))&Application::AddComponent<Type>;
-			t.Has	= &Application::HasComponent<Type>;
-			t.Copy	= &Application::CopyComponent<Type>;
+			t.Get = (void* (*)(Entity&)) & Application::GetComponent<Type>;
+			t.Add = (void* (*)(Entity&)) & Application::AddComponent<Type>;
+			t.Has = &Application::HasComponent<Type>;
+			t.Copy = &Application::CopyComponent<Type>;
 
 			registeredComponents.push_back(t);
 			return registeredComponents.back();
 		}
 
-		std::vector<MetaType> GetComponentMetaTypes()
+		std::vector<ComponentMetaType> GetComponentMetaTypes()
 		{
-
 			return registeredComponents;
 		}
 
-		template<typename Type>
-		void RegisterSystem()
+		std::vector<SystemMetaType> GetSystemsMetaTypes()
 		{
-			registeredSystems[typeid(Type).name()] = &Application::AddSystem<Type>;
+			std::vector<SystemMetaType> res;
+
+			for (auto& [name, system] : registeredSystems)
+				res.push_back(system);
+			
+			return res;
+		}
+
+		template<typename Type>
+		SystemMetaType& RegisterSystem()
+		{
+			SystemMetaType t;
+
+			t.name = typeid(Type).name();
+			t.Get = (void* (*)(Scene&)) & Application::GetSystem<Type>;
+			t.Delete = (void* (*)(Scene&)) & Application::DeleteSystem<Type>;
+			t.Add = (void* (*)(Scene&)) & Application::AddSystem<Type>;
+			t.Has = &Application::HasSystem<Type>;
+			t.Copy = &Application::CopySystem<Type>;
+
+			registeredSystems[typeid(Type).name()] = t;
+			return registeredSystems[typeid(Type).name()];
 		}
 
 		template<typename Type>
