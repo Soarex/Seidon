@@ -15,6 +15,7 @@ namespace Seidon
         unsigned char* data = stbi_load("Assets/ModelIcon.png", &width, &height, &channelCount, 0);
         window->SetIcon(data, width, height);
         delete data;
+
         RegisterSystem<RenderSystem>(); 
         RegisterSystem<EditorCameraControlSystem>()
             .AddMember("Mouse Sensitivity", &EditorCameraControlSystem::mouseSensitivity)
@@ -110,6 +111,12 @@ namespace Seidon
 
         if (!isPlaying)
         {
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
+            ImGuiStyle& style = ImGui::GetStyle();
+            float size = ImGui::CalcTextSize("Add Component").x + style.FramePadding.x * 2.0f;
+
+            float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
             if (ImGui::Button("Start"))
             {
                 guizmoOperation = -1;
@@ -122,9 +129,16 @@ namespace Seidon
                 selectedEntity = { entt::null, nullptr };
                 isPlaying = true;
             }
+            ImGui::PopStyleVar();
         } 
         else
         {
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
+            ImGuiStyle& style = ImGui::GetStyle();
+            float size = ImGui::CalcTextSize("Add Component").x + style.FramePadding.x * 2.0f;
+
+            float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
             if (ImGui::Button("Stop"))
             {
                 sceneManager->SetActiveScene(scene);
@@ -132,6 +146,7 @@ namespace Seidon
                 selectedEntity = { entt::null, nullptr };
                 isPlaying = false;
             }
+            ImGui::PopStyleVar();
         }
 
         ImVec2 viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -212,12 +227,12 @@ namespace Seidon
         }
         ImGui::End();
 
-
+        systemsPanel.Draw();
         inspectorPanel.SetSelectedEntity(selectedEntity);
         inspectorPanel.Draw();
        
         assetBrowserPanel.Draw();
-        systemsPanel.Draw();
+        
         hierarchyPanel.Draw();
 
         ImGui::Begin("Stats"); 

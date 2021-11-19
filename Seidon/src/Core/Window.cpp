@@ -84,6 +84,7 @@ namespace Seidon
         ImGui::StyleColorsDark();
         ImGui_ImplGlfw_InitForOpenGL(handle, true);
         ImGui_ImplOpenGL3_Init("#version 330");
+        SetImGuiStyle();
     }
 
     void Window::Destroy()
@@ -157,5 +158,57 @@ namespace Seidon
         image.width = width;
         
         glfwSetWindowIcon(handle, 1, &image);
+    }
+
+    void Window::SetImGuiStyle()
+    {
+        ImGuiStyle& style = ImGui::GetStyle();
+        style.WindowBorderSize = 0.0f;
+        style.WindowMenuButtonPosition = ImGuiDir_None;
+        style.FramePadding = ImVec2(6.0f, 6.0f);
+        style.ItemSpacing = ImVec2(10.0f, 10.0f);
+        style.TabRounding = 0;
+
+        ImVec4 backgroundColor = ImVec4{ 0.2f, 0.2f, 0.2f, 0.5f };
+        ImVec4 activeBackgroundColor = ImVec4{ 0.3f, 0.3f, 0.3f, 0.5f };
+        ImVec4 accentColor = ImVec4{ 0.0f, 0.38f, 0.85f, 0.7f };
+        ImVec4 highlightColor = ImVec4{ 0.0f, 0.46f, 1.0f, 0.7f };
+
+        ImGui::PushStyleColor(ImGuiCol_Border, backgroundColor);
+        ImGui::PushStyleColor(ImGuiCol_MenuBarBg, 0);
+
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, backgroundColor);
+        ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, highlightColor);
+        ImGui::PushStyleColor(ImGuiCol_FrameBgActive, accentColor);
+
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, backgroundColor);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, backgroundColor);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, activeBackgroundColor);
+
+        ImGui::PushStyleColor(ImGuiCol_Button, backgroundColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, highlightColor);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, accentColor);
+
+        ImGui::PushStyleColor(ImGuiCol_Header, backgroundColor);
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, highlightColor);
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, accentColor);
+
+        ImGui::PushStyleColor(ImGuiCol_Tab, 0);
+        ImGui::PushStyleColor(ImGuiCol_TabHovered, highlightColor);
+        ImGui::PushStyleColor(ImGuiCol_TabActive, ImVec4{ 0.08f, 0.08f, 0.08f, 0.94f });
+        ImGui::PushStyleColor(ImGuiCol_TabUnfocused, 0);
+        ImGui::PushStyleColor(ImGuiCol_TabUnfocusedActive, 0);
+
+        ImGui::PushStyleColor(ImGuiCol_SeparatorHovered, highlightColor);
+        ImGui::PushStyleColor(ImGuiCol_SeparatorActive, accentColor);
+
+        ImGui::PushStyleColor(ImGuiCol_SliderGrab, highlightColor);
+        ImGui::PushStyleColor(ImGuiCol_SliderGrabActive, accentColor);
+
+        ImGui::PushStyleColor(ImGuiCol_DockingPreview, accentColor);
+        ImGui::PushStyleColor(ImGuiCol_NavHighlight, accentColor);
+        ImGui::PushStyleColor(ImGuiCol_CheckMark, accentColor);
+        ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, accentColor);
+        ImGui::PushStyleColor(ImGuiCol_DragDropTarget, accentColor);
     }
 }

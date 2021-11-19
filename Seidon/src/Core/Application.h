@@ -66,6 +66,12 @@ namespace Seidon
 		}
 
 		template<typename Type>
+		static void RemoveComponent(Entity& entity)
+		{
+			return entity.RemoveComponent<Type>();
+		}
+
+		template<typename Type>
 		static bool HasComponent(Entity& entity)
 		{
 			return entity.HasComponent<Type>();
@@ -121,8 +127,9 @@ namespace Seidon
 		{
 			ComponentMetaType t;
 			t.name = typeid(Type).name();
-			t.Get = (void* (*)(Entity&)) & Application::GetComponent<Type>;
-			t.Add = (void* (*)(Entity&)) & Application::AddComponent<Type>;
+			t.Get = (void* (*)(Entity&)) &Application::GetComponent<Type>;
+			t.Add = (void* (*)(Entity&)) &Application::AddComponent<Type>;
+			t.Remove = &Application::RemoveComponent<Type>;
 			t.Has = &Application::HasComponent<Type>;
 			t.Copy = &Application::CopyComponent<Type>;
 

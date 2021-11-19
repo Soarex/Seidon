@@ -1,4 +1,5 @@
 #pragma once
+#include <Seidon.h>
 
 namespace Seidon
 {
@@ -9,5 +10,8 @@ namespace Seidon
 
 		void Init();
 		void Draw();
+
+	private:
+		void DrawSystems(Scene* scene);
 	};
 }

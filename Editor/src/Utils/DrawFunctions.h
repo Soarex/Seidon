@@ -13,4 +13,7 @@ namespace Seidon
 	void DrawMeshControl(const std::string& label, Mesh** mesh, float size = 64);
 	bool DrawMaterialControl(const std::string& label, Material** material, float size = 64);
 	void DrawMaterialEditor(const std::string& label, Material* material, bool* open = 0);
+
+	void DrawReflectedMember(void* object, MemberData& member);
+	void DrawReflectedMembers(void* object, std::vector<MemberData>& members);
 }

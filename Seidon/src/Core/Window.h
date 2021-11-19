@@ -63,5 +63,8 @@ namespace Seidon
 		friend void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 		friend void MouseWheelCallback(GLFWwindow* window, double xpos, double ypos);
 		friend void KeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+	private:
+		void SetImGuiStyle();
 	};
 }

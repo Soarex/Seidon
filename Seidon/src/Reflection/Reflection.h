@@ -55,6 +55,7 @@ namespace Seidon
 		std::vector<MemberData> members;
 
 		void* (*Add)(Entity& entity);
+		void (*Remove)(Entity& entity);
 		void* (*Get)(Entity& entity);
 		bool  (*Has)(Entity& entity);
 		void  (*Copy)(entt::registry& src, entt::registry& dst, const std::unordered_map<UUID, entt::entity>& enttMap);

@@ -14,7 +14,9 @@ namespace Seidon
 		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityID)
 			{
 				Entity entity(entityID, &Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry());
+
 				DrawEntityNode(entity);
+
 			});
 
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
@@ -40,9 +42,10 @@ namespace Seidon
 	{
 		std::string& name = entity.GetComponent<NameComponent>().name;
 
-		ImGuiTreeNodeFlags flags = ((selectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		ImGuiTreeNodeFlags flags = ((selectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		if (ImGui::TreeNodeEx((void*)entity.ID, flags, name.c_str()))
 			ImGui::TreePop();
 
@@ -54,6 +57,7 @@ namespace Seidon
 				callback(entity);
 		}
 
+		ImGui::PopStyleVar();
 		bool entityDeleted = false;
 		if (ImGui::BeginPopupContextItem())
 		{
@@ -62,7 +66,7 @@ namespace Seidon
 
 			ImGui::EndPopup();
 		}
-
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
 		if (entityDeleted)
 		{
@@ -74,6 +78,8 @@ namespace Seidon
 					callback(selectedEntity);
 			}
 		}
+
+		ImGui::PopStyleVar();
 	}
 
 	void HierarchyPanel::AddSelectionCallback(const std::function<void(Entity&)>& callback)

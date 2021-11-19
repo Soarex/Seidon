@@ -11,6 +11,7 @@ namespace Seidon
 		ImGui::PushItemWidth(-1);
 
 		ImGui::Columns(2);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -79,6 +80,7 @@ namespace Seidon
 		ImGui::PushItemWidth(-1);
 
 		ImGui::Columns(2);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -160,6 +162,7 @@ namespace Seidon
 
 		ImGui::PushItemWidth(-1);
 		ImGui::Columns(2);
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 		ImGui::NextColumn();
 
@@ -176,6 +179,7 @@ namespace Seidon
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		ImGui::PushID(label.c_str());
 
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
@@ -203,6 +207,7 @@ namespace Seidon
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		ImGui::PushID(label.c_str());
 
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
@@ -231,6 +236,7 @@ namespace Seidon
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		ImGui::PushID(label.c_str());
 
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
@@ -261,6 +267,7 @@ namespace Seidon
 
 		ImGui::PushID(label.c_str());
 
+		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
@@ -304,5 +311,72 @@ namespace Seidon
 		}
 		
 		ImGui::End();
+	}
+
+	void DrawReflectedMember(void* object, MemberData& member)
+	{
+		char* obj = (char*) object;
+		if (member.type == Types::FLOAT)
+			DrawFloatControl(member.name.c_str(), *(float*)(obj + member.offset));
+
+		if (member.type == Types::VECTOR3)
+			DrawVec3Control(member.name.c_str(), *(glm::vec3*)(obj + member.offset), 0.0f);
+
+		if (member.type == Types::VECTOR3_ANGLES)
+		{
+			glm::vec3 temp = glm::degrees(*(glm::vec3*)(obj + member.offset));
+			DrawVec3Control(member.name.c_str(), temp, 0.0f);
+			*(glm::vec3*)(obj + member.offset) = glm::radians(temp);
+		}
+
+		if (member.type == Types::VECTOR3_COLOR)
+			DrawColorControl(member.name.c_str(), *(glm::vec3*)(obj + member.offset));
+
+		if (member.type == Types::TEXTURE)
+		{
+			Texture* t = *(Texture**)(obj + member.offset);
+			DrawTextureControl(member.name.c_str(), t);
+		}
+
+		if (member.type == Types::MESH)
+		{
+			Mesh** m = (Mesh**)(obj + member.offset);
+			DrawMeshControl(member.name.c_str(), m);
+		}
+
+		if (member.type == Types::MATERIAL_VECTOR)
+		{
+			std::vector<Material*>* v = (std::vector<Material*>*)(obj + member.offset);
+
+			static bool open;
+			static int selected;
+
+			for (int i = 0; i < v->size(); i++)
+				if (DrawMaterialControl(member.name.c_str(), &v->at(i)))
+				{
+					if (selected == i && open)
+						open = false;
+					else
+					{
+						selected = i;
+						open = true;
+					}
+				}
+
+			if (open && selected < v->size())
+				DrawMaterialEditor("Material Editor", v->at(selected), &open);
+		}
+
+		if (member.type == Types::CUBEMAP)
+		{
+			HdrCubemap** c = (HdrCubemap**)(obj + member.offset);
+			DrawCubemapControl(member.name.c_str(), c);
+		}
+	}
+
+	void DrawReflectedMembers(void* object, std::vector<MemberData>& members)
+	{
+		for (MemberData& member : members)
+			DrawReflectedMember(object, member);
 	}
 }
