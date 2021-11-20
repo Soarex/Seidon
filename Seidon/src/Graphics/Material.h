@@ -9,6 +9,7 @@ namespace Seidon
 	class Material
 	{
 	public:
+		UUID id;
 		std::string name;
 		glm::vec3 tint;
 

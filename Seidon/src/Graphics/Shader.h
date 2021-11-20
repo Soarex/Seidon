@@ -1,4 +1,5 @@
 #pragma once
+#include "../Core/UUID.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -16,8 +17,9 @@ namespace Seidon
     class Shader
     {
     private:
+        UUID id;
         std::string path;
-        unsigned int ID;
+        unsigned int renderId;
 
         static Shader* temporaryShader;
     public:

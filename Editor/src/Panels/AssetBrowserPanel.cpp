@@ -44,7 +44,7 @@ namespace Seidon
 			ImGui::PushID(filenameString.c_str());
 
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-			ImGui::ImageButton((ImTextureID)folderIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+			ImGui::ImageButton((ImTextureID)folderIcon.GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
 			ImGui::PopStyleColor();
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -69,7 +69,7 @@ namespace Seidon
 
 			if (path.extension() == ".png" || path.extension() == ".jpg")
 			{
-				ImGui::ImageButton((ImTextureID)resourceManager->LoadTexture(directoryEntry.path().string())->GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				ImGui::ImageButton((ImTextureID)resourceManager->LoadTexture(directoryEntry.path().string())->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 				if (ImGui::BeginDragDropSource())
 				{
 					const std::string& itemPath = directoryEntry.path().string();
@@ -82,7 +82,7 @@ namespace Seidon
 			}
 			else if (path.extension() == ".hdr")
 			{
-				ImGui::ImageButton((ImTextureID)fileIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				ImGui::ImageButton((ImTextureID)fileIcon.GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 				if (ImGui::BeginDragDropSource())
 				{
 					const std::string& itemPath = directoryEntry.path().string();
@@ -96,7 +96,7 @@ namespace Seidon
 			else if (path.extension() == ".fbx")
 			{
 				static bool show = false;
-				if (ImGui::ImageButton((ImTextureID)modelIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 }))
+				if (ImGui::ImageButton((ImTextureID)modelIcon.GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 }))
 					show = !show;
 
 				ImGui::TextWrapped(filenameString.c_str());
@@ -114,7 +114,7 @@ namespace Seidon
 					for (const auto& mesh : resourceManager->GetModelFileMeshes(directoryEntry.path().string()))
 					{
 						ImGui::PushID(mesh->name.c_str());
-						ImGui::ImageButton((ImTextureID)modelIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+						ImGui::ImageButton((ImTextureID)modelIcon.GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 						if (ImGui::BeginDragDropSource())
 						{
 							ImGui::SetDragDropPayload("CONTENT_BROWSER_MESH", mesh->name.c_str(), mesh->name.length() + 1);
@@ -129,7 +129,7 @@ namespace Seidon
 					for (const auto& material : resourceManager->GetModelFileMaterials(directoryEntry.path().string()))
 					{
 						ImGui::PushID(material->name.c_str());
-						ImGui::ImageButton((ImTextureID)materialIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+						ImGui::ImageButton((ImTextureID)materialIcon.GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 						if (ImGui::BeginDragDropSource())
 						{
 							ImGui::SetDragDropPayload("CONTENT_BROWSER_MATERIAL", material->name.c_str(), material->name.length() + 1);
@@ -144,7 +144,7 @@ namespace Seidon
 			}
 			else
 			{
-				ImGui::ImageButton((ImTextureID)fileIcon.GetId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				ImGui::ImageButton((ImTextureID)fileIcon.GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 				if (path.extension() == ".sdscene" && ImGui::BeginDragDropSource())
 				{
 					const std::string& itemPath = directoryEntry.path().string();

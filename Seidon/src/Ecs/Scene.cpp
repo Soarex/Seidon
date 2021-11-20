@@ -2,6 +2,8 @@
 #include "Entity.h"
 #include "../Core/Application.h"
 
+#include <yaml-cpp/yaml.h>
+
 namespace Seidon
 {
 
@@ -27,6 +29,17 @@ namespace Seidon
 	{
 		for (auto& [typeName, system] : systems)
 			system->Update(deltaTime);
+	}
+
+	void Scene::SaveText(std::ofstream& fileOut)
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Id" << YAML::Value << id;
+		out << YAML::Key << "Name" << YAML::Value << name;
+		out << YAML::Key << "Entities" << YAML::BeginSeq;
+
+		out << YAML::EndMap;
 	}
 
 	void Scene::Destroy()

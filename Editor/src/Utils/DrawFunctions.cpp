@@ -183,7 +183,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)texture->GetId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)texture->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE"))
@@ -211,7 +211,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/FileIcon.png")->GetId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/FileIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -240,7 +240,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/ModelIcon.png")->GetId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/ModelIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -271,7 +271,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/MaterialIcon.png")->GetId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/MaterialIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		
 		if (ImGui::IsItemClicked())
 			clicked = true;

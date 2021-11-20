@@ -14,7 +14,7 @@ namespace Seidon
 
     Shader::~Shader()
     {
-        glDeleteProgram(ID);
+        glDeleteProgram(renderId);
     }
 
     void Shader::LoadFromFile(const std::string& path)
@@ -73,7 +73,7 @@ namespace Seidon
             temporaryShader->CreateFromSource(vertexSource, fragmentSource);
         }
 
-        ID = temporaryShader->ID;
+        renderId = temporaryShader->renderId;
         Application::Get()->GetWorkManager()->Execute([this, path]()
             {
                 std::stringstream vertexStream;
@@ -154,14 +154,14 @@ namespace Seidon
             std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
         }
 
-        ID = glCreateProgram();
-        glAttachShader(ID, vertexShader);
-        glAttachShader(ID, fragmentShader);
-        glLinkProgram(ID);
+        renderId = glCreateProgram();
+        glAttachShader(renderId, vertexShader);
+        glAttachShader(renderId, fragmentShader);
+        glLinkProgram(renderId);
 
-        glGetProgramiv(ID, GL_LINK_STATUS, &success);
+        glGetProgramiv(renderId, GL_LINK_STATUS, &success);
         if (!success) {
-            glGetProgramInfoLog(ID, 512, NULL, infoLog);
+            glGetProgramInfoLog(renderId, 512, NULL, infoLog);
             std::cout << "ERROR::SHADER::LINK_FAILED\n" << infoLog << std::endl;
         }
 
@@ -172,41 +172,41 @@ namespace Seidon
 
     void Shader::Use()
     {
-        glUseProgram(ID);
+        glUseProgram(renderId);
     }
 
     void Shader::SetBool(const std::string& name, bool value) const
     {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+        glUniform1i(glGetUniformLocation(renderId, name.c_str()), (int)value);
     }
 
     void Shader::SetInt(const std::string& name, int value) const
     {
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+        glUniform1i(glGetUniformLocation(renderId, name.c_str()), value);
     }
 
     void Shader::SetInts(const std::string& name, int* values, int count) const
     {
-        glUniform1iv(glGetUniformLocation(ID, name.c_str()), count, values);
+        glUniform1iv(glGetUniformLocation(renderId, name.c_str()), count, values);
     }
 
     void Shader::SetFloat(const std::string& name, float value) const
     {
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+        glUniform1f(glGetUniformLocation(renderId, name.c_str()), value);
     }
 
     void Shader::SetMat4(const std::string& name, const glm::mat4& value) const
     {
-        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+        glUniformMatrix4fv(glGetUniformLocation(renderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 
     void Shader::SetMat3(const std::string& name, const glm::mat3& value) const
     {
-        glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+        glUniformMatrix3fv(glGetUniformLocation(renderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 
     void Shader::SetVec3(const std::string& name, const glm::vec3& value) const
     {
-        glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
+        glUniform3fv(glGetUniformLocation(renderId, name.c_str()), 1, glm::value_ptr(value));
     }
 }

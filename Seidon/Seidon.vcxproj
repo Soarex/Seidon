@@ -235,6 +235,7 @@
     <ClCompile Include="src\Vendor\yaml-cpp\singledocparser.cpp" />
     <ClCompile Include="src\Vendor\yaml-cpp\stream.cpp" />
     <ClCompile Include="src\Vendor\yaml-cpp\tag.cpp" />
+    <ClCompile Include="src\Vendor\yaml-cpp\YamlBuild.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Core\Application.h" />

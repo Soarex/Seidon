@@ -1,4 +1,5 @@
 #pragma once
+#include "../Core/UUID.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -37,9 +38,10 @@ namespace Seidon
     public:
         std::string path;
     private:
-        static Texture* temporaryTexture;
-        unsigned int ID;
+        UUID id;
+        unsigned int renderId;
 
+        static Texture* temporaryTexture;
     public:
         Texture();
         ~Texture();
@@ -57,7 +59,8 @@ namespace Seidon
 
         void Destroy();
 
-        inline unsigned int GetId() const { return ID; }
+        inline UUID GetId() const { return id; }
+        inline unsigned int GetRenderId() const { return renderId; }
         inline const std::string& GetPath() { return path; }
     };
 }

@@ -11,7 +11,7 @@ namespace Seidon
 	class RenderBuffer
 	{
 	private:
-		unsigned int ID;
+		unsigned int renderId;
 		int width, height;
 	public:
 		RenderBuffer();
@@ -20,6 +20,6 @@ namespace Seidon
 		void Create(int width, int height, RenderBufferType type);
 		void Destroy();
 
-		inline unsigned int GetId() const { return ID; }
+		inline unsigned int GetRenderId() const { return renderId; }
 	};
 }

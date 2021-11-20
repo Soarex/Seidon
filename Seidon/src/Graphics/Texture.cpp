@@ -12,21 +12,21 @@ namespace Seidon
     }
     Texture::~Texture()
     {
-        glDeleteTextures(1, &ID);
+        glDeleteTextures(1, &renderId);
     }
 
     void Texture::Bind(unsigned int slot) const
     {
         glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_2D, ID);
+        glBindTexture(GL_TEXTURE_2D, renderId);
     }
 
     void Texture::Create(int width, int height, unsigned char* rgbData, TextureFormat startFormat, TextureFormat endFormat,
         ClampingMode clampingMode, const glm::vec3& borderColor)
     {
-        glGenTextures(1, &ID);
+        glGenTextures(1, &renderId);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, ID);
+        glBindTexture(GL_TEXTURE_2D, renderId);
 
         glTexImage2D(GL_TEXTURE_2D, 0, (int)startFormat, width, height, 0, (int)endFormat, GL_UNSIGNED_BYTE, rgbData);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -43,9 +43,9 @@ namespace Seidon
     void Texture::Create(int width, int height, float* rgbData, TextureFormat startFormat, TextureFormat endFormat,
         ClampingMode clampingMode, const glm::vec3& borderColor)
     {
-        glGenTextures(1, &ID);
+        glGenTextures(1, &renderId);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, ID);
+        glBindTexture(GL_TEXTURE_2D, renderId);
 
         glTexImage2D(GL_TEXTURE_2D, 0, (int)startFormat, width, height, 0, (int)endFormat, GL_FLOAT, rgbData);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -61,7 +61,7 @@ namespace Seidon
 
     void Texture::Destroy()
     {
-        glDeleteTextures(1, &ID);
+        glDeleteTextures(1, &renderId);
     }
 
     void Texture::LoadFromFile(const std::string& path, bool gammaCorrection)
@@ -110,7 +110,7 @@ namespace Seidon
             temporaryTexture->Create(1, 1, white);
         }
 
-        ID = temporaryTexture->ID;
+        renderId = temporaryTexture->renderId;
         Application::Get()->GetWorkManager()->Execute([this, path, gammaCorrection]()
             {
                 int width, height, channelCount;

@@ -19,7 +19,6 @@ namespace Seidon
 
 namespace std 
 {
-
 	template<>
 	struct hash<Seidon::UUID>
 	{

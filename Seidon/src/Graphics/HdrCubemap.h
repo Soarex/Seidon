@@ -16,6 +16,7 @@ namespace Seidon
 	class HdrCubemap
 	{
 	private:
+		UUID id;
 		std::string filepath;
 		unsigned int skyboxID;
 		unsigned int irradianceMapID;
@@ -37,6 +38,7 @@ namespace Seidon
 		void BindBRDFLookupMap(unsigned int slot = 0);
 
 		inline const std::string& GetPath() { return filepath; }
+		inline UUID GetId() { return id; }
 		inline unsigned int GetSkyboxID() { return skyboxID; }
 	private:
 		void ToCubemap(Texture& equirectangularMap);

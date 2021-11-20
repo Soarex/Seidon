@@ -9,7 +9,7 @@ namespace Seidon
 	class Framebuffer
 	{
 	private:
-		unsigned int ID;
+		unsigned int renderId;
 
 	public:
 		Framebuffer() = default;
@@ -26,6 +26,6 @@ namespace Seidon
 
 		void DisableColorBuffer();
 
-		inline unsigned int GetID() { return ID; }
+		inline unsigned int GetRenderId() { return renderId; }
 	};
 }

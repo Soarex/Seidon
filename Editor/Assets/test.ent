@@ -1,0 +1,39 @@
+- Name: struct Seidon::IDComponent
+  Members:
+    - Name: ID
+      Type: 5
+      Value: 7834231515083557755
+- Name: struct Seidon::NameComponent
+  Members:
+    - Name: Name
+      Type: 4
+      Value: Roberto
+- Name: struct Seidon::TransformComponent
+  Members:
+    - Name: Position
+      Type: 7
+      Value: [-15.3000002, 12.1999998, 0]
+    - Name: Rotation
+      Type: 9
+      Value: [0, -0.328121871, 0]
+    - Name: Scale
+      Type: 7
+      Value: [14, 1, 1]
+- Name: struct Seidon::CubeColliderComponent
+  Members:
+    - Name: Half Extents
+      Type: 7
+      Value: [0.5, -4.5999999, 0.5]
+- Name: struct Seidon::RigidbodyComponent
+  Members:
+    - Name: Mass
+      Type: 2
+      Value: 2.70000005
+- Name: struct PlayerComponent
+  Members:
+    - Name: Speed
+      Type: 2
+      Value: 5.4000001
+    - Name: Jump Height
+      Type: 2
+      Value: 6.5999999

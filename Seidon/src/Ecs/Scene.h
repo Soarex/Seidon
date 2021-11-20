@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <string>
 #include <typeinfo>
+#include <iostream>
 
 #include <entt/entt.hpp>
 
@@ -17,6 +18,7 @@ namespace Seidon
 	class Scene
 	{
 	private:
+		UUID id;
 		std::string name;
 		entt::registry registry;
 		std::unordered_map<std::string, System*> systems;
@@ -28,6 +30,9 @@ namespace Seidon
 		void Init();
 		void Update(float deltaTime);
 		void Destroy();
+
+		void Save(std::ofstream& fileOut);
+		void SaveText(std::ofstream& fileOut);
 
 		Scene* Duplicate();
 		void CopyEntities(Scene* other);

@@ -11,8 +11,11 @@
 #include <vector>
 #include <iostream>
 
+
 namespace Seidon
 {
+	typedef unsigned char Byte;
+
 	enum class Types
 	{
 		UNKNOWN = 0,
@@ -20,6 +23,7 @@ namespace Seidon
 		FLOAT,
 		BOOL,
 		STRING,
+		ID,
 		VECTOR2,
 		VECTOR3,
 		VECTOR3_COLOR,
@@ -80,6 +84,9 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(std::string).hash_code())
 				data.type = Types::STRING;
+
+			if (typeid(U).hash_code() == typeid(UUID).hash_code())
+				data.type = Types::ID;
 
 			if (typeid(U).hash_code() == typeid(glm::vec2).hash_code())
 				data.type = Types::VECTOR2;

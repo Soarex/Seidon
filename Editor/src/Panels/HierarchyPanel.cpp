@@ -1,5 +1,5 @@
 #include "HierarchyPanel.h"
-
+#include <ostream>
 namespace Seidon
 {
 	void HierarchyPanel::Init()
@@ -63,6 +63,17 @@ namespace Seidon
 		{
 			if (ImGui::MenuItem("Delete Entity"))
 				entityDeleted = true;
+
+			if (ImGui::MenuItem("Save Entity"))
+			{
+				std::ofstream out("Assets/test.ent");
+				selectedEntity.SaveText(out);
+			}
+
+			if (ImGui::MenuItem("Load Entity"))
+			{
+				selectedEntity.LoadText("Assets/test.ent");
+			}
 
 			ImGui::EndPopup();
 		}

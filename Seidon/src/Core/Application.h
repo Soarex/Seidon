@@ -20,8 +20,11 @@ namespace Seidon
 	class Application
 	{
 	public:
-		std::unordered_map<std::string, SystemMetaType> registeredSystems;
+		std::vector<SystemMetaType> registeredSystems;
+		std::unordered_map<std::string, int> registeredSystemsIndexToName;
+
 		std::vector<ComponentMetaType> registeredComponents;
+		std::unordered_map<std::string, int> registeredComponentsIndexToName;
 
 		static Application* instance;
 	protected:
@@ -134,22 +137,43 @@ namespace Seidon
 			t.Copy = &Application::CopyComponent<Type>;
 
 			registeredComponents.push_back(t);
+			registeredComponentsIndexToName[typeid(Type).name()] = registeredComponents.size() - 1;
+
 			return registeredComponents.back();
 		}
+
+		template<typename Type>
+		ComponentMetaType GetComponentMetaType()
+		{
+			return registeredComponents[registeredComponentsIndexToName.at(typeid(Type).name())];
+		}
+		
+		ComponentMetaType GetComponentMetaTypeByName(const std::string& name)
+		{
+			return registeredComponents[registeredComponentsIndexToName.at(name)];
+		}
+
 
 		std::vector<ComponentMetaType> GetComponentMetaTypes()
 		{
 			return registeredComponents;
 		}
 
-		std::vector<SystemMetaType> GetSystemsMetaTypes()
+		template<typename Type>
+		SystemMetaType GetSystemMetaType()
 		{
-			std::vector<SystemMetaType> res;
+			return registeredSystems[registeredSystemsIndexToName.at(typeid(Type).name())];
+		}
 
-			for (auto& [name, system] : registeredSystems)
-				res.push_back(system);
-			
-			return res;
+		SystemMetaType GetSystemMetaTypeByName(const std::string& name)
+		{
+			return registeredSystems[registeredSystemsIndexToName.at(name)];
+		}
+
+
+		std::vector<SystemMetaType> GetSystemsMetaTypes()
+		{		
+			return registeredSystems;
 		}
 
 		template<typename Type>
@@ -164,14 +188,19 @@ namespace Seidon
 			t.Has = &Application::HasSystem<Type>;
 			t.Copy = &Application::CopySystem<Type>;
 
-			registeredSystems[typeid(Type).name()] = t;
-			return registeredSystems[typeid(Type).name()];
+
+			registeredSystems.push_back(t);
+			registeredSystemsIndexToName[typeid(Type).name()] = registeredSystems.size() - 1;
+
+			return registeredSystems.back();
 		}
 
 		template<typename Type>
 		void UnregisterSystem()
 		{
-			registeredSystems.erase(typeid(Type).name());
+			//int index = std::distance(registeredSystems.begin(), std::find(registeredSystems.begin(), registeredSystems.end(), registeredSystemsByName[typeid(Type).name()]));
+			//registeredSystems.erase(registeredSystems.begin() + index);
+			registeredSystemsIndexToName.erase(typeid(Type).name());
 		}
 	};
 
