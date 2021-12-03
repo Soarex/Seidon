@@ -28,10 +28,18 @@ namespace Seidon
 		unsigned int irradianceMapSize;
 		unsigned int prefilteredMapSize;
 		unsigned int BRDFLookupSize;
+
+		static constexpr unsigned int maxMipLevels = 5;
 	public:
+		Texture t;
 		HdrCubemap(unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
+		
+		void Save(const std::string& path);
+		void Load(const std::string& path);
+		
 		void CreateFromEquirectangularMap(Texture* texture);
 		void LoadFromEquirectangularMap(std::string path);
+		
 		void BindSkybox(unsigned int slot = 0);
 		void BindIrradianceMap(unsigned int slot = 0);
 		void BindPrefilteredMap(unsigned int slot = 0);
@@ -41,11 +49,22 @@ namespace Seidon
 		inline UUID GetId() { return id; }
 		inline unsigned int GetSkyboxID() { return skyboxID; }
 	private:
+		void SaveCubemap(std::ofstream& out);
+		void LoadCubemap(std::ifstream& in);
+
+		void SaveIrradianceMap(std::ofstream& out);
+		void LoadIrradianceMap(std::ifstream& in);
+
+		void SavePrefilteredMap(std::ofstream& out);
+		void LoadPrefilteredMap(std::ifstream& in);
+
 		void ToCubemap(Texture& equirectangularMap);
 		void GenerateIrradianceMap();
 		void GeneratePrefilteredMap();
 		void GenerateBRDFLookupMap();
 		void DrawCaptureCube();
 		void DrawCaptureQuad();
+
+		friend class ResourceManager;
 	};
 }

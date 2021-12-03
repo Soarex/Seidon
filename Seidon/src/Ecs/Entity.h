@@ -4,6 +4,8 @@
 #include "Components.h"
 #include "entt/entt.hpp"
 
+#include <yaml-cpp/yaml.h>
+
 #include <iostream>
 
 namespace Seidon
@@ -19,10 +21,10 @@ namespace Seidon
 		Entity(entt::entity id, entt::registry* registry);
 
 		void Save(std::ofstream& fileOut);
-		void SaveText(std::ofstream& fileOut);
+		void SaveText(YAML::Emitter& out);
 
 		void Load(std::ifstream& fileIn);
-		void LoadText(const std::string& code);
+		void LoadText(YAML::Node& entityNode);
 
 		template <typename T, typename... Args>
 		T& AddComponent(Args&&... args)

@@ -86,15 +86,19 @@ namespace Seidon
                     ;// NewScene();
 
                 if (ImGui::MenuItem("Open...", "Ctrl+O"))
-                    ;//OpenScene();
+                {
+                    std::string filepath = LoadFile("Seidon Scene (*.sdscene)\0*.sdscene\0");
+                    if (!filepath.empty())
+                        scene->LoadText(filepath);
+                }
 
                 if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
                 {
                     std::string filepath = SaveFile("Seidon Scene (*.sdscene)\0*.sdscene\0");
                     if (!filepath.empty())
                     {
-                        SceneSerializer serializer;
-                        serializer.Save(sceneManager->GetActiveScene(), filepath);
+                        std::ofstream out(filepath);
+                        scene->SaveText(out);
                     }
                 }
 

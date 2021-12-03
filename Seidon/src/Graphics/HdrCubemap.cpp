@@ -1,4 +1,5 @@
 #include "HdrCubemap.h"
+#include <Imgui/imgui.h>
 
 namespace Seidon
 {
@@ -6,6 +7,188 @@ namespace Seidon
         : faceSize(faceSize), irradianceMapSize(irradianceMapSize), prefilteredMapSize(prefilteredMapSize), BRDFLookupSize(BRDFLookupSize)
     {
 
+    }
+
+    void HdrCubemap::Save(const std::string& path)
+    {
+        std::ofstream out(path, std::ios::out | std::ios::binary);
+        
+        SaveCubemap(out);
+        SaveIrradianceMap(out);
+        SavePrefilteredMap(out);
+
+        float* pixels = new float[(long long)BRDFLookupSize * BRDFLookupSize * 2];
+
+        BRDFLookupMap.Bind(0);
+        glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)TextureFormat::RED_GREEN, GL_FLOAT, pixels);
+
+        out.write((char*)&BRDFLookupSize, sizeof(unsigned int));
+        out.write((char*)pixels, sizeof(float) * BRDFLookupSize * BRDFLookupSize * 2);
+
+        delete[] pixels;
+    }
+
+    void HdrCubemap::SaveCubemap(std::ofstream& out)
+    {
+        int elementsPerPixel = 3;
+        float* pixels = new float[(long long)faceSize * faceSize * elementsPerPixel];
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+
+        out.write((char*)&faceSize, sizeof(unsigned int));
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, GL_FLOAT, pixels);
+            out.write((char*)pixels, sizeof(float) * faceSize * faceSize * elementsPerPixel);
+        }
+
+        delete[] pixels;
+    }
+
+    void HdrCubemap::SaveIrradianceMap(std::ofstream& out)
+    {
+        int elementsPerPixel = 3;
+        float* pixels = new float[(long long)irradianceMapSize * irradianceMapSize * elementsPerPixel];
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID);
+
+        out.write((char*)&irradianceMapSize, sizeof(unsigned int));
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, GL_FLOAT, pixels);
+            out.write((char*)pixels, sizeof(float) * irradianceMapSize * irradianceMapSize * elementsPerPixel);
+        }
+
+        delete[] pixels;
+    }
+
+    void HdrCubemap::SavePrefilteredMap(std::ofstream& out)
+    {
+        int elementsPerPixel = 3;
+        float* pixels = new float[(long long)prefilteredMapSize * prefilteredMapSize * elementsPerPixel];
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID);
+        
+        out.write((char*)&prefilteredMapSize, sizeof(unsigned int));
+
+        for (unsigned int mip = 0; mip < maxMipLevels; mip++)
+        {
+            unsigned int mipSize = prefilteredMapSize * std::pow(0.5, mip);
+
+            for (unsigned int i = 0; i < 6; ++i)
+            {
+                glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, GL_RGB, GL_FLOAT, pixels);
+                out.write((char*)pixels, sizeof(float) * mipSize * mipSize * elementsPerPixel);
+            }
+        }
+        delete[] pixels;
+    }
+
+    void HdrCubemap::Load(const std::string& path)
+    {
+        std::ifstream in(path, std::ios::in | std::ios::binary);
+
+        LoadCubemap(in);
+        LoadIrradianceMap(in);
+        LoadPrefilteredMap(in);
+
+        in.read((char*)&BRDFLookupSize, sizeof(unsigned int));
+        
+        float* pixels = new float[(long long)BRDFLookupSize * BRDFLookupSize * 2];
+        in.read((char*)pixels, sizeof(float) * BRDFLookupSize * BRDFLookupSize * 2);
+
+        BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, pixels, TextureFormat::FLOAT16_RED_GREEN, TextureFormat::RED_GREEN, ClampingMode::CLAMP);
+        delete[] pixels;
+    }
+
+    void HdrCubemap::LoadCubemap(std::ifstream& in)
+    {
+        int elementsPerPixel = 3;
+
+        glGenTextures(1, &skyboxID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+
+        in.read((char*)&faceSize, sizeof(unsigned int));
+        float* pixels = new float[(long long)faceSize * faceSize * 3];
+
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            in.read((char*)pixels, sizeof(float) * faceSize * faceSize * elementsPerPixel);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, faceSize, faceSize, 0, GL_RGB, GL_FLOAT, pixels);
+        }
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+        delete[] pixels;
+    }
+
+    
+    void HdrCubemap::LoadIrradianceMap(std::ifstream& in)
+    {
+        int elementsPerPixel = 3;
+
+        glGenTextures(1, &irradianceMapID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID);
+
+        in.read((char*)&irradianceMapSize, sizeof(unsigned int));
+        float* pixels = new float[(long long)irradianceMapSize * irradianceMapSize * 3];
+
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            in.read((char*)pixels, sizeof(float) * irradianceMapSize * irradianceMapSize * elementsPerPixel);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irradianceMapSize, irradianceMapSize, 0, GL_RGB, GL_FLOAT, pixels);
+        }
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        delete[] pixels;
+    }
+
+    
+    void HdrCubemap::LoadPrefilteredMap(std::ifstream& in)
+    {
+        int elementsPerPixel = 3;
+
+        glGenTextures(1, &prefilteredMapID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID);
+
+        in.read((char*)&prefilteredMapSize, sizeof(unsigned int));
+        float* pixels = new float[(long long)prefilteredMapSize * prefilteredMapSize * 3];
+
+        for (unsigned int i = 0; i < 6; i++)
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilteredMapSize, prefilteredMapSize, 0, GL_RGB, GL_FLOAT, NULL);
+
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+        for (unsigned int mip = 0; mip < maxMipLevels; mip++)
+        {
+            unsigned int mipSize = prefilteredMapSize * std::pow(0.5, mip);
+
+            for (unsigned int i = 0; i < 6; ++i)
+            {
+                in.read((char*)pixels, sizeof(float) * mipSize * mipSize * elementsPerPixel);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, GL_RGB16F, mipSize, mipSize, 0, GL_RGB, GL_FLOAT, pixels);
+            }
+        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        delete[] pixels;
     }
 
     void HdrCubemap::CreateFromEquirectangularMap(Texture* texture)
@@ -229,7 +412,7 @@ namespace Seidon
         glViewport(0, 0, prefilteredMapSize, prefilteredMapSize);
 
         convolutionFramebuffer.Bind();
-        unsigned int maxMipLevels = 5;
+        
         for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
         {
             unsigned int mipWidth = prefilteredMapSize * std::pow(0.5, mip);

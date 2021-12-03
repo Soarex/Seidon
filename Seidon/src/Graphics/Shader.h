@@ -26,6 +26,9 @@ namespace Seidon
         Shader() = default;
         Shader(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
         ~Shader();
+
+        inline UUID GetId() { return id; }
+
         void CreateFromSource(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
 
         void LoadFromFile(const std::string& path);
@@ -41,5 +44,6 @@ namespace Seidon
         void SetMat4(const std::string& name, const glm::mat4& value) const;
         void SetVec3(const std::string& name, const glm::vec3& value) const;
 
+        friend class ResourceManager;
     };
 }

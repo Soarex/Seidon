@@ -227,6 +227,18 @@ namespace Seidon
 		std::filesystem::path path = std::string((*cubemap)->GetPath());
 		ImGui::Text(path.filename().string().c_str());
 
+		if (ImGui::BeginPopupContextItem("test"))
+		{
+			if (ImGui::MenuItem("Save Cubemap"))
+				(*cubemap)->Save("Test.cubemap");
+
+			if (ImGui::MenuItem("Load Cubemap"))
+				(*cubemap)->Load("Test.cubemap");
+
+			ImGui::EndPopup();
+		}
+		
+
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
@@ -251,10 +263,11 @@ namespace Seidon
 			}
 			ImGui::EndDragDropTarget();
 		}
+
 		ImGui::NextColumn();
 
 		ImGui::Text((*mesh)->name.c_str());
-
+		
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}

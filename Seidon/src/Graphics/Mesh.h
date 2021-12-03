@@ -29,6 +29,8 @@ namespace Seidon
 
     private:
         void SetupMesh();
+
+        friend struct Mesh;
     };
 
     struct Mesh
@@ -41,5 +43,8 @@ namespace Seidon
         Mesh() = default;
         Mesh(const std::string& name) : name(name) {};
         ~Mesh();
+
+        void Load(const std::string& path);
+        void Save(const std::string& path);
     };
 }

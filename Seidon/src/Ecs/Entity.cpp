@@ -11,10 +11,10 @@ namespace Seidon
 	Entity::Entity(entt::entity id, entt::registry* registry)
 		:ID(id), registry(registry) {}
 
-	void Entity::SaveText(std::ofstream& fileOut)
+	void Entity::SaveText(YAML::Emitter& out)
 	{
-		YAML::Emitter out;
-		out << YAML::BeginSeq;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Components" <<  YAML::BeginSeq;
 
 		for (auto& metaType : Application::Get()->GetComponentMetaTypes())
 		{
@@ -32,43 +32,45 @@ namespace Seidon
 				out << YAML::Key << "Name" << YAML::Value << member.name;
 				out << YAML::Key << "Type" << YAML::Value << (int)member.type;
 				
-				if (member.type == Types::ID)
+				switch (member.type)
+				{
+				case Types::ID:
 				{
 					UUID* data = (UUID*)(obj + member.offset);
 					out << YAML::Key << "Value" << YAML::Value << *data;
+					break;
 				}
-
-				if (member.type == Types::STRING)
+				case Types::STRING:
 				{
 					std::string* data = (std::string*)(obj + member.offset);
 					out << YAML::Key << "Value" << YAML::Value << *data;
+					break;
 				}
-
-				if (member.type == Types::FLOAT)
+				case Types::FLOAT:
 				{
 					float* data = (float*)(obj + member.offset);
 					out << YAML::Key << "Value" << YAML::Value << *data;
+					break;
 				}
-
-				if (member.type == Types::VECTOR3 || member.type == Types::VECTOR3_ANGLES || member.type == Types::VECTOR3_COLOR)
+				case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
 				{
 					glm::vec3* data = (glm::vec3*)(obj + member.offset);
 					out << YAML::Key << "Value" << YAML::Value << *data;
+					break;
 				}
-
-				if (member.type == Types::TEXTURE)
+				case Types::TEXTURE:
 				{
 					Texture* t = *(Texture**)(obj + member.offset);
 					out << YAML::Key << "Value" << YAML::Value << t->GetId();
+					break;
 				}
-
-				if (member.type == Types::MESH)
+				case Types::MESH:
 				{
 					Mesh* m = *(Mesh**)(obj + member.offset);
 					out << YAML::Key << "Value" << YAML::Value << m->id;
+					break;
 				}
-
-				if (member.type == Types::MATERIAL_VECTOR)
+				case Types::MATERIAL_VECTOR:
 				{
 					std::vector<Material*>* v = (std::vector<Material*>*)(obj + member.offset);
 
@@ -81,15 +83,15 @@ namespace Seidon
 						out << YAML::EndMap;
 					}
 					out << YAML::EndSeq;
+					break;
 				}
-
-				if (member.type == Types::CUBEMAP)
+				case Types::CUBEMAP:
 				{
 					HdrCubemap* c = *(HdrCubemap**)(obj + member.offset);
 					out << YAML::Key << "Value" << YAML::Value << c->GetId();
+					break;
 				}
-
-				if (member.type == Types::UNKNOWN)
+				case Types::UNKNOWN:
 				{
 					unsigned char* data = obj + member.offset;
 					out << YAML::Key << "Value" << YAML::BeginSeq;
@@ -98,22 +100,20 @@ namespace Seidon
 						out << (unsigned int)data[i];
 
 					out << YAML::EndSeq;
+					break;
 				}
-
+				}
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
-
-		fileOut << out.c_str();
+		out << YAML::EndMap;
 	}
 
-	void Entity::LoadText(const std::string& code)
-	{
-		YAML::Node root = YAML::LoadFile(code);
-		
+	void Entity::LoadText(YAML::Node& entityNode)
+	{	
 		if (HasComponent<IDComponent>())
 		{
 			RemoveComponent<IDComponent>();
@@ -121,7 +121,9 @@ namespace Seidon
 			RemoveComponent<TransformComponent>();
 		}
 
-		for (YAML::Node componentNode : root)
+		YAML::Node components = entityNode["Components"];
+
+		for (YAML::Node componentNode : components)
 		{
 			ComponentMetaType metaType = Application::Get()->GetComponentMetaTypeByName(componentNode["Name"].as<std::string>());
 
@@ -163,15 +165,22 @@ namespace Seidon
 					break;
 
 				case Types::TEXTURE:
+					*(Texture**)member = Application::Get()->GetResourceManager()->GetTexture(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::MESH:
+					*(Mesh**)member = Application::Get()->GetResourceManager()->GetMesh(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::MATERIAL_VECTOR:
+					for(YAML::Node material : memberNode["Value"])
+						((std::vector<Material*>*)member)->push_back(
+							Application::Get()->GetResourceManager()->GetMaterial(material["Id"].as<uint64_t>())
+							);
 					break;
 
 				case Types::CUBEMAP:
+					*(HdrCubemap**)member = Application::Get()->GetResourceManager()->GetCubemap(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::UNKNOWN:
