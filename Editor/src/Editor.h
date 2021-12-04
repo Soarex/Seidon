@@ -5,6 +5,7 @@
 #include "Panels/HierarchyPanel.h"
 #include "Panels/SystemsPanel.h"
 #include "Panels/AssetBrowserPanel.h"
+#include "Panels/FileBrowserPanel.h"
 #include "Dockspace.h"
 
 #include <ImGuizmo/ImGuizmo.h>
@@ -14,6 +15,7 @@ namespace Seidon
     class Editor : public Application
     {
     public:
+        ResourceManager editorResourceManager;
         Scene* scene;
         Scene* runtimeScene;
         Entity selectedEntity;
@@ -23,6 +25,7 @@ namespace Seidon
 
         HierarchyPanel hierarchyPanel;
         InspectorPanel inspectorPanel;
+        FileBrowserPanel fileBrowserPanel;
         AssetBrowserPanel assetBrowserPanel;
         SystemsPanel systemsPanel;
         Dockspace dockspace;

@@ -1,5 +1,7 @@
 #include "DrawFunctions.h"
 
+#include "../Editor.h"
+
 namespace Seidon
 {
 	void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
@@ -176,7 +178,6 @@ namespace Seidon
 
 	void DrawTextureControl(const std::string& label, Texture*& texture, float size)
 	{
-		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
 		ImGui::PushID(label.c_str());
 
 		ImGui::AlignTextToFramePadding();
@@ -187,10 +188,8 @@ namespace Seidon
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE"))
-			{
-				std::string path = (const char*)payload->Data;
-				texture = resourceManager->GetTexture(path);
-			}
+				texture = *(Texture**)payload->Data;
+
 			ImGui::EndDragDropTarget();
 		}
 		ImGui::NextColumn();
@@ -204,63 +203,47 @@ namespace Seidon
 
 	void DrawCubemapControl(const std::string& label, HdrCubemap** cubemap, float size)
 	{
-		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		ImGui::PushID(label.c_str());
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/FileIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetTexture("Resources/FileIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_CUBEMAP"))
-			{
-				std::string path = (const char*)payload->Data;
-				*cubemap = resourceManager->LoadCubemap(path);
-			}
+				*cubemap = *(HdrCubemap**)payload->Data;
+
 			ImGui::EndDragDropTarget();
 		}
 		ImGui::NextColumn();
 
 		std::filesystem::path path = std::string((*cubemap)->GetPath());
 		ImGui::Text(path.filename().string().c_str());
-
-		if (ImGui::BeginPopupContextItem("test"))
-		{
-			if (ImGui::MenuItem("Save Cubemap"))
-				(*cubemap)->Save("Test.cubemap");
-
-			if (ImGui::MenuItem("Load Cubemap"))
-				(*cubemap)->Load("Test.cubemap");
-
-			ImGui::EndPopup();
-		}
 		
-
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
 
 	void DrawMeshControl(const std::string& label, Mesh** mesh, float size)
 	{
-		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		ImGui::PushID(label.c_str());
 
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/ModelIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetTexture("Resources/ModelIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MESH"))
-			{
-				std::string path = (const char*)payload->Data;
-				*mesh = resourceManager->GetMesh(path);
-			}
+				*mesh = *(Mesh**)payload->Data;
+
 			ImGui::EndDragDropTarget();
 		}
 
@@ -274,7 +257,7 @@ namespace Seidon
 
 	bool DrawMaterialControl(const std::string& label, Material** material, float size)
 	{
-		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		bool clicked = false;
 		static Material* selectedMaterial = nullptr;
 
@@ -284,7 +267,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager->LoadTexture("Assets/MaterialIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetTexture("Resources/MaterialIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		
 		if (ImGui::IsItemClicked())
 			clicked = true;
@@ -292,16 +275,25 @@ namespace Seidon
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MATERIAL"))
-			{
-				std::string path = (const char*)payload->Data;
-				*material = resourceManager->GetMaterial(path);
-			}
+				*material = *(Material**)payload->Data;
+
 			ImGui::EndDragDropTarget();
 		}
 
 		ImGui::NextColumn();
 
 		ImGui::Text((*material)->name.c_str());
+
+		if (ImGui::BeginPopupContextItem("test"))
+		{
+			if (ImGui::MenuItem("Save Material"))
+				(*material)->Save("Test.material");
+
+			if (ImGui::MenuItem("Load Material"))
+				(*material)->Load("Test.material");
+
+			ImGui::EndPopup();
+		}
 
 		ImGui::Columns(1);
 

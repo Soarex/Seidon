@@ -156,7 +156,7 @@ namespace Seidon
         for (YAML::Node textures : resources["Textures"])
         {
             idToTexturePath[resources["Id"].as<uint64_t>()] = resources["Path"].as<std::string>();
-            LoadTexture(resources["Path"].as<std::string>(), false, resources["Id"].as<uint64_t>());
+            //LoadTexture(resources["Path"].as<std::string>(), false, resources["Id"].as<uint64_t>());
         }
 
         for (YAML::Node textures : resources["Meshes"])
@@ -172,19 +172,6 @@ namespace Seidon
             idToCubemapPath[resources["Id"].as<uint64_t>()] = resources["Path"].as<std::string>();
     }
 
-    Texture* ResourceManager::LoadTexture(const std::string& path, bool gammaCorrection, UUID id)
-    {
-        if (nameToTextureId.count(path) > 0) return GetTexture(path);
-
-        Texture* t = new Texture();
-        t->id = id;
-        t->LoadFromFileAsync(path, gammaCorrection);
-
-        AddTexture(path, t);
-
-        idToTexturePath[t->GetId()] = path;
-        return t;
-    }
 
     Shader* ResourceManager::LoadShader(const std::string& path, UUID id)
     {
@@ -200,7 +187,47 @@ namespace Seidon
         return s;
     }
 
-    HdrCubemap* ResourceManager::LoadCubemap(const std::string& path, UUID id)
+    Mesh* ResourceManager::LoadMesh(const std::string& path)
+    {
+        if (nameToMeshId.count(path) > 0) return GetMesh(path);
+
+        Mesh* m = new Mesh();
+        m->Load(path);
+
+        AddMesh(path, m);
+
+        idToMeshPath[m->id] = path;
+        return m;
+    }
+
+    Material* ResourceManager::LoadMaterial(const std::string& path)
+    {
+        if (nameToMaterialId.count(path) > 0) return GetMaterial(path);
+
+        Material* m = new Material();
+        m->Load(path);
+
+        AddMaterial(path, m);
+
+        idToMaterialPath[m->id] = path;
+        return m;
+    }
+
+    Texture* ResourceManager::ImportTexture(const std::string& path, bool gammaCorrection, UUID id)
+    {
+        if (nameToTextureId.count(path) > 0) return GetTexture(path);
+
+        Texture* t = new Texture();
+        t->id = id;
+        t->ImportAsync(path, gammaCorrection);
+
+        AddTexture(path, t);
+
+        idToTexturePath[t->GetId()] = path;
+        return t;
+    }
+
+    HdrCubemap* ResourceManager::ImportCubemap(const std::string& path, UUID id)
     {
         if (nameToCubemapId.count(path) > 0) return GetCubemap(path);
 
@@ -241,20 +268,18 @@ namespace Seidon
         material->id = id;
         material->name = importData.name;
         material->tint = importData.tint;
-        material->albedo = LoadTexture(importData.albedoMapPath == "" ? "albedo_default" : importData.albedoMapPath);
-        material->normal = LoadTexture(importData.normalMapPath == "" ? "normal_default" : importData.normalMapPath);
-        material->roughness = LoadTexture(importData.roughnessMapPath == "" ? "roughness_default" : importData.roughnessMapPath);
-        material->metallic = LoadTexture(importData.metallicMapPath == "" ? "metallic_default" : importData.metallicMapPath);
-        material->ao = LoadTexture(importData.aoMapPath == "" ? "ao_default" : importData.aoMapPath);
+        material->albedo = ImportTexture(importData.albedoMapPath == "" ? "albedo_default" : importData.albedoMapPath, true);
+        material->normal = ImportTexture(importData.normalMapPath == "" ? "normal_default" : importData.normalMapPath);
+        material->roughness = ImportTexture(importData.roughnessMapPath == "" ? "roughness_default" : importData.roughnessMapPath);
+        material->metallic = ImportTexture(importData.metallicMapPath == "" ? "metallic_default" : importData.metallicMapPath);
+        material->ao = ImportTexture(importData.aoMapPath == "" ? "ao_default" : importData.aoMapPath);
 
         AddMaterial(importData.name, material);
         return material;
     }
 
-    const ModelFileInfo& ResourceManager::LoadModelFile(const std::string& path)
+    const ModelFileInfo& ResourceManager::ImportModelFile(const std::string& path)
     {
-        if (loadedModelFiles.count(path) > 0) return loadedModelFiles[path];
-
         ModelImporter importer;
         return CreateFromImportData(importer.Import(path));
     }
@@ -287,81 +312,55 @@ namespace Seidon
             res.content.push_back({ mesh, materials });
         }
 
-        loadedModelFiles[importData.filepath] = res;
         return res;
     }
 
-    std::vector<std::string> ResourceManager::GetTextureNames()
+    std::vector<Texture*> ResourceManager::GetTextures()
     {
-        std::vector<std::string> keys;
+        std::vector<Texture*> res;
 
-        for (auto& [key, texture] : nameToTextureId)
-            keys.push_back(key);
+        for (auto& [key, texture] : textures)
+            res.push_back(texture);
 
-        return keys;
+        return res;
     }
 
-    std::vector<std::string> ResourceManager::GetMeshNames()
-    {
-        std::vector<std::string> keys;
-
-        for (auto& [key, mesh] : nameToMeshId)
-            keys.push_back(key);
-
-        return keys;
-    }
-
-    std::vector<std::string> ResourceManager::GetShaderNames()
-    {
-        std::vector<std::string> keys;
-
-        for (auto& [key, shader] : nameToShaderId)
-            keys.push_back(key);
-
-        return keys;
-    }
-
-    std::vector<std::string> ResourceManager::GetMaterialNames()
-    {
-        std::vector<std::string> keys;
-
-        for (auto& [key, material] : nameToMaterialId)
-            keys.push_back(key);
-
-        return keys;
-    }
-
-    std::vector<std::string> ResourceManager::GetCubemapNames()
-    {
-        std::vector<std::string> keys;
-
-        for (auto& [key, cubemap] : nameToCubemapId)
-            keys.push_back(key);
-
-        return keys;
-    }
-
-    std::vector<Mesh*> ResourceManager::GetModelFileMeshes(const std::string& name)
+    std::vector<Mesh*> ResourceManager::GetMeshes()
     {
         std::vector<Mesh*> res;
 
-        for (const auto& [mesh, materials] : loadedModelFiles[name].content)
+        for (auto& [key, mesh] : meshes)
             res.push_back(mesh);
 
         return res;
     }
 
-    std::vector<Material*> ResourceManager::GetModelFileMaterials(const std::string& name)
+    std::vector<Shader*> ResourceManager::GetShaders()
     {
-        std::unordered_set<Material*> set;
+        std::vector<Shader*> res;
+
+        for (auto& [key, shader] : shaders)
+            res.push_back(shader);
+
+        return res;
+    }
+
+    std::vector<Material*> ResourceManager::GetMaterials()
+    {
         std::vector<Material*> res;
 
-        for (const auto& [mesh, materials] : loadedModelFiles[name].content)
-            for(const auto& material : materials)
-                set.insert(material);
-
-        for (const auto& material : set)
+        for (auto& [key, material] : materials)
             res.push_back(material);
+
+        return res;
+    }
+
+    std::vector<HdrCubemap*> ResourceManager::GetCubemaps()
+    {
+        std::vector<HdrCubemap*> res;
+
+        for (auto& [key, cubemap] : cubemaps)
+            res.push_back(cubemap);
 
         return res;
     }

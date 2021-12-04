@@ -9,14 +9,15 @@ namespace Seidon
 {
 	class FlyingCameraControlSystem : public System
 	{
+	public:
+		float speed, mouseSensitivity;
+
 	private:
 		Entity camera;
-
 
 		bool rotationEnabled = true, movementEnabled = true;
 
 		float pitch = 0, yaw = 0;
-		float speed, mouseSensitivity;
 	public:
 		FlyingCameraControlSystem(float speed = 1, float mouseSensitivity = 0.1f);
 		void Init();

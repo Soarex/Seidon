@@ -40,8 +40,6 @@ namespace Seidon
 		std::unordered_map<UUID, std::string> idToMaterialPath;
 		std::unordered_map<UUID, std::string> idToMeshPath;
 		std::unordered_map<UUID, std::string> idToShaderPath;
-
-		std::unordered_map<std::string, ModelFileInfo> loadedModelFiles;
 	public:
 		void Init();
 		void Destroy();
@@ -49,10 +47,13 @@ namespace Seidon
 		void SaveText(YAML::Emitter& out);
 		void LoadText(YAML::Node& node);
 		
-		Texture* LoadTexture(const std::string& path, bool gammaCorrection = false, UUID id = UUID());
 		Shader* LoadShader(const std::string& path, UUID id = UUID());
-		HdrCubemap* LoadCubemap(const std::string& path, UUID id = UUID());
-		const ModelFileInfo& LoadModelFile(const std::string& path);
+		Mesh* LoadMesh(const std::string& path);
+		Material* LoadMaterial(const std::string& path);
+		
+		Texture* ImportTexture(const std::string& path, bool gammaCorrection = false, UUID id = UUID());
+		HdrCubemap* ImportCubemap(const std::string& path, UUID id = UUID());
+		const ModelFileInfo& ImportModelFile(const std::string& path);
 
 		Mesh* CreateMesh(const MeshImportData& importData, UUID id = UUID());
 		Material* CreateMaterial(const MaterialImportData& importData, UUID id = UUID());
@@ -70,8 +71,11 @@ namespace Seidon
 		inline Material*	GetMaterial(UUID id) { return materials[id]; }
 		inline HdrCubemap*	GetCubemap(UUID id) { return cubemaps[id]; }
 
-		std::vector<Mesh*> GetModelFileMeshes(const std::string& name);
-		std::vector<Material*> GetModelFileMaterials(const std::string& name);
+		std::vector<Texture*>		GetTextures();
+		std::vector<Mesh*>			GetMeshes();
+		std::vector<Shader*>		GetShaders();
+		std::vector<Material*>		GetMaterials();
+		std::vector<HdrCubemap*>	GetCubemaps();
 
 		inline void AddTexture(const std::string& name, Texture* texture) { textures[texture->GetId()] = texture; nameToTextureId[name] = texture->GetId(); }
 		inline void AddMesh(const std::string& name, Mesh* mesh) { meshes[mesh->id] = mesh; nameToMeshId[name] = mesh->id; }
@@ -84,13 +88,5 @@ namespace Seidon
 		inline bool IsMeshLoaded(const std::string& name) { return nameToMeshId.count(name) > 0; }
 		inline bool IsShaderLoaded(const std::string& name) { return nameToShaderId.count(name) > 0; }
 		inline bool IsMaterialLoaded(const std::string& name) { return nameToMaterialId.count(name) > 0; }
-		inline bool IsModelLoaded(const std::string& name) { return loadedModelFiles.count(name) > 0; }
-
-		std::vector<std::string> GetTextureNames();
-		std::vector<std::string> GetCubemapNames();
-		std::vector<std::string> GetMeshNames();
-		std::vector<std::string> GetShaderNames();
-		std::vector<std::string> GetMaterialNames();
-
 	};
 }

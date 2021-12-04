@@ -58,8 +58,8 @@ namespace Seidon
         void Save(const std::string& path);
         void Load(const std::string& path);
 
-        void LoadFromFile(const std::string& path, bool gammaCorrection = true);
-        void LoadFromFileAsync(const std::string& path, bool gammaCorrection = true);
+        void Import(const std::string& path, bool gammaCorrection = true);
+        void ImportAsync(const std::string& path, bool gammaCorrection = true);
 
         void Bind(unsigned int slot = 0) const;
 

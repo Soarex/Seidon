@@ -110,7 +110,7 @@ namespace Seidon
         std::ifstream in(path, std::ios::in | std::ios::binary);
 
         unsigned int width, height;
-        in.read((char*)&this->id, sizeof(UUID));
+        in.read((char*)&id, sizeof(UUID));
         in.read((char*)&width, sizeof(unsigned int));
         in.read((char*)&height, sizeof(unsigned int));
 
@@ -139,7 +139,7 @@ namespace Seidon
         delete[] pixels;
     }
 
-    void Texture::LoadFromFile(const std::string& path, bool gammaCorrection)
+    void Texture::Import(const std::string& path, bool gammaCorrection)
     {
         this->path = path;
         int width, height, channelCount;
@@ -172,7 +172,7 @@ namespace Seidon
         }
     }
 
-    void Texture::LoadFromFileAsync(const std::string& path, bool gammaCorrection)
+    void Texture::ImportAsync(const std::string& path, bool gammaCorrection)
     {
         this->path = path;
 

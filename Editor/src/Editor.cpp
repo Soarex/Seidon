@@ -12,15 +12,15 @@ namespace Seidon
     void Editor::Init()
 	{
         int width, height, channelCount;
-        unsigned char* data = stbi_load("Assets/ModelIcon.png", &width, &height, &channelCount, 0);
+        unsigned char* data = stbi_load("Resources/ModelIcon.png", &width, &height, &channelCount, 0);
         window->SetIcon(data, width, height);
         delete data;
 
-        RegisterSystem<RenderSystem>(); 
+        editorResourceManager.Init();
+
         RegisterSystem<EditorCameraControlSystem>()
             .AddMember("Mouse Sensitivity", &EditorCameraControlSystem::mouseSensitivity)
             .AddMember("Movement Speed", &EditorCameraControlSystem::movementSpeed);
-        RegisterSystem<PhysicSystem>();
 
 #ifdef NDEBUG
         e.Bind(L"../Bin/Release-x64/GameDll/GameDll.dll");
@@ -31,6 +31,7 @@ namespace Seidon
         hierarchyPanel.Init();           
         inspectorPanel.Init();           
         assetBrowserPanel.Init();
+        fileBrowserPanel.Init();
         
 		window->SetName("Seidon Editor");
         window->SetSize(1280, 720);
@@ -46,7 +47,7 @@ namespace Seidon
             });
 
         ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->AddFontFromFileTTF("Assets/Roboto-Regular.ttf", 18);
+        io.Fonts->AddFontFromFileTTF("Resources/Roboto-Regular.ttf", 18);
         e.Init();
 	}
 
@@ -235,6 +236,7 @@ namespace Seidon
         inspectorPanel.SetSelectedEntity(selectedEntity);
         inspectorPanel.Draw();
        
+        fileBrowserPanel.Draw();
         assetBrowserPanel.Draw();
         
         hierarchyPanel.Draw();
@@ -253,6 +255,8 @@ namespace Seidon
         runtimeSystems.Destroy();
         e.Destroy();
         e.Unbind();
+
+        editorResourceManager.Destroy();
 	}
 
 

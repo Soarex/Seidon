@@ -13,6 +13,8 @@ namespace Seidon
     {
         std::ofstream out(path, std::ios::out | std::ios::binary);
         
+        out.write((char*)&id, sizeof(UUID));
+
         SaveCubemap(out);
         SaveIrradianceMap(out);
         SavePrefilteredMap(out);
@@ -90,6 +92,8 @@ namespace Seidon
     void HdrCubemap::Load(const std::string& path)
     {
         std::ifstream in(path, std::ios::in | std::ios::binary);
+
+        in.read((char*)&id, sizeof(UUID));
 
         LoadCubemap(in);
         LoadIrradianceMap(in);

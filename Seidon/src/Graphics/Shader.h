@@ -28,6 +28,7 @@ namespace Seidon
         ~Shader();
 
         inline UUID GetId() { return id; }
+        inline const std::string& GetPath() { return path; }
 
         void CreateFromSource(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
 

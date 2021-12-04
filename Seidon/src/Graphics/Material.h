@@ -18,5 +18,9 @@ namespace Seidon
 		Texture* normal;
 		Texture* metallic;
 		Texture* ao;
+
+	public:
+		void Save(const std::string& path);
+		void Load(const std::string& path);
 	};
 }

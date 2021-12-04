@@ -42,6 +42,9 @@
     <ClCompile Include="src\Panels\SystemsPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Panels\FileBrowserPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Default.shader" />
@@ -89,6 +92,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Panels\SystemsPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Panels\FileBrowserPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
