@@ -9,11 +9,27 @@ namespace Seidon
 
     }
 
+    HdrCubemap::~HdrCubemap()
+    {
+        Destroy();
+    }
+
+    void HdrCubemap::Destroy()
+    {
+        glDeleteTextures(1, &skyboxID);
+        glDeleteTextures(1, &irradianceMapID);
+        glDeleteTextures(1, &prefilteredMapID);
+    }
+
     void HdrCubemap::Save(const std::string& path)
     {
         std::ofstream out(path, std::ios::out | std::ios::binary);
         
         out.write((char*)&id, sizeof(UUID));
+
+        size_t size = filepath.length() + 1;
+        out.write((char*)&size, sizeof(size_t));
+        out.write(filepath.c_str(), size * sizeof(char));
 
         SaveCubemap(out);
         SaveIrradianceMap(out);
@@ -95,6 +111,13 @@ namespace Seidon
 
         in.read((char*)&id, sizeof(UUID));
 
+        size_t size = 0;
+        in.read((char*)&size, sizeof(size_t));
+
+        char buffer[2048];
+        in.read(buffer, size * sizeof(char));
+        filepath = buffer;
+
         LoadCubemap(in);
         LoadIrradianceMap(in);
         LoadPrefilteredMap(in);
@@ -104,7 +127,7 @@ namespace Seidon
         float* pixels = new float[(long long)BRDFLookupSize * BRDFLookupSize * 2];
         in.read((char*)pixels, sizeof(float) * BRDFLookupSize * BRDFLookupSize * 2);
 
-        BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, pixels, TextureFormat::FLOAT16_RED_GREEN, TextureFormat::RED_GREEN, ClampingMode::CLAMP);
+        BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, pixels, TextureFormat::RED_GREEN, TextureFormat::FLOAT16_RED_GREEN, ClampingMode::CLAMP);
         delete[] pixels;
     }
 
@@ -215,7 +238,7 @@ namespace Seidon
         {
             Texture hdrTexture;
 
-            hdrTexture.Create(width, height, data, TextureFormat::FLOAT16, TextureFormat::RGB, ClampingMode::CLAMP);
+            hdrTexture.Create(width, height, data, TextureFormat::RGB, TextureFormat::FLOAT16, ClampingMode::CLAMP);
             ToCubemap(hdrTexture);
             GenerateIrradianceMap();
             GeneratePrefilteredMap();
@@ -447,7 +470,7 @@ namespace Seidon
 
     void HdrCubemap::GenerateBRDFLookupMap()
     {
-        BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, (float*)NULL, TextureFormat::FLOAT16_RED_GREEN, TextureFormat::RED_GREEN, ClampingMode::CLAMP);
+        BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, (float*)NULL, TextureFormat::RED_GREEN, TextureFormat::FLOAT16_RED_GREEN, ClampingMode::CLAMP);
         RenderBuffer depthAttachment;
         depthAttachment.Create(BRDFLookupSize, BRDFLookupSize, RenderBufferType::DEPTH_STENCIL);
 

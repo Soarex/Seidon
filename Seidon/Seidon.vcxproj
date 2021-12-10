@@ -176,6 +176,7 @@
     <ClCompile Include="src\Ecs\Scene.cpp" />
     <ClCompile Include="src\Ecs\SceneManager.cpp" />
     <ClCompile Include="src\Extensions\Extension.cpp" />
+    <ClCompile Include="src\Graphics\CaptureCube.cpp" />
     <ClCompile Include="src\Graphics\Framebuffer.cpp" />
     <ClCompile Include="src\Core\InputManager.cpp" />
     <ClCompile Include="src\Graphics\HdrCubemap.cpp" />
@@ -251,6 +252,7 @@
     <ClInclude Include="src\ExtensionEntryPoint.h" />
     <ClInclude Include="src\Extensions\Extension.h" />
     <ClInclude Include="src\Extensions\Extensions.h" />
+    <ClInclude Include="src\Graphics\CaptureCube.h" />
     <ClInclude Include="src\Graphics\Graphics.h" />
     <ClInclude Include="src\Graphics\HdrCubemap.h" />
     <ClInclude Include="src\Graphics\Vertex.h" />

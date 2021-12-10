@@ -10,11 +10,11 @@ namespace Seidon
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 
-		backIcon = resourceManager.ImportTexture("Resources/BackIcon.png");
-		fileIcon = resourceManager.ImportTexture("Resources/FileIcon.png");
-		folderIcon = resourceManager.ImportTexture("Resources/FolderIcon.png");
-		modelIcon = resourceManager.ImportTexture("Resources/ModelIcon.png");
-		materialIcon = resourceManager.ImportTexture("Resources/MaterialIcon.png");
+		backIcon = resourceManager.GetOrImportTexture("Resources/BackIcon.png");
+		fileIcon = resourceManager.GetOrImportTexture("Resources/FileIcon.png");
+		folderIcon = resourceManager.GetOrImportTexture("Resources/FolderIcon.png");
+		modelIcon = resourceManager.GetOrImportTexture("Resources/ModelIcon.png");
+		materialIcon = resourceManager.GetOrImportTexture("Resources/MaterialIcon.png");
 
 		currentDirectory = assetsPath;
 	}
@@ -22,7 +22,11 @@ namespace Seidon
 	void FileBrowserPanel::Draw()
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
-		ImGui::Begin("File Browser");
+		if (!ImGui::Begin("File Browser"))
+		{
+			ImGui::End();
+			return;
+		}
 
 
 		static float padding = 32.0f;
@@ -83,7 +87,7 @@ namespace Seidon
 
 			if (path.extension() == ".png" || path.extension() == ".jpg")
 			{
-				if (ImGui::ImageButton((ImTextureID)resourceManager.ImportTexture(directoryEntry.path().string())->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 }))
+				if (ImGui::ImageButton((ImTextureID)resourceManager.GetOrImportTexture(directoryEntry.path().string())->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 }))
 					ImGui::OpenPopup("Texture Import Popup");
 				
 				if (ImGui::BeginDragDropSource())

@@ -9,7 +9,11 @@ namespace Seidon
 
 	void HierarchyPanel::Draw()
 	{
-		ImGui::Begin("Hierarchy");
+		if (!ImGui::Begin("Hierarchy"))
+		{
+			ImGui::End();
+			return;
+		}
 
 		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityID)
 			{

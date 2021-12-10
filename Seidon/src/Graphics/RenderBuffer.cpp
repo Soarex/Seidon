@@ -1,4 +1,5 @@
 #include "RenderBuffer.h"
+#include <iostream>
 
 namespace Seidon
 {
@@ -9,7 +10,7 @@ namespace Seidon
 
 	RenderBuffer::~RenderBuffer()
 	{
-		glDeleteRenderbuffers(1, &renderId);
+		Destroy();
 	}
 
 	void RenderBuffer::Create(int width, int height, RenderBufferType type)

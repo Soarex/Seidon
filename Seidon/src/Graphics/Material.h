@@ -21,6 +21,8 @@ namespace Seidon
 
 	public:
 		void Save(const std::string& path);
+		void SaveAsync(const std::string& path);
 		void Load(const std::string& path);
+		void LoadAsync(const std::string& path);
 	};
 }

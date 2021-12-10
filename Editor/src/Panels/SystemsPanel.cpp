@@ -12,7 +12,12 @@ namespace Seidon
 
 	void SystemsPanel::Draw()
 	{
-		ImGui::Begin("Systems");
+        if (!ImGui::Begin("Systems"))
+        {
+            ImGui::End();
+            return;
+        }
+
         Editor* editor = (Editor*)Application::Get();
 		Scene* currentScene = Application::Get()->GetSceneManager()->GetActiveScene();
 

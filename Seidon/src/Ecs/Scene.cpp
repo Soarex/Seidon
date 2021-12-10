@@ -10,7 +10,6 @@ namespace Seidon
 	Scene::Scene(const std::string& name)
 		: name(name)
 	{
-
 	}
 
 
@@ -21,8 +20,6 @@ namespace Seidon
 
 	void Scene::Init()
 	{
-		for (auto& [typeName, system] : systems)
-			system->Init();
 	}
 
 	void Scene::Update(float deltaTime)
@@ -171,15 +168,21 @@ namespace Seidon
 					break;
 
 				case Types::TEXTURE:
+					*(Texture**)member = Application::Get()->GetResourceManager()->GetOrLoadTexture(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::MESH:
+					*(Mesh**)member = Application::Get()->GetResourceManager()->GetOrLoadMesh(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::MATERIAL_VECTOR:
+					for (YAML::Node material : memberNode["Value"])
+						((std::vector<Material*>*)member)->push_back(
+							Application::Get()->GetResourceManager()->GetOrLoadMaterial(material["Id"].as<uint64_t>()));
 					break;
 
 				case Types::CUBEMAP:
+					*(HdrCubemap**)member = Application::Get()->GetResourceManager()->GetOrLoadCubemap(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::UNKNOWN:
@@ -195,6 +198,11 @@ namespace Seidon
 		out << YAML::BeginMap;
 		out << YAML::Key << "Id" << YAML::Value << id;
 		out << YAML::Key << "Name" << YAML::Value << name;
+
+		out << YAML::Key << "ResourceManager";
+		
+		Application::Get()->GetResourceManager()->SaveText(out);
+
 		out << YAML::Key << "Entities" << YAML::BeginSeq;
 
 		registry.each([&](auto entityID)
@@ -215,7 +223,7 @@ namespace Seidon
 		fileOut << out.c_str();
 	}
 
-	void Scene::LoadText(std::string& path)
+	void Scene::LoadText(const std::string& path)
 	{
 		YAML::Node data;
 
@@ -229,8 +237,13 @@ namespace Seidon
 			return;
 		}
 
+		Destroy();
+
 		id = data["Id"].as<uint64_t>();
 		name = data["Name"].as<std::string>();
+
+		YAML::Node res = data["ResourceManager"];
+		Application::Get()->GetResourceManager()->LoadText(res);
 
 		for (YAML::Node entityNode : data["Entities"])
 			CreateEntity().LoadText(entityNode);

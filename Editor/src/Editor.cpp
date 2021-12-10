@@ -35,9 +35,11 @@ namespace Seidon
         
 		window->SetName("Seidon Editor");
         window->SetSize(1280, 720);
-        RenderSystem* er = new RenderSystem();
-        scene = new Scene("Main Scene");
 
+        scene = new Scene("Main Scene");
+        scene->AddSystem<RenderSystem>();
+        scene->AddSystem<EditorCameraControlSystem>();
+        scene->Init();
         sceneManager->SetActiveScene(scene);
 
         selectedEntity = { entt::null, nullptr };
@@ -90,7 +92,21 @@ namespace Seidon
                 {
                     std::string filepath = LoadFile("Seidon Scene (*.sdscene)\0*.sdscene\0");
                     if (!filepath.empty())
-                        scene->LoadText(filepath);
+                    {
+                        runtimeSystems.Destroy();
+                        scene->Destroy();
+
+                        Scene tempScene;
+                        tempScene.LoadText(filepath);
+
+                        tempScene.CopyEntities(scene);
+                        tempScene.CopySystems(&runtimeSystems);
+
+                        scene->AddSystem<RenderSystem>();
+                        scene->AddSystem<EditorCameraControlSystem>();
+                        
+                        selectedEntity = { entt::null, nullptr };
+                    }
                 }
 
                 if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
@@ -99,7 +115,12 @@ namespace Seidon
                     if (!filepath.empty())
                     {
                         std::ofstream out(filepath);
-                        scene->SaveText(out);
+                        Scene tempScene;
+
+                        scene->CopyEntities(&tempScene);
+                        runtimeSystems.CopySystems(&tempScene);
+
+                        tempScene.SaveText(out);
                     }
                 }
 
@@ -118,7 +139,7 @@ namespace Seidon
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
             ImGuiStyle& style = ImGui::GetStyle();
-            float size = ImGui::CalcTextSize("Add Component").x + style.FramePadding.x * 2.0f;
+            float size = ImGui::CalcTextSize("Start").x + style.FramePadding.x * 2.0f;
 
             float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
@@ -135,12 +156,12 @@ namespace Seidon
                 isPlaying = true;
             }
             ImGui::PopStyleVar();
-        } 
+        }
         else
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
             ImGuiStyle& style = ImGui::GetStyle();
-            float size = ImGui::CalcTextSize("Add Component").x + style.FramePadding.x * 2.0f;
+            float size = ImGui::CalcTextSize("Stop").x + style.FramePadding.x * 2.0f;
 
             float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
@@ -167,6 +188,7 @@ namespace Seidon
         if (sceneManager->GetActiveScene()->HasSystem<RenderSystem>())
         {
             RenderSystem& renderSystem = sceneManager->GetActiveScene()->GetSystem<RenderSystem>();
+            renderSystem.SetRenderToScreen(false);
             renderSystem.ResizeFramebuffer(viewportPanelSize.x, viewportPanelSize.y);
 
             ImGui::Image((ImTextureID)renderSystem.GetRenderTarget().GetRenderId(), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });

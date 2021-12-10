@@ -8,7 +8,7 @@ namespace Seidon
 		std::ofstream out(path, std::ios::out | std::ios::binary);
 
 		out.write((char*)&id, sizeof(UUID));
-		
+
 		size_t size = name.length() + 1;
 		out.write((char*)&size, sizeof(size_t));
 
@@ -32,6 +32,14 @@ namespace Seidon
 		out.write((char*)&textureId, sizeof(UUID));
 	}
 
+	void Material::SaveAsync(const std::string& path)
+	{
+		Application::Get()->GetWorkManager()->Execute([&]()
+			{
+				Save(path);
+			});
+	}
+
 	void Material::Load(const std::string& path)
 	{
 		std::ifstream in(path, std::ios::in | std::ios::binary);
@@ -51,18 +59,33 @@ namespace Seidon
 		UUID textureId;
 
 		in.read((char*)&textureId, sizeof(UUID));
-		albedo = resourceManager->GetTexture(textureId);
+		albedo = resourceManager->GetOrLoadTexture(textureId);
 
 		in.read((char*)&textureId, sizeof(UUID));
-		roughness = resourceManager->GetTexture(textureId);
+		roughness = resourceManager->GetOrLoadTexture(textureId);
 
 		in.read((char*)&textureId, sizeof(UUID));
-		normal = resourceManager->GetTexture(textureId);
+		normal = resourceManager->GetOrLoadTexture(textureId);
 
 		in.read((char*)&textureId, sizeof(UUID));
-		metallic = resourceManager->GetTexture(textureId);
+		metallic = resourceManager->GetOrLoadTexture(textureId);
 
 		in.read((char*)&textureId, sizeof(UUID));
-		ao = resourceManager->GetTexture(textureId);
+		ao = resourceManager->GetOrLoadTexture(textureId);
+	}
+
+	void Material::LoadAsync(const std::string& path)
+	{
+		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
+		albedo = resourceManager->GetTexture("albedo_default");
+		roughness = resourceManager->GetTexture("roughness_default");
+		normal = resourceManager->GetTexture("normal_default");
+		metallic = resourceManager->GetTexture("metallic_default");
+		ao = resourceManager->GetTexture("ao_default");
+
+		Application::Get()->GetWorkManager()->Execute([&]()
+			{
+				Load(path);
+			});
 	}
 }

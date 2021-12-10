@@ -1,4 +1,6 @@
 #include "Mesh.h"
+#include "../Core/Application.h"
+
 #include <iostream>
 
 namespace Seidon
@@ -95,6 +97,15 @@ namespace Seidon
         }
     }
 
+    void Mesh::SaveAsync(const std::string& path)
+    {
+        Application::Get()->GetWorkManager()->Execute([&]()
+            {
+                Save(path);
+            }
+        );
+    }
+
     void Mesh::Load(const std::string& path)
     {
         std::ifstream in(path, std::ios::in | std::ios::binary);
@@ -137,5 +148,58 @@ namespace Seidon
             submesh->SetupMesh();
             subMeshes[i] = submesh;
         }
+    }
+
+    void Mesh::LoadAsync(const std::string& path)
+    {
+        Application::Get()->GetWorkManager()->Execute([&]()
+            {
+                std::ifstream in(path, std::ios::in | std::ios::binary);
+
+                char buffer[2048];
+                in.read((char*)&id, sizeof(id));
+
+                size_t size = 0;
+                in.read((char*)&size, sizeof(size_t));
+
+                in.read(buffer, size * sizeof(char));
+                name = buffer;
+
+                in.read((char*)&size, sizeof(size_t));
+                subMeshes.resize(size);
+                for (int i = 0; i < size; i++)
+                {
+                    SubMesh* submesh = new SubMesh();
+
+                    size_t size2 = 0;
+
+                    in.read((char*)&size2, sizeof(size_t));
+                    in.read(buffer, size2 * sizeof(char));
+                    submesh->name = buffer;
+
+                    in.read((char*)&size2, sizeof(size_t));
+
+                    submesh->vertices.resize(size2);
+
+                    for (int j = 0; j < size2; j++)
+                        in.read((char*)&submesh->vertices[j], sizeof(Vertex));
+
+
+                    in.read((char*)&size2, sizeof(size_t));
+
+                    submesh->indices.resize(size2);
+                    for (int j = 0; j < size2; j++)
+                        in.read((char*)&submesh->indices[j], sizeof(unsigned int));
+
+                    Application::Get()->GetWorkManager()->ExecuteOnMainThread([=]()
+                        {
+                            submesh->SetupMesh();
+                        }
+                    );
+
+                    subMeshes[i] = submesh;
+                }
+            }
+        );
     }
 }

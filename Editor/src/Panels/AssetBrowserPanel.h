@@ -10,6 +10,7 @@ namespace Seidon
 		MESH,
 		MATERIAL,
 		SHADER,
+		ALL,
 		NONE
 	};
 

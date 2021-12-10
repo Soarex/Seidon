@@ -1,163 +1,211 @@
-Scene: Main Scene
+Id: 5052786070138385316
+Name: Scene
+ResourceManager:
+  Resources:
+    Textures:
+      - Id: 7660610040660264020
+        Path: Assets/Imported/7660610040660264020.sdtex
+      - Id: 18075786187746934208
+        Path: Assets/Imported/18075786187746934208.sdtex
+      - Id: 16379521089496919711
+        Path: Assets/Imported/16379521089496919711.sdtex
+      - Id: 2566800181226921575
+        Path: Assets/Imported/2566800181226921575.sdtex
+      - Id: 12579686845988754798
+        Path: Assets/Imported/12579686845988754798.sdtex
+      - Id: 2847613641831984865
+        Path: Assets/Imported/2847613641831984865.sdtex
+      - Id: 16901712518054279382
+        Path: Assets/Imported/16901712518054279382.sdtex
+      - Id: 15490974852006903746
+        Path: Assets/Imported/15490974852006903746.sdtex
+      - Id: 6792895179253989677
+        Path: Assets/Imported/6792895179253989677.sdtex
+      - Id: 8261985365937288976
+        Path: Assets/Imported/8261985365937288976.sdtex
+      - Id: 12117763704618808228
+        Path: Assets/Imported/12117763704618808228.sdtex
+      - Id: 10198334022816626125
+        Path: Assets/Imported/10198334022816626125.sdtex
+      - Id: 13219532928013614922
+        Path: Assets/Imported/13219532928013614922.sdtex
+      - Id: 14721974542229557590
+        Path: Assets/Imported/14721974542229557590.sdtex
+    Meshes:
+      - Id: 12260230803588988745
+        Path: Assets/Imported/12260230803588988745.sdmesh
+      - Id: 3868158577601451075
+        Path: Assets/Imported/3868158577601451075.sdmesh
+      - Id: 17601573188022963762
+        Path: Assets/Imported/17601573188022963762.sdmesh
+    Materials:
+      - Id: 2225193161943504741
+        Path: Assets/Imported/2225193161943504741.sdmat
+      - Id: 10803420089414586337
+        Path: Assets/Imported/10803420089414586337.sdmat
+      - Id: 12666512795287105995
+        Path: Assets/Imported/12666512795287105995.sdmat
+    Cubemaps:
+      - Id: 17605785398138651557
+        Path: Assets/Imported/17605785398138651557.sdhdr
+      - Id: 16952198273407017832
+        Path: Assets/Imported/16952198273407017832.sdhdr
+    Shaders:
+      []
 Entities:
-  - ID: 9
-    Name Component:
-      Name: Cubemap
-    Transform Component:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Cubemap Component:
-      Path: Assets/Cubemap.hdr
-  - ID: 8
-    Name Component:
-      Name: Camera
-    Transform Component:
-      Position: [0, 10, 50]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Camera Component:
-      Aspect Ratio: 1.77777779
-      Exposure: 1
-      Near Plane: 0.100000001
-      Far Plane: 300
-      Fov: 45
-      Perspective: true
-  - ID: 7
-    Name Component:
-      Name: Light
-    Transform Component:
-      Position: [0, 0, 0]
-      Rotation: [1, 4, 1]
-      Scale: [1, 1, 1]
-    Directional Light Component:
-      Color: [1, 1, 1]
-      Intensity: 1
-  - ID: 6
-    Name Component:
-      Name: Cube.005
-    Transform Component:
-      Position: [-0.246411324, 1.13966942, 1.57569695]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    Render Component:
-      Path: Assets/untitled.fbx
-      Name: Cube.005
-      Materials:
-        - Name: Material.001
-          Tint: [0.800000012, 0.800000012, 0.800000012]
-          Albedo Path: Assets/Metal007_1K_Color.jpg
-          Roughness Path: Assets/Metal007_1K_Roughness.jpg
-          Normal Path: Assets/Metal007_1K_Normal.jpg
-          Metallic Path: Assets/Metal007_1K_Metalness.jpg
-          Ao Path: ao_default
-  - ID: 5
-    Name Component:
-      Name: Cube.004
-    Transform Component:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    Render Component:
-      Path: Assets/untitled.fbx
-      Name: Cube.004
-      Materials:
-        - Name: Material.003
-          Tint: [0.800000012, 0.800000012, 0.800000012]
-          Albedo Path: albedo_default
-          Roughness Path: roughness_default
-          Normal Path: normal_default
-          Metallic Path: metallic_default
-          Ao Path: ao_default
-  - ID: 4
-    Name Component:
-      Name: Cube.003
-    Transform Component:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    Render Component:
-      Path: Assets/untitled.fbx
-      Name: Cube.003
-      Materials:
-        - Name: Material
-          Tint: [0.800000012, 0.800000012, 0.800000012]
-          Albedo Path: Assets/Grass002_1K_Color.jpg
-          Roughness Path: Assets/Grass002_1K_Roughness.jpg
-          Normal Path: Assets/Grass002_1K_Normal.jpg
-          Metallic Path: metallic_default
-          Ao Path: ao_default
-  - ID: 3
-    Name Component:
-      Name: Cube.002
-    Transform Component:
-      Position: [9.29689026, 1.27379084, 16.496748]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    Render Component:
-      Path: Assets/untitled.fbx
-      Name: Cube.002
-      Materials:
-        - Name: Material.003
-          Tint: [0.800000012, 0.800000012, 0.800000012]
-          Albedo Path: albedo_default
-          Roughness Path: roughness_default
-          Normal Path: normal_default
-          Metallic Path: metallic_default
-          Ao Path: ao_default
-  - ID: 2
-    Name Component:
-      Name: Cube.001
-    Transform Component:
-      Position: [-18.7178211, 1.27379084, -17.5305195]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    Render Component:
-      Path: Assets/untitled.fbx
-      Name: Cube.001
-      Materials:
-        - Name: Material.002
-          Tint: [0.800000012, 0.800000012, 0.800000012]
-          Albedo Path: albedo_default
-          Roughness Path: roughness_default
-          Normal Path: normal_default
-          Metallic Path: metallic_default
-          Ao Path: ao_default
-  - ID: 1
-    Name Component:
-      Name: Floor
-    Transform Component:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    Render Component:
-      Path: Assets/untitled.fbx
-      Name: Floor
-      Materials:
-        - Name: Material
-          Tint: [0.800000012, 0.800000012, 0.800000012]
-          Albedo Path: Assets/Grass002_1K_Color.jpg
-          Roughness Path: Assets/Grass002_1K_Roughness.jpg
-          Normal Path: Assets/Grass002_1K_Normal.jpg
-          Metallic Path: metallic_default
-          Ao Path: ao_default
-  - ID: 0
-    Name Component:
-      Name: RootNode
-    Transform Component:
-      Position: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    Render Component:
-      Path: Assets/untitled.fbx
-      Name: RootNode
-      Materials:
-        - {}
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 5921837286691428646
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Camera
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [-4.80522966, 7.46129513, 6.96369696]
+          - Name: Rotation
+            Type: 9
+            Value: [-0.628318548, -0.890117884, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::CameraComponent
+        Members:
+          - Name: Perspective
+            Type: 3
+          - Name: Fov
+            Type: 2
+            Value: 45
+          - Name: Aspect Ratio
+            Type: 2
+            Value: 1.77777779
+          - Name: Near Plane
+            Type: 2
+            Value: 0.100000001
+          - Name: Far Plane
+            Type: 2
+            Value: 100
+          - Name: Exposure
+            Type: 2
+            Value: 1
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 3461932878831253782
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Lights
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [0, 0, 0]
+          - Name: Rotation
+            Type: 9
+            Value: [0.968054652, 0.845510304, -3.14489171e-07]
+          - Name: Scale
+            Type: 7
+            Value: [0.999999404, 0.999997139, 0.999996901]
+      - Name: struct Seidon::CubemapComponent
+        Members:
+          - Name: Cubemap
+            Type: 16
+            Value: 16952198273407017832
+      - Name: struct Seidon::DirectionalLightComponent
+        Members:
+          - Name: Color
+            Type: 8
+            Value: [1, 0.917647064, 0.75686276]
+          - Name: Intensity
+            Type: 2
+            Value: 1
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 10053146263909308748
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Floor
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [0, 0, 0]
+          - Name: Rotation
+            Type: 9
+            Value: [0, 0, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 17
+            Value: 17601573188022963762
+          - Name: Materials
+            Type: 12
+            Value:
+              - Id: 12666512795287105995
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 17079365664146648448
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Player
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [0, 1.54925871, 0]
+          - Name: Rotation
+            Type: 9
+            Value: [0, 0, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 17
+            Value: 3868158577601451075
+          - Name: Materials
+            Type: 12
+            Value:
+              - Id: 10803420089414586337
+      - Name: struct PlayerComponent
+        Members:
+          - Name: Speed
+            Type: 2
+            Value: 10
+          - Name: Jump Height
+            Type: 2
+            Value: 2
 Systems:
-  Render System:
-    {}
-  Editor Camera Control System:
-    Movement Speed: 10
-    Pan Speed: 0.800000012
-    Mouse Sensitivity: 0.5
-    Scrollwheel Sensitivy: 100
+  - Name: class Seidon::RenderSystem
+    Members:
+      []
+  - Name: class PlayerSystem
+    Members:
+      []
+  - Name: class CameraSystem
+    Members:
+      []

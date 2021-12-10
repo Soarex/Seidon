@@ -197,6 +197,17 @@ namespace Seidon
 		std::filesystem::path path = std::string(texture->path);
 		ImGui::Text(path.filename().string().c_str());
 
+		if (ImGui::BeginPopupContextItem("test"))
+		{
+			if (ImGui::MenuItem("Save Texture"))
+				(texture)->Save("Test.texture");
+
+			if (ImGui::MenuItem("Load Texture"))
+				(texture)->LoadAsync("Test.texture");
+
+			ImGui::EndPopup();
+		}
+
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
@@ -223,6 +234,17 @@ namespace Seidon
 
 		std::filesystem::path path = std::string((*cubemap)->GetPath());
 		ImGui::Text(path.filename().string().c_str());
+
+		if (ImGui::BeginPopupContextItem("test"))
+		{
+			if (ImGui::MenuItem("Save Cubemap"))
+				(*cubemap)->Save("Test.cubemap");
+
+			if (ImGui::MenuItem("Load Texture"))
+				(*cubemap)->Load("Test.cubemap");
+
+			ImGui::EndPopup();
+		}
 		
 		ImGui::Columns(1);
 		ImGui::PopID();
@@ -283,17 +305,6 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		ImGui::Text((*material)->name.c_str());
-
-		if (ImGui::BeginPopupContextItem("test"))
-		{
-			if (ImGui::MenuItem("Save Material"))
-				(*material)->Save("Test.material");
-
-			if (ImGui::MenuItem("Load Material"))
-				(*material)->Load("Test.material");
-
-			ImGui::EndPopup();
-		}
 
 		ImGui::Columns(1);
 

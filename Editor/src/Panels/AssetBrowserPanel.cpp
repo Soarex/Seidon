@@ -8,17 +8,22 @@ namespace Seidon
 
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 
-		backIcon = resourceManager.ImportTexture("Resources/BackIcon.png");
-		fileIcon = resourceManager.ImportTexture("Resources/FileIcon.png");
-		folderIcon = resourceManager.ImportTexture("Resources/FolderIcon.png");
-		modelIcon = resourceManager.ImportTexture("Resources/ModelIcon.png");
-		materialIcon = resourceManager.ImportTexture("Resources/MaterialIcon.png");
+		backIcon = resourceManager.GetOrImportTexture("Resources/BackIcon.png");
+		fileIcon = resourceManager.GetOrImportTexture("Resources/FileIcon.png");
+		folderIcon = resourceManager.GetOrImportTexture("Resources/FolderIcon.png");
+		modelIcon = resourceManager.GetOrImportTexture("Resources/ModelIcon.png");
+		materialIcon = resourceManager.GetOrImportTexture("Resources/MaterialIcon.png");
 	}
 
 	void AssetBrowserPanel::Draw()
 	{
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
-		ImGui::Begin("Content Browser");
+		
+		if (!ImGui::Begin("Content Browser"))
+		{
+			ImGui::End();
+			return;
+		}
 
 		static float padding = 32.0f;
 		static float thumbnailSize = 90.0f;
@@ -34,6 +39,18 @@ namespace Seidon
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 		if (selectedResource == ResourceType::NONE)
 		{
+			ImGui::PushID("AllButton");
+
+			ImGui::ImageButton((ImTextureID)folderIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				selectedResource = ResourceType::ALL;
+
+			ImGui::TextWrapped("All");
+			ImGui::NextColumn();
+
+			ImGui::PopID();
+			//------------------------------
 			ImGui::PushID("TexturesButton");
 
 			ImGui::ImageButton((ImTextureID)folderIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
@@ -103,7 +120,7 @@ namespace Seidon
 			ImGui::NextColumn();
 		}
 
-		if (selectedResource == ResourceType::TEXTURE)
+		if (selectedResource == ResourceType::TEXTURE || selectedResource == ResourceType::ALL)
 			for (Texture* texture : resourceManager->GetTextures())
 			{
 				ImGui::PushID(texture);
@@ -121,7 +138,7 @@ namespace Seidon
 				ImGui::PopID();
 			}
 
-		if (selectedResource == ResourceType::CUBEMAP)
+		if (selectedResource == ResourceType::CUBEMAP || selectedResource == ResourceType::ALL)
 			for (HdrCubemap* cubemap : resourceManager->GetCubemaps())
 			{
 				ImGui::PushID(cubemap);
@@ -139,7 +156,7 @@ namespace Seidon
 				ImGui::PopID();
 			}
 
-		if (selectedResource == ResourceType::MESH)
+		if (selectedResource == ResourceType::MESH || selectedResource == ResourceType::ALL)
 			for (Mesh* mesh : resourceManager->GetMeshes())
 			{
 				ImGui::PushID(mesh);
@@ -157,7 +174,7 @@ namespace Seidon
 				ImGui::PopID();
 			}
 
-		if (selectedResource == ResourceType::MATERIAL)
+		if (selectedResource == ResourceType::MATERIAL || selectedResource == ResourceType::ALL)
 			for (Material* material : resourceManager->GetMaterials())
 			{
 				ImGui::PushID(material);
@@ -175,7 +192,7 @@ namespace Seidon
 				ImGui::PopID();
 			}
 
-		if (selectedResource == ResourceType::SHADER)
+		if (selectedResource == ResourceType::SHADER || selectedResource == ResourceType::ALL)
 			for (Shader* shader : resourceManager->GetShaders())
 			{
 				ImGui::PushID(shader);

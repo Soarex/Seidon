@@ -10,7 +10,6 @@ namespace Seidon
 	void SceneManager::SetActiveScene(Scene* scene)
 	{
 		activeScene = scene;
-		activeScene->Init();
 	}
 
 	void SceneManager::ChangeActiveScene(Scene* scene)

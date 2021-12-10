@@ -35,7 +35,7 @@ namespace Seidon
 		void SaveText(std::ofstream& fileOut);
 
 		void Load(std::ifstream& fileIn);
-		void LoadText(std::string& path);
+		void LoadText(const std::string& path);
 
 		Scene* Duplicate();
 		void CopyEntities(Scene* other);

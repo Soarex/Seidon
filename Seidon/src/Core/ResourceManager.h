@@ -50,10 +50,21 @@ namespace Seidon
 		Shader* LoadShader(const std::string& path, UUID id = UUID());
 		Mesh* LoadMesh(const std::string& path);
 		Material* LoadMaterial(const std::string& path);
+		Texture* LoadTexture(const std::string& path);
+		HdrCubemap* LoadCubemap(const std::string& path);
+
+		Shader* LoadShader(UUID id);
+		Mesh* LoadMesh(UUID id);
+		Material* LoadMaterial(UUID id);
+		Texture* LoadTexture(UUID id);
+		HdrCubemap* LoadCubemap(UUID id);
 		
 		Texture* ImportTexture(const std::string& path, bool gammaCorrection = false, UUID id = UUID());
 		HdrCubemap* ImportCubemap(const std::string& path, UUID id = UUID());
 		const ModelFileInfo& ImportModelFile(const std::string& path);
+
+		Texture* GetOrImportTexture(const std::string& path, bool gammaCorrection = false, UUID id = UUID());
+		HdrCubemap* GetOrImportCubemap(const std::string& path, UUID id = UUID());
 
 		Mesh* CreateMesh(const MeshImportData& importData, UUID id = UUID());
 		Material* CreateMaterial(const MaterialImportData& importData, UUID id = UUID());
@@ -70,6 +81,18 @@ namespace Seidon
 		inline Shader*		GetShader(UUID id) { return shaders[id]; }
 		inline Material*	GetMaterial(UUID id) { return materials[id]; }
 		inline HdrCubemap*	GetCubemap(UUID id) { return cubemaps[id]; }
+
+		Texture*	GetOrLoadTexture(const std::string& name);
+		Mesh*		GetOrLoadMesh(const std::string& name);
+		Shader*		GetOrLoadShader(const std::string& name);
+		Material*	GetOrLoadMaterial(const std::string& name);
+		HdrCubemap* GetOrLoadCubemap(const std::string& name);
+
+		Texture*	GetOrLoadTexture(UUID id);
+		Mesh*		GetOrLoadMesh(UUID id);
+		Shader*		GetOrLoadShader(UUID id);
+		Material*	GetOrLoadMaterial(UUID id);
+		HdrCubemap*	GetOrLoadCubemap(UUID id);
 
 		std::vector<Texture*>		GetTextures();
 		std::vector<Mesh*>			GetMeshes();

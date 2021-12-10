@@ -3,6 +3,11 @@
 
 namespace Seidon
 {
+	System::~System()
+	{
+
+	}
+
 	void System::SysInit()
 	{
 		Application* app = Application::Get();

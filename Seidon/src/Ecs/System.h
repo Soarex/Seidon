@@ -21,6 +21,7 @@ namespace Seidon
 		SceneManager* sceneManager;
 
 	public:
+		virtual ~System();
 		virtual void Init() {};
 		virtual void Update(float deltaTime) {};
 		virtual void Destroy() {};

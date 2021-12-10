@@ -22,11 +22,11 @@ namespace Seidon
 		unsigned int width, height;
 		bool mouseCursorEnabled, fullscreenEnabled;
 
-		std::vector<std::function<void(int, int)>>		windowSizeCallbacks;
-		std::vector<std::function<void(float, float)>>	cursorCallbacks;
-		std::vector<std::function<void(int, int)>>		mouseButtonCallbacks;
-		std::vector<std::function<void(float, float)>>	mouseWheelCallbacks;
-		std::vector<std::function<void(int, int)>>		keyboardCallbacks;
+		std::list<std::function<void(int, int)>>		windowSizeCallbacks;
+		std::list<std::function<void(float, float)>>	cursorCallbacks;
+		std::list<std::function<void(int, int)>>		mouseButtonCallbacks;
+		std::list<std::function<void(float, float)>>	mouseWheelCallbacks;
+		std::list<std::function<void(int, int)>>		keyboardCallbacks;
 
 	public:
 		void Init(const std::string& name, unsigned int width = 800, unsigned int height = 600);
@@ -52,11 +52,17 @@ namespace Seidon
 		inline float GetDeltaTime() { return deltaTime; }
 		inline GLFWwindow* GetHandle() { return handle; }
 
-		inline void AddWindowSizeCallback(const std::function<void(int, int)>& callback) { windowSizeCallbacks.push_back(callback); }
-		inline void AddCursorCallback(const std::function<void(float, float)>& callback) { cursorCallbacks.push_back(callback); }
-		inline void AddMouseButtonCallback(const std::function<void(int, int)>& callback) { mouseButtonCallbacks.push_back(callback); }
-		inline void AddMouseWheelCallback(const std::function<void(float, float)>& callback) { mouseWheelCallbacks.push_back(callback); }
-		inline void AddKeyboardCallback(const std::function<void(int, int)>& callback) { keyboardCallbacks.push_back(callback); }
+		inline std::list<std::function<void(int, int)>>::iterator AddWindowSizeCallback(const std::function<void(int, int)>& callback) { windowSizeCallbacks.push_back(callback); auto it = windowSizeCallbacks.end(); return --it; }
+		inline std::list<std::function<void(float, float)>>::iterator AddCursorCallback(const std::function<void(float, float)>& callback) { cursorCallbacks.push_back(callback); auto it = cursorCallbacks.end(); return --it;  }
+		inline std::list<std::function<void(int, int)>>::iterator AddMouseButtonCallback(const std::function<void(int, int)>& callback) { mouseButtonCallbacks.push_back(callback); auto it = mouseButtonCallbacks.end(); return --it;}
+		inline std::list<std::function<void(float, float)>>::iterator AddMouseWheelCallback(const std::function<void(float, float)>& callback) { mouseWheelCallbacks.push_back(callback); auto it = mouseWheelCallbacks.end(); return --it;}
+		inline std::list<std::function<void(int, int)>>::iterator AddKeyboardCallback(const std::function<void(int, int)>& callback) { keyboardCallbacks.push_back(callback); auto it = keyboardCallbacks.end(); return --it;}
+
+		inline void removeWindowSizeCallback(std::list<std::function<void(int, int)>>::iterator& position) { windowSizeCallbacks.erase(position); }
+		inline void removeCursorCallback(std::list<std::function<void(float, float)>>::iterator& position) { cursorCallbacks.erase(position); }
+		inline void removeMouseButtonCallback(std::list<std::function<void(int, int)>>::iterator& position) { mouseButtonCallbacks.erase(position); }
+		inline void removeMouseWheelCallback(std::list<std::function<void(float, float)>>::iterator& position) { mouseWheelCallbacks.erase(position); }
+		inline void removeKeyboardCallback(std::list<std::function<void(int, int)>>::iterator& position) { keyboardCallbacks.erase(position); }
 
 		friend void WindowSizeCallback(GLFWwindow* window, int width, int height);
 		friend void CursorCallback(GLFWwindow* window, double xpos, double ypos);

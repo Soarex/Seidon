@@ -8,7 +8,11 @@ namespace Seidon
 
 	void InspectorPanel::Draw()
 	{
-        ImGui::Begin("Inspector");
+        if (!ImGui::Begin("Inspector"))
+        {
+            ImGui::End();
+            return;
+        }
 
 		if (selectedEntity.ID == entt::null)
 		{

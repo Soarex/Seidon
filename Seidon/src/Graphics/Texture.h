@@ -43,20 +43,24 @@ namespace Seidon
 
         unsigned int width, height;
         TextureFormat format;
+        bool gammaCorrected = false;
 
         static Texture* temporaryTexture;
     public:
         Texture();
         ~Texture();
 
-        void Create(int width, int height, unsigned char* rgbData, TextureFormat startFormat = TextureFormat::RGB, TextureFormat endFormat = TextureFormat::RGB, 
+        void Create(int width, int height, unsigned char* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
             ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f));
 
-        void Create(int width, int height, float* rgbData, TextureFormat startFormat = TextureFormat::RGB, TextureFormat endFormat = TextureFormat::RGB,
+        void Create(int width, int height, float* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
             ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& = glm::vec3(1.0f));
 
         void Save(const std::string& path);
+        void SaveAsync(const std::string& path);
+
         void Load(const std::string& path);
+        void LoadAsync(const std::string& path);
 
         void Import(const std::string& path, bool gammaCorrection = true);
         void ImportAsync(const std::string& path, bool gammaCorrection = true);

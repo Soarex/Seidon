@@ -7,6 +7,7 @@
 #include "Ecs/Entity.h"
 #include "Shader.h"
 #include "Framebuffer.h"
+#include "CaptureCube.h"
 
 namespace Seidon
 {
@@ -16,7 +17,7 @@ namespace Seidon
 		constexpr static int SHADOW_MAP_SIZE = 1024;
 		constexpr static int CASCADE_COUNT = 4;
 
-		std::function<void(int, int)> windowResizeCallback;
+		std::list<std::function<void(int, int)>>::iterator windowResizeCallbackPosition;
 
 		Shader shader;
 		Shader depthShader;
@@ -38,14 +39,17 @@ namespace Seidon
 		RenderBuffer renderDepthStencilBuffer;
 
 		SubMesh* fullscreenQuad;
+		CaptureCube captureCube;
 
 		CameraComponent defaultCamera;
 
 		bool useFullWindow = true;
+		bool renderToScreen = true;
 		unsigned int framebufferWidth, framebufferHeight;
 
 	public:
-		RenderSystem();
+		RenderSystem() = default;
+		~RenderSystem() = default;
 		void Init();
 		void Update(float deltatime);
 		void Destroy();
@@ -53,6 +57,7 @@ namespace Seidon
 		void ResizeFramebuffer(unsigned int width, unsigned int height);
 
 		inline const Texture& GetRenderTarget() { return renderTarget; }
+		inline void SetRenderToScreen(bool value) { renderToScreen = value; }
 
 	private:
 		std::vector<glm::vec4> CalculateFrustumCorners(CameraComponent& camera, TransformComponent& cameraTransform, float nearPlane, float farPlane);

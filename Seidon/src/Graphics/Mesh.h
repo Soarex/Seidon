@@ -44,7 +44,9 @@ namespace Seidon
         Mesh(const std::string& name) : name(name) {};
         ~Mesh();
 
-        void Load(const std::string& path);
         void Save(const std::string& path);
+        void SaveAsync(const std::string& path);
+        void Load(const std::string& path);
+        void LoadAsync(const std::string& path);
     };
 }

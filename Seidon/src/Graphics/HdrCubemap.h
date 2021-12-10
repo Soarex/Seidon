@@ -33,9 +33,15 @@ namespace Seidon
 	public:
 		Texture t;
 		HdrCubemap(unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
-		
+		~HdrCubemap();
+
+		void Destroy();
+
+
 		void Save(const std::string& path);
+		void SaveAsync(const std::string& path);
 		void Load(const std::string& path);
+		void LoadAsync(const std::string& path);
 		
 		void CreateFromEquirectangularMap(Texture* texture);
 		void LoadFromEquirectangularMap(std::string path);

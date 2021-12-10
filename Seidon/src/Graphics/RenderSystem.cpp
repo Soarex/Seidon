@@ -5,87 +5,15 @@
 
 namespace Seidon
 {
-	unsigned int cubeVAO = 0;
-	void SetupCaptureCube()
-	{
-		static const float cubeVertices[] = {
-			// positions          
-			-1.0f,  1.0f, -1.0f,
-			-1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f, -1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-
-			-1.0f, -1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f,
-			-1.0f, -1.0f,  1.0f,
-
-			-1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f, -1.0f,
-			 1.0f,  1.0f,  1.0f,
-			 1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f,  1.0f,
-			-1.0f,  1.0f, -1.0f,
-
-			-1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f, -1.0f,
-			 1.0f, -1.0f, -1.0f,
-			-1.0f, -1.0f,  1.0f,
-			 1.0f, -1.0f,  1.0f
-		};
-
-		
-		unsigned int cubeVBO = 0;
-		glGenVertexArrays(1, &cubeVAO);
-		glGenBuffers(1, &cubeVBO);
-
-		glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-		glBindVertexArray(cubeVAO);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-	}
-
-	void DrawCaptureCube()
-	{
-		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
-	}
-
-	RenderSystem::RenderSystem()
-	{
-	}
 
 	void RenderSystem::Init()
 	{
 		framebufferWidth = window->GetWidth();
 		framebufferHeight = window->GetHeight();
 
-		hdrMap.Create(window->GetWidth(), window->GetHeight(), (unsigned char*)NULL, TextureFormat::FLOAT16_ALPHA, TextureFormat::RGBA);
+		captureCube.Init();
+
+		hdrMap.Create(window->GetWidth(), window->GetHeight(), (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::FLOAT16_ALPHA);
 		hdrDepthStencilBuffer.Create(window->GetWidth(), window->GetHeight(), RenderBufferType::DEPTH_STENCIL);
 
 		hdrFramebuffer.Create();
@@ -140,20 +68,19 @@ namespace Seidon
 		std::vector<unsigned int> indices = { 0, 1, 2, 3, 4, 5 };
 		fullscreenQuad = new SubMesh();
 		fullscreenQuad->Create(quadVertices, indices, "");
-		SetupCaptureCube();
 
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-		windowResizeCallback = [this](int width, int height)
-		{
-			if (useFullWindow)
-				ResizeFramebuffer(width, height);
-		};
+		windowResizeCallbackPosition = 
+			window->AddWindowSizeCallback([this](int width, int height)
+			{
+				if (useFullWindow)
+					ResizeFramebuffer(width, height);
+			});
 
-		window->AddWindowSizeCallback(windowResizeCallback);
 		renderFramebuffer.Unbind();
 	}
 
@@ -309,13 +236,13 @@ namespace Seidon
 		cubemapShader.SetMat4("viewMatrix", glm::mat4(glm::mat3(camera.GetViewMatrix(cameraTransform))));
 		cubemapShader.SetMat4("projectionMatrix", camera.GetProjectionMatrix());
 		cubemap.cubemap->BindSkybox();
-		DrawCaptureCube();
+		captureCube.Draw();
 		glDepthFunc(GL_LESS);
 
 		hdrFramebuffer.Unbind();
 
 		// Final Quad
-		renderFramebuffer.Bind();
+		if(!renderToScreen) renderFramebuffer.Bind();
 		glViewport(0, 0, framebufferWidth, framebufferHeight);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -326,12 +253,13 @@ namespace Seidon
 		
 		glBindVertexArray(fullscreenQuad->GetVAO());
 		glDrawElements(GL_TRIANGLES, fullscreenQuad->indices.size(), GL_UNSIGNED_INT, 0);
-		renderFramebuffer.Unbind();
+		if (!renderToScreen) renderFramebuffer.Unbind();
 	}
 
 	void RenderSystem::Destroy()
 	{
 		delete fullscreenQuad;
+		window->removeWindowSizeCallback(windowResizeCallbackPosition);
 	}
 
 	void RenderSystem::ResizeFramebuffer(unsigned int width, unsigned int height)
@@ -351,7 +279,7 @@ namespace Seidon
 		framebufferHeight = height;
 
 		hdrMap.Destroy();
-		hdrMap.Create(width, height, (unsigned char*)NULL, TextureFormat::FLOAT16_ALPHA, TextureFormat::RGBA);
+		hdrMap.Create(width, height, (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::FLOAT16_ALPHA);
 		
 		hdrDepthStencilBuffer.Destroy();
 		hdrDepthStencilBuffer.Create(width, height, RenderBufferType::DEPTH_STENCIL);
@@ -375,9 +303,9 @@ namespace Seidon
 		const glm::mat4& inv = glm::inverse(projectionMatrix * camera.GetViewMatrix(cameraTransform));
 
 		std::vector<glm::vec4> frustumCorners;
-		for (int x = 0; x < 2; ++x)
-			for (int y = 0; y < 2; ++y)
-				for (int z = 0; z < 2; ++z)
+		for (int x = 0; x < 2; x++)
+			for (int y = 0; y < 2; y++)
+				for (int z = 0; z < 2; z++)
 				{
 					const glm::vec4 point = inv *
 						glm::vec4

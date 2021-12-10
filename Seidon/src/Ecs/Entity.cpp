@@ -165,22 +165,21 @@ namespace Seidon
 					break;
 
 				case Types::TEXTURE:
-					*(Texture**)member = Application::Get()->GetResourceManager()->GetTexture(memberNode["Value"].as<uint64_t>());
+					*(Texture**)member = Application::Get()->GetResourceManager()->GetOrLoadTexture(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::MESH:
-					*(Mesh**)member = Application::Get()->GetResourceManager()->GetMesh(memberNode["Value"].as<uint64_t>());
+					*(Mesh**)member = Application::Get()->GetResourceManager()->GetOrLoadMesh(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::MATERIAL_VECTOR:
 					for(YAML::Node material : memberNode["Value"])
 						((std::vector<Material*>*)member)->push_back(
-							Application::Get()->GetResourceManager()->GetMaterial(material["Id"].as<uint64_t>())
-							);
+							Application::Get()->GetResourceManager()->GetOrLoadMaterial(material["Id"].as<uint64_t>()));
 					break;
 
 				case Types::CUBEMAP:
-					*(HdrCubemap**)member = Application::Get()->GetResourceManager()->GetCubemap(memberNode["Value"].as<uint64_t>());
+					*(HdrCubemap**)member = Application::Get()->GetResourceManager()->GetOrLoadCubemap(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::UNKNOWN:
