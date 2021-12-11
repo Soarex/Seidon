@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Core.h"
+#include "Debug/Debug.h"
 #include "Ecs/Ecs.h"
 #include "Extensions/Extensions.h"
 #include "Graphics/Graphics.h"

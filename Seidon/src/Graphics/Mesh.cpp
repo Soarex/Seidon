@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "../Core/Application.h"
+#include "../Debug/Debug.h"
 
 #include <iostream>
 
@@ -12,50 +13,71 @@ namespace Seidon
 
     SubMesh::~SubMesh()
     {
-        glDeleteBuffers(1, &VBO);
-        glDeleteBuffers(1, &EBO);
-        glDeleteVertexArrays(1, &VAO);
+        Destroy();
     }
 
     void SubMesh::Create(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::string& name)
     {
+        SD_ASSERT(!initialized, "Submesh already initialized");
+
         this->vertices = vertices;
         this->indices = indices;
         this->name = name;
 
         SetupMesh();
+
+        initialized = true;
+    }
+
+    void SubMesh::Destroy()
+    {
+        SD_ASSERT(initialized, "Submesh not initialized");
+
+        GL_CHECK(glDeleteBuffers(1, &VBO));
+        GL_CHECK(glDeleteBuffers(1, &EBO));
+        GL_CHECK(glDeleteVertexArrays(1, &VAO));
+
+        initialized = false;
     }
 
     void SubMesh::SetupMesh()
     {
-        glGenVertexArrays(1, &VAO);
-        glGenBuffers(1, &VBO);
-        glGenBuffers(1, &EBO);
+        GL_CHECK(glGenVertexArrays(1, &VAO));
+        GL_CHECK(glGenBuffers(1, &VBO));
+        GL_CHECK(glGenBuffers(1, &EBO));
 
-        glBindVertexArray(VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        GL_CHECK(glBindVertexArray(VAO));
+        GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, VBO));
 
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+        GL_CHECK(glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW));
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
-            &indices[0], GL_STATIC_DRAW);
+        GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
+        GL_CHECK(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
+            &indices[0], GL_STATIC_DRAW));
 
         // vertex positions
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        GL_CHECK(glEnableVertexAttribArray(0));
+        GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0));
         // vertex normals
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+        GL_CHECK(glEnableVertexAttribArray(1));
+        GL_CHECK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
         // vertex tangent
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
+        GL_CHECK(glEnableVertexAttribArray(2));
+        GL_CHECK(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent)));
         // vertex texture coords
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
+        GL_CHECK(glEnableVertexAttribArray(3));
+        GL_CHECK(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords)));
 
-        glBindVertexArray(0);
+        GL_CHECK(glBindVertexArray(0));
+
+        initialized = true;
     }
+
+    unsigned int SubMesh::GetVAO() 
+    {
+        SD_ASSERT(initialized, "Submesh not initialized");
+        return VAO; 
+    };
 
     Mesh::~Mesh()
     {
@@ -109,6 +131,12 @@ namespace Seidon
     void Mesh::Load(const std::string& path)
     {
         std::ifstream in(path, std::ios::in | std::ios::binary);
+
+        if (!in)
+        {
+            std::cerr << "Error opening mesh file: " << path << std::endl;
+            return;
+        }
 
         char buffer[2048];
         in.read((char*)&id, sizeof(id));

@@ -12,6 +12,7 @@ namespace Seidon
     class SubMesh
     {
     public:
+        bool initialized = false;
         std::string name;
         std::vector<Vertex> vertices;
         std::vector<unsigned int> indices;    
@@ -24,8 +25,9 @@ namespace Seidon
         ~SubMesh();
 
         void Create(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::string& name = "");
+        void Destroy();
 
-        unsigned int GetVAO() { return VAO; };
+        unsigned int GetVAO();
 
     private:
         void SetupMesh();

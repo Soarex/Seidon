@@ -13,6 +13,8 @@ namespace Seidon
 	class System
 	{
 	protected:
+		bool initialized = false;
+
 		Scene* scene;
 		Window* window;
 		InputManager* inputManager;
@@ -28,7 +30,8 @@ namespace Seidon
 
 	private:
 		void SysInit();
-
+		void SysUpdate(float deltaTime);
+		void SysDestroy();
 	public:
 		friend class Scene;
 	};

@@ -121,7 +121,7 @@ namespace Seidon
 		template<typename Type>
 		static void CopySystem(Scene& src, Scene& dst)
 		{
-			dst.AddSystem<Type>(src.GetSystem<Type>());
+			dst.AddSystem<Type>(/*src.GetSystem<Type>()*/);
 		}
 
 	public:

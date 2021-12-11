@@ -1,4 +1,5 @@
 #include "Window.h"
+#include "../Debug/Debug.h"
 
 namespace Seidon
 {
@@ -40,6 +41,8 @@ namespace Seidon
 
     void Window::Init(const std::string& name, unsigned int width, unsigned int height)
     {
+        SD_ASSERT(!initialized, "Trying to init already initialized window");
+
         instance = this;
 
         this->name = name;
@@ -60,14 +63,13 @@ namespace Seidon
 
         if (handle == NULL)
         {
-            std::cout << "Failed to create GLFW window" << std::endl;
+            std::cerr << "Failed to create GLFW window" << std::endl;
             glfwTerminate();
         }
 
         glfwMakeContextCurrent(handle);
 
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-            std::cout << "Failed to initialize GLAD" << std::endl;
+        SD_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 
         glfwSetWindowSizeCallback(handle, WindowSizeCallback);
         glfwSetKeyCallback(handle, KeyboardCallback);
@@ -85,20 +87,28 @@ namespace Seidon
         ImGui_ImplGlfw_InitForOpenGL(handle, true);
         ImGui_ImplOpenGL3_Init("#version 330");
         SetImGuiStyle();
+
+        initialized = true;
     }
 
     void Window::Destroy()
     {
+        SD_ASSERT(initialized, "Attempting to destroy not initialized Window");
+
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
 
         glfwDestroyWindow(handle);
         glfwTerminate();
+
+        initialized = false;
     }
 
     void Window::BeginFrame()
     {
+        SD_ASSERT(initialized, "Window not initialized");
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -106,6 +116,8 @@ namespace Seidon
 
     float Window::EndFrame()
     {
+        SD_ASSERT(initialized, "Window not initialized");
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

@@ -38,6 +38,8 @@ namespace Seidon
     public:
         std::string path;
     private:
+        bool initialized = false; 
+
         UUID id;
         unsigned int renderId;
 

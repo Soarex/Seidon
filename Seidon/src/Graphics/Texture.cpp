@@ -3,13 +3,17 @@
 #include "Core/Application.h"
 #include "Core/WorkManager.h"
 
+#include "../Debug/Debug.h"
+
 namespace Seidon
 {
     Texture* Texture::temporaryTexture = nullptr;
+    
     Texture::Texture()
     {
         path = "";
     }
+
     Texture::~Texture()
     {
         Destroy();
@@ -17,64 +21,81 @@ namespace Seidon
 
     void Texture::Bind(unsigned int slot) const
     {
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_2D, renderId);
+        SD_ASSERT(initialized, "Texture not initialized");
+
+        GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+        GL_CHECK(glBindTexture(GL_TEXTURE_2D, renderId));
     }
 
     void Texture::Create(int width, int height, unsigned char* rgbData, TextureFormat sourceFormat, TextureFormat internalFormat,
         ClampingMode clampingMode, const glm::vec3& borderColor)
     {
+        SD_ASSERT(!initialized, "Texture already initialized");
+
         this->width = width;
         this->height = height;
         this->format = sourceFormat;
 
-        glGenTextures(1, &renderId);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, renderId);
+        GL_CHECK(glGenTextures(1, &renderId));
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_2D, renderId));
 
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLenum)internalFormat, width, height, 0, (GLenum)sourceFormat, GL_UNSIGNED_BYTE, rgbData);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, (GLenum)internalFormat, width, height, 0, (GLenum)sourceFormat, GL_UNSIGNED_BYTE, rgbData));
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_2D));
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLenum)clampingMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLenum)clampingMode);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLenum)clampingMode));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLenum)clampingMode));
+
         float color[] = { borderColor.x, borderColor.y, borderColor.z, 1.0f };
-        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+        GL_CHECK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color));
+
+        initialized = true;
     }
 
     void Texture::Create(int width, int height, float* rgbData, TextureFormat sourceFormat, TextureFormat internalFormat,
         ClampingMode clampingMode, const glm::vec3& borderColor)
     {
+        SD_ASSERT(!initialized, "Texture already initialized");
+
         this->width = width;
         this->height = height;
         this->format = sourceFormat;
 
-        glGenTextures(1, &renderId);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, renderId);
+        GL_CHECK(glGenTextures(1, &renderId));
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_2D, renderId));
+   
+        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, (GLenum)internalFormat, width, height, 0, (GLenum)sourceFormat, GL_FLOAT, rgbData));
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_2D));
+  
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+      
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLenum)clampingMode));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLenum)clampingMode));
 
-        glTexImage2D(GL_TEXTURE_2D, 0, (GLenum)internalFormat, width, height, 0, (GLenum)sourceFormat, GL_FLOAT, rgbData);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLenum)clampingMode);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLenum)clampingMode);
         float color[] = { borderColor.x, borderColor.y, borderColor.z, 1.0f };
-        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+        GL_CHECK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color));
 
+        initialized = true;
     }
 
     void Texture::Destroy()
     {
-        glDeleteTextures(1, &renderId);
+        SD_ASSERT(initialized, "Texture not initialized");
+
+        GL_CHECK(glDeleteTextures(1, &renderId));
+
+        initialized = false;
     }
 
     void Texture::Save(const std::string& path)
     {
+        SD_ASSERT(initialized, "Texture not initialized");
+
         int elementsPerPixel = 0;
 
         switch (format)
@@ -99,7 +120,7 @@ namespace Seidon
         Byte* pixels = new Byte[(long long)width * height * elementsPerPixel];
         
         Bind(0);
-        glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)format, GL_UNSIGNED_BYTE, pixels);
+        GL_CHECK(glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)format, GL_UNSIGNED_BYTE, pixels));
 
         std::ofstream out(path, std::ios::out | std::ios::binary);
 
@@ -122,6 +143,8 @@ namespace Seidon
 
     void Texture::SaveAsync(const std::string& path)
     {
+        SD_ASSERT(initialized, "Texture not initialized");
+
         int elementsPerPixel = 0;
 
         switch (format)
@@ -146,7 +169,7 @@ namespace Seidon
         Byte* pixels = new Byte[(long long)width * height * elementsPerPixel];
 
         Bind(0);
-        glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)format, GL_UNSIGNED_BYTE, pixels);
+        GL_CHECK(glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)format, GL_UNSIGNED_BYTE, pixels));
         Application::Get()->GetWorkManager()->Execute([&]()
             {
                 std::ofstream out(path, std::ios::out | std::ios::binary);
@@ -172,7 +195,15 @@ namespace Seidon
 
     void Texture::Load(const std::string& path)
     {
+        SD_ASSERT(!initialized, "Texture already initialized");
+
         std::ifstream in(path, std::ios::in | std::ios::binary);
+
+        if (!in)
+        {
+            std::cerr << "Error opening texture file: " << path << std::endl;
+            return;
+        }
 
         unsigned int width, height;
         in.read((char*)&id, sizeof(UUID));
@@ -230,6 +261,8 @@ namespace Seidon
 
     void Texture::LoadAsync(const std::string& path)
     {
+        SD_ASSERT(!initialized, "Texture already initialized");
+
         renderId = Application::Get()->GetResourceManager()->GetTexture("albedo_default")->GetRenderId();
         Application::Get()->GetWorkManager()->Execute([&]()
             {
@@ -296,6 +329,8 @@ namespace Seidon
 
     void Texture::Import(const std::string& path, bool gammaCorrection)
     {
+        SD_ASSERT(!initialized, "Texture already initialized");
+
         this->path = path;
         gammaCorrected = gammaCorrection;
         int width, height, channelCount;
@@ -330,6 +365,8 @@ namespace Seidon
 
     void Texture::ImportAsync(const std::string& path, bool gammaCorrection)
     {
+        SD_ASSERT(!initialized, "Texture already initialized");
+
         this->path = path;
         if (!temporaryTexture)
         {

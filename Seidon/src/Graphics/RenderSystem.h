@@ -29,7 +29,7 @@ namespace Seidon
 		Framebuffer renderFramebuffer;
 
 		Texture hdrMap;
-		Texture bloomMap;
+		//Texture bloomMap;
 		
 		Texture shadowMaps[CASCADE_COUNT];
 

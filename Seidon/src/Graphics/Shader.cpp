@@ -3,6 +3,8 @@
 #include "Core/Application.h"
 #include "Core/WorkManager.h"
 
+#include "../Debug/Debug.h"
+
 namespace Seidon
 {
     Shader* Shader::temporaryShader = nullptr;
@@ -14,11 +16,20 @@ namespace Seidon
 
     Shader::~Shader()
     {
-        glDeleteProgram(renderId);
+        Destroy();
+    }
+
+    void Shader::Destroy()
+    {
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glDeleteProgram(renderId));
     }
 
     void Shader::LoadFromFile(const std::string& path)
     {
+        SD_ASSERT(!initialized, "Shader already initialized");
+
         this->path = path;
         std::stringstream vertexStream;
         std::stringstream fragmentStream;
@@ -57,10 +68,14 @@ namespace Seidon
         std::string fShaderCode = fragmentStream.str();
 
         CreateFromSource(vShaderCode, fShaderCode);
+
+        initialized = true;
     }
 
     void Shader::LoadFromFileAsync(const std::string& path)
     {
+        SD_ASSERT(!initialized, "Shader already initialized");
+
         this->path = path;
 
         if (!temporaryShader)
@@ -120,11 +135,12 @@ namespace Seidon
                 );
             }
         );
-        
     }
 
     void Shader::CreateFromSource(const std::string& vertexShaderCode, const std::string& fragmentShaderCode)
     {
+        SD_ASSERT(!initialized, "Shader already initialized");
+
         const char* vertexCode = vertexShaderCode.c_str();
         const char* fragmentCode = fragmentShaderCode.c_str();
 
@@ -132,81 +148,104 @@ namespace Seidon
         int  success;
         char infoLog[512];
 
-        vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &vertexCode, NULL);
-        glCompileShader(vertexShader);
+        vertexShader = GL_CHECK(glCreateShader(GL_VERTEX_SHADER));
+        GL_CHECK(glShaderSource(vertexShader, 1, &vertexCode, NULL));
+        GL_CHECK(glCompileShader(vertexShader));
 
-        glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+        GL_CHECK(glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success));
         if (!success)
         {
-            glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+            GL_CHECK(glGetShaderInfoLog(vertexShader, 512, NULL, infoLog));
             std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+            return;
         }
 
-        fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, 1, &fragmentCode, NULL);
-        glCompileShader(fragmentShader);
+        fragmentShader = GL_CHECK(glCreateShader(GL_FRAGMENT_SHADER));
+        GL_CHECK(glShaderSource(fragmentShader, 1, &fragmentCode, NULL));
+        GL_CHECK(glCompileShader(fragmentShader));
 
-        glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+        GL_CHECK(glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success));
+
         if (!success)
         {
-            glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+            GL_CHECK(glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog));
             std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+            return;
         }
 
-        renderId = glCreateProgram();
-        glAttachShader(renderId, vertexShader);
-        glAttachShader(renderId, fragmentShader);
-        glLinkProgram(renderId);
+        renderId = GL_CHECK(glCreateProgram());
+        GL_CHECK(glAttachShader(renderId, vertexShader));
+        GL_CHECK(glAttachShader(renderId, fragmentShader));
+        GL_CHECK(glLinkProgram(renderId));
 
-        glGetProgramiv(renderId, GL_LINK_STATUS, &success);
-        if (!success) {
-            glGetProgramInfoLog(renderId, 512, NULL, infoLog);
+        GL_CHECK(glGetProgramiv(renderId, GL_LINK_STATUS, &success));
+
+        if (!success) 
+        {
+            GL_CHECK(glGetProgramInfoLog(renderId, 512, NULL, infoLog));
             std::cout << "ERROR::SHADER::LINK_FAILED\n" << infoLog << std::endl;
         }
 
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
+        GL_CHECK(glDeleteShader(vertexShader));
+        GL_CHECK(glDeleteShader(fragmentShader));
+
+        initialized = true;
     }
 
 
     void Shader::Use()
     {
-        glUseProgram(renderId);
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUseProgram(renderId));
     }
 
     void Shader::SetBool(const std::string& name, bool value) const
     {
-        glUniform1i(glGetUniformLocation(renderId, name.c_str()), (int)value);
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniform1i(glGetUniformLocation(renderId, name.c_str()), (int)value));
     }
 
     void Shader::SetInt(const std::string& name, int value) const
     {
-        glUniform1i(glGetUniformLocation(renderId, name.c_str()), value);
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniform1i(glGetUniformLocation(renderId, name.c_str()), value));
     }
 
     void Shader::SetInts(const std::string& name, int* values, int count) const
     {
-        glUniform1iv(glGetUniformLocation(renderId, name.c_str()), count, values);
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniform1iv(glGetUniformLocation(renderId, name.c_str()), count, values));
     }
 
     void Shader::SetFloat(const std::string& name, float value) const
     {
-        glUniform1f(glGetUniformLocation(renderId, name.c_str()), value);
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniform1f(glGetUniformLocation(renderId, name.c_str()), value));
     }
 
     void Shader::SetMat4(const std::string& name, const glm::mat4& value) const
     {
-        glUniformMatrix4fv(glGetUniformLocation(renderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniformMatrix4fv(glGetUniformLocation(renderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value)));
     }
 
     void Shader::SetMat3(const std::string& name, const glm::mat3& value) const
     {
-        glUniformMatrix3fv(glGetUniformLocation(renderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniformMatrix3fv(glGetUniformLocation(renderId, name.c_str()), 1, GL_FALSE, glm::value_ptr(value)));
     }
 
     void Shader::SetVec3(const std::string& name, const glm::vec3& value) const
     {
-        glUniform3fv(glGetUniformLocation(renderId, name.c_str()), 1, glm::value_ptr(value));
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniform3fv(glGetUniformLocation(renderId, name.c_str()), 1, glm::value_ptr(value)));
     }
 }

@@ -91,9 +91,9 @@ namespace Seidon
 	{
 
 		Destroy();
-		window->Destroy();
 		resourceManager->Destroy();
 		workManager->Destroy();
+		window->Destroy();
 
 		delete window;
 		delete resourceManager;

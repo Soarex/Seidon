@@ -9,6 +9,7 @@ namespace Seidon
 	class Framebuffer
 	{
 	private:
+		bool initialized = false;
 		unsigned int renderId;
 
 	public:
@@ -16,6 +17,7 @@ namespace Seidon
 		~Framebuffer();
 
 		void Create();
+		void Destroy();
 
 		void Bind();
 		void Unbind();

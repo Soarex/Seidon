@@ -11,6 +11,8 @@ namespace Seidon
 	class RenderBuffer
 	{
 	private:
+		bool initialized = false;
+
 		unsigned int renderId;
 		int width, height;
 	public:

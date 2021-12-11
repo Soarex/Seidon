@@ -44,6 +44,12 @@ namespace Seidon
 	{
 		std::ifstream in(path, std::ios::in | std::ios::binary);
 
+		if (!in)
+		{
+			std::cerr << "Error opening material file: " << path << std::endl;
+			return;
+		}
+
 		in.read((char*)&id, sizeof(UUID));
 
 		size_t size = 0;

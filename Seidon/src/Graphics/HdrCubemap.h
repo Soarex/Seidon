@@ -16,6 +16,7 @@ namespace Seidon
 	class HdrCubemap
 	{
 	private:
+		bool initialized = false;
 		UUID id;
 		std::string filepath;
 		unsigned int skyboxID;
@@ -31,7 +32,6 @@ namespace Seidon
 
 		static constexpr unsigned int maxMipLevels = 5;
 	public:
-		Texture t;
 		HdrCubemap(unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
 		~HdrCubemap();
 

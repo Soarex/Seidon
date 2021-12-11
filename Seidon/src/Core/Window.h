@@ -15,6 +15,7 @@ namespace Seidon
 	class Window
 	{
 	private:
+		bool initialized = false;
 		std::string name;
 		GLFWwindow* handle;
 

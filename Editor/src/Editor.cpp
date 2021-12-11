@@ -189,7 +189,9 @@ namespace Seidon
         {
             RenderSystem& renderSystem = sceneManager->GetActiveScene()->GetSystem<RenderSystem>();
             renderSystem.SetRenderToScreen(false);
-            renderSystem.ResizeFramebuffer(viewportPanelSize.x, viewportPanelSize.y);
+
+            if(viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
+                renderSystem.ResizeFramebuffer(viewportPanelSize.x, viewportPanelSize.y);
 
             ImGui::Image((ImTextureID)renderSystem.GetRenderTarget().GetRenderId(), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
         }

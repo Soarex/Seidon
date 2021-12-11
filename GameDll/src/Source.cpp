@@ -99,7 +99,7 @@ public:
 
     bool IsGrounded(Seidon::TransformComponent& transform)
     {
-        return transform.position.y <= 1.5;
+        return transform.position.y <= 1.6;
     }
 
     void Jump(PlayerComponent& player)

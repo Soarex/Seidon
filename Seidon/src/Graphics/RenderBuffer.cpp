@@ -1,5 +1,5 @@
 #include "RenderBuffer.h"
-#include <iostream>
+#include "../Debug/Debug.h"
 
 namespace Seidon
 {
@@ -15,16 +15,24 @@ namespace Seidon
 
 	void RenderBuffer::Create(int width, int height, RenderBufferType type)
 	{
+		SD_ASSERT(!initialized, "RenderBuffer already initialized");
+
 		this->width = width; this->height = height;
 
-		glGenRenderbuffers(1, &renderId);
-		glBindRenderbuffer(GL_RENDERBUFFER, renderId);
-		glRenderbufferStorage(GL_RENDERBUFFER, (int)type, width, height);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		GL_CHECK(glGenRenderbuffers(1, &renderId));
+		GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, renderId));
+		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, (int)type, width, height));
+		GL_CHECK(glBindRenderbuffer(GL_RENDERBUFFER, 0));
+
+		initialized = true;
 	}
 
 	void RenderBuffer::Destroy()
 	{
-		glDeleteRenderbuffers(1, &renderId);
+		SD_ASSERT(initialized, "RenderBuffer not initialized");
+
+		GL_CHECK(glDeleteRenderbuffers(1, &renderId));
+
+		initialized = false;
 	}
 }

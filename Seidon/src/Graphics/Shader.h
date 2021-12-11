@@ -17,6 +17,8 @@ namespace Seidon
     class Shader
     {
     private:
+        bool initialized = false;
+
         UUID id;
         std::string path;
         unsigned int renderId;
@@ -31,6 +33,7 @@ namespace Seidon
         inline const std::string& GetPath() { return path; }
 
         void CreateFromSource(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
+        void Destroy();
 
         void LoadFromFile(const std::string& path);
         void LoadFromFileAsync(const std::string& path);

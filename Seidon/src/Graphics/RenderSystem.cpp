@@ -1,4 +1,6 @@
 #include "RenderSystem.h"
+#include "../Debug/Debug.h"
+
 #include "Ecs/Scene.h"
 
 #include "Core/Application.h"
@@ -49,9 +51,9 @@ namespace Seidon
 
 		shader.SetInts("shadowMaps", shadowSamplers, CASCADE_COUNT);
 
-		depthShader.LoadFromFileAsync("Shaders/ShadowPass.shader");
-		quadShader.LoadFromFileAsync("Shaders/Simple.shader");
-		cubemapShader.LoadFromFileAsync("Shaders/Cubemap.shader");
+		depthShader.LoadFromFile("Shaders/ShadowPass.shader");
+		quadShader.LoadFromFile("Shaders/Simple.shader");
+		cubemapShader.LoadFromFile("Shaders/Cubemap.shader");
 
 		std::vector<Vertex> quadVertices =
 		{
@@ -69,15 +71,15 @@ namespace Seidon
 		fullscreenQuad = new SubMesh();
 		fullscreenQuad->Create(quadVertices, indices, "");
 
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		GL_CHECK(glEnable(GL_DEPTH_TEST));
+		GL_CHECK(glEnable(GL_BLEND));
+		GL_CHECK(glEnable(GL_CULL_FACE));
+		GL_CHECK(glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS));
 
 		windowResizeCallbackPosition = 
 			window->AddWindowSizeCallback([this](int width, int height)
 			{
-				if (useFullWindow)
+				if (useFullWindow && width > 0 && height > 0)
 					ResizeFramebuffer(width, height);
 			});
 
@@ -120,7 +122,7 @@ namespace Seidon
 		//Shadow Pass
 		//glDisable(GL_CULL_FACE);
 		//glCullFace(GL_FRONT);
-		glEnable(GL_DEPTH_CLAMP);
+		GL_CHECK(glEnable(GL_DEPTH_CLAMP));
 
 		glm::mat4 lightSpaceMatrices[CASCADE_COUNT];
 		float farPlanes[CASCADE_COUNT] =
@@ -131,8 +133,8 @@ namespace Seidon
 		for (int i = 0; i < CASCADE_COUNT; i++)
 		{
 			depthFramebuffers[i].Bind();
-			glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-			glClear(GL_DEPTH_BUFFER_BIT);
+			GL_CHECK(glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE));
+			GL_CHECK(glClear(GL_DEPTH_BUFFER_BIT));
 			
 			float nearPlane, farPlane;
 			if (i == 0)
@@ -160,23 +162,23 @@ namespace Seidon
 
 				for (SubMesh* subMesh : r.mesh->subMeshes)
 				{
-					glBindVertexArray(subMesh->GetVAO());
-					glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0);
+					GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
+					GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
 				}
 			}
 
 			depthFramebuffers[i].Unbind();
 		}
 
-		glDisable(GL_DEPTH_CLAMP);
+		GL_CHECK(glDisable(GL_DEPTH_CLAMP));
 		//Hdr Pass
-		glEnable(GL_CULL_FACE);
+		GL_CHECK(glEnable(GL_CULL_FACE));
 		hdrFramebuffer.Bind();
 
-		glViewport(0, 0, framebufferWidth, framebufferHeight);
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glCullFace(GL_BACK);
+		GL_CHECK(glViewport(0, 0, framebufferWidth, framebufferHeight));
+		GL_CHECK(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+		GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+		GL_CHECK(glCullFace(GL_BACK));
 
 		shader.Use();
 		shader.SetVec3("directionalLight.direction", lightTransform.GetForwardDirection());
@@ -223,36 +225,36 @@ namespace Seidon
 				r.materials[i]->metallic->Bind(3);
 				r.materials[i]->ao->Bind(4);
 
-				glBindVertexArray(subMesh->GetVAO());
-
-				glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0);
+				GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
+				
+				GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
 
 				i++;
 			}
 		}
 
-		glDepthFunc(GL_LEQUAL);
+		GL_CHECK(glDepthFunc(GL_LEQUAL));
 		cubemapShader.Use();
 		cubemapShader.SetMat4("viewMatrix", glm::mat4(glm::mat3(camera.GetViewMatrix(cameraTransform))));
 		cubemapShader.SetMat4("projectionMatrix", camera.GetProjectionMatrix());
 		cubemap.cubemap->BindSkybox();
 		captureCube.Draw();
-		glDepthFunc(GL_LESS);
+		GL_CHECK(glDepthFunc(GL_LESS));
 
 		hdrFramebuffer.Unbind();
 
 		// Final Quad
 		if(!renderToScreen) renderFramebuffer.Bind();
-		glViewport(0, 0, framebufferWidth, framebufferHeight);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		GL_CHECK(glViewport(0, 0, framebufferWidth, framebufferHeight));
+		GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		quadShader.Use();
 		quadShader.SetFloat("exposure", camera.exposure);
 
 		hdrMap.Bind(0);
 		
-		glBindVertexArray(fullscreenQuad->GetVAO());
-		glDrawElements(GL_TRIANGLES, fullscreenQuad->indices.size(), GL_UNSIGNED_INT, 0);
+		GL_CHECK(glBindVertexArray(fullscreenQuad->GetVAO()));
+		GL_CHECK(glDrawElements(GL_TRIANGLES, fullscreenQuad->indices.size(), GL_UNSIGNED_INT, 0));
 		if (!renderToScreen) renderFramebuffer.Unbind();
 	}
 
@@ -264,6 +266,8 @@ namespace Seidon
 
 	void RenderSystem::ResizeFramebuffer(unsigned int width, unsigned int height)
 	{
+		SD_ASSERT(initialized, "RenderSystem not initialized");
+
 		if (width == framebufferWidth && height == framebufferHeight) return;
 
 		if (width == 0 && height == 0)

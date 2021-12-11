@@ -11,6 +11,8 @@ namespace Seidon
 	class Extension
 	{
 	private:
+		bool initialized = false;
+		bool bound;
 		HINSTANCE handle;
 		std::wstring path;
 

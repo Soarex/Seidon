@@ -1,5 +1,6 @@
 #include "HdrCubemap.h"
-#include <Imgui/imgui.h>
+
+#include "../Debug/Debug.h"
 
 namespace Seidon
 {
@@ -16,13 +17,19 @@ namespace Seidon
 
     void HdrCubemap::Destroy()
     {
-        glDeleteTextures(1, &skyboxID);
-        glDeleteTextures(1, &irradianceMapID);
-        glDeleteTextures(1, &prefilteredMapID);
+        SD_ASSERT(initialized, "Cubemap not initialized");
+
+        GL_CHECK(glDeleteTextures(1, &skyboxID));
+        GL_CHECK(glDeleteTextures(1, &irradianceMapID));
+        GL_CHECK(glDeleteTextures(1, &prefilteredMapID));
+
+        initialized = false;
     }
 
     void HdrCubemap::Save(const std::string& path)
     {
+        SD_ASSERT(initialized, "Cubemap not initialized");
+
         std::ofstream out(path, std::ios::out | std::ios::binary);
         
         out.write((char*)&id, sizeof(UUID));
@@ -38,7 +45,7 @@ namespace Seidon
         float* pixels = new float[(long long)BRDFLookupSize * BRDFLookupSize * 2];
 
         BRDFLookupMap.Bind(0);
-        glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)TextureFormat::RED_GREEN, GL_FLOAT, pixels);
+        GL_CHECK(glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)TextureFormat::RED_GREEN, GL_FLOAT, pixels));
 
         out.write((char*)&BRDFLookupSize, sizeof(unsigned int));
         out.write((char*)pixels, sizeof(float) * BRDFLookupSize * BRDFLookupSize * 2);
@@ -51,13 +58,13 @@ namespace Seidon
         int elementsPerPixel = 3;
         float* pixels = new float[(long long)faceSize * faceSize * elementsPerPixel];
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
 
         out.write((char*)&faceSize, sizeof(unsigned int));
         for (unsigned int i = 0; i < 6; ++i)
         {
-            glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, GL_FLOAT, pixels);
+            GL_CHECK(glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, GL_FLOAT, pixels));
             out.write((char*)pixels, sizeof(float) * faceSize * faceSize * elementsPerPixel);
         }
 
@@ -69,13 +76,13 @@ namespace Seidon
         int elementsPerPixel = 3;
         float* pixels = new float[(long long)irradianceMapSize * irradianceMapSize * elementsPerPixel];
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID);
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID));
 
         out.write((char*)&irradianceMapSize, sizeof(unsigned int));
         for (unsigned int i = 0; i < 6; ++i)
         {
-            glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, GL_FLOAT, pixels);
+            GL_CHECK(glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, GL_FLOAT, pixels));
             out.write((char*)pixels, sizeof(float) * irradianceMapSize * irradianceMapSize * elementsPerPixel);
         }
 
@@ -87,8 +94,8 @@ namespace Seidon
         int elementsPerPixel = 3;
         float* pixels = new float[(long long)prefilteredMapSize * prefilteredMapSize * elementsPerPixel];
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID);
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID));
         
         out.write((char*)&prefilteredMapSize, sizeof(unsigned int));
 
@@ -98,7 +105,7 @@ namespace Seidon
 
             for (unsigned int i = 0; i < 6; ++i)
             {
-                glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, GL_RGB, GL_FLOAT, pixels);
+                GL_CHECK(glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, GL_RGB, GL_FLOAT, pixels));
                 out.write((char*)pixels, sizeof(float) * mipSize * mipSize * elementsPerPixel);
             }
         }
@@ -107,7 +114,15 @@ namespace Seidon
 
     void HdrCubemap::Load(const std::string& path)
     {
+        SD_ASSERT(!initialized, "Cubemap alrady initialized");
+
         std::ifstream in(path, std::ios::in | std::ios::binary);
+
+        if (!in)
+        {
+            std::cerr << "Error opening cubemap file: " << path << std::endl;
+            return;
+        }
 
         in.read((char*)&id, sizeof(UUID));
 
@@ -129,14 +144,16 @@ namespace Seidon
 
         BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, pixels, TextureFormat::RED_GREEN, TextureFormat::FLOAT16_RED_GREEN, ClampingMode::CLAMP);
         delete[] pixels;
+
+        initialized = true;
     }
 
     void HdrCubemap::LoadCubemap(std::ifstream& in)
     {
         int elementsPerPixel = 3;
 
-        glGenTextures(1, &skyboxID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+        GL_CHECK(glGenTextures(1, &skyboxID));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
 
         in.read((char*)&faceSize, sizeof(unsigned int));
         float* pixels = new float[(long long)faceSize * faceSize * 3];
@@ -144,15 +161,15 @@ namespace Seidon
         for (unsigned int i = 0; i < 6; ++i)
         {
             in.read((char*)pixels, sizeof(float) * faceSize * faceSize * elementsPerPixel);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, faceSize, faceSize, 0, GL_RGB, GL_FLOAT, pixels);
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, faceSize, faceSize, 0, GL_RGB, GL_FLOAT, pixels));
         }
 
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
 
         delete[] pixels;
     }
@@ -162,8 +179,8 @@ namespace Seidon
     {
         int elementsPerPixel = 3;
 
-        glGenTextures(1, &irradianceMapID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID);
+        GL_CHECK(glGenTextures(1, &irradianceMapID));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID));
 
         in.read((char*)&irradianceMapSize, sizeof(unsigned int));
         float* pixels = new float[(long long)irradianceMapSize * irradianceMapSize * 3];
@@ -171,14 +188,14 @@ namespace Seidon
         for (unsigned int i = 0; i < 6; ++i)
         {
             in.read((char*)pixels, sizeof(float) * irradianceMapSize * irradianceMapSize * elementsPerPixel);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irradianceMapSize, irradianceMapSize, 0, GL_RGB, GL_FLOAT, pixels);
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irradianceMapSize, irradianceMapSize, 0, GL_RGB, GL_FLOAT, pixels));
         }
 
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
         delete[] pixels;
     }
@@ -188,16 +205,16 @@ namespace Seidon
     {
         int elementsPerPixel = 3;
 
-        glGenTextures(1, &prefilteredMapID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID);
+        GL_CHECK(glGenTextures(1, &prefilteredMapID));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID));
 
         in.read((char*)&prefilteredMapSize, sizeof(unsigned int));
         float* pixels = new float[(long long)prefilteredMapSize * prefilteredMapSize * 3];
 
         for (unsigned int i = 0; i < 6; i++)
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilteredMapSize, prefilteredMapSize, 0, GL_RGB, GL_FLOAT, NULL);
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilteredMapSize, prefilteredMapSize, 0, GL_RGB, GL_FLOAT, NULL));
 
-        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
 
         for (unsigned int mip = 0; mip < maxMipLevels; mip++)
         {
@@ -206,29 +223,35 @@ namespace Seidon
             for (unsigned int i = 0; i < 6; ++i)
             {
                 in.read((char*)pixels, sizeof(float) * mipSize * mipSize * elementsPerPixel);
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, GL_RGB16F, mipSize, mipSize, 0, GL_RGB, GL_FLOAT, pixels);
+                GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, GL_RGB16F, mipSize, mipSize, 0, GL_RGB, GL_FLOAT, pixels));
             }
         }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
         delete[] pixels;
     }
 
     void HdrCubemap::CreateFromEquirectangularMap(Texture* texture)
     {
+        SD_ASSERT(!initialized, "Cubemap already initialized");
+
         filepath = texture->GetPath();
         ToCubemap(*texture);
         GenerateIrradianceMap();
         GeneratePrefilteredMap();
         GenerateBRDFLookupMap();
+
+        initialized = true;
     }
 
 	void HdrCubemap::LoadFromEquirectangularMap(std::string path)
 	{
+        SD_ASSERT(!initialized, "Cubemap already initialized");
+
         filepath = path;
         stbi_set_flip_vertically_on_load(true);
         int width, height, channelCount;
@@ -252,43 +275,53 @@ namespace Seidon
         }
 
         stbi_set_flip_vertically_on_load(false);
+
+        initialized = true;
 	}
 
     void HdrCubemap::BindSkybox(unsigned int slot)
     {
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+        SD_ASSERT(initialized, "Cubemap not initialized");
+
+        GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
     }
 
     void HdrCubemap::BindIrradianceMap(unsigned int slot)
     {
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID);
+        SD_ASSERT(initialized, "Cubemap not initialized");
+
+        GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID));
     }
 
     void HdrCubemap::BindPrefilteredMap(unsigned int slot)
     {
-        glActiveTexture(GL_TEXTURE0 + slot);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID);
+        SD_ASSERT(initialized, "Cubemap not initialized");
+
+        GL_CHECK(glActiveTexture(GL_TEXTURE0 + slot));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID));
     }
 
     void HdrCubemap::BindBRDFLookupMap(unsigned int slot)
     {
+        SD_ASSERT(initialized, "Cubemap not initialized");
+
         BRDFLookupMap.Bind(slot);
     }
 
     void HdrCubemap::ToCubemap(Texture& equirectangularMap)
     {
-        glGenTextures(1, &skyboxID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+        GL_CHECK(glGenTextures(1, &skyboxID));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
         for (unsigned int i = 0; i < 6; ++i)
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, faceSize, faceSize, 0, GL_RGB, GL_FLOAT, nullptr);
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, faceSize, faceSize, 0, GL_RGB, GL_FLOAT, nullptr));
 
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
 
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
@@ -308,8 +341,6 @@ namespace Seidon
         Framebuffer conversionFramebuffer;
         conversionFramebuffer.Create();
 
-        conversionFramebuffer.SetDepthStencilRenderBuffer(depthAttachment);
-
         Shader conversionShader;
         conversionShader.LoadFromFile("Shaders/EquirectangularConversion.shader");
         conversionShader.Use();
@@ -317,38 +348,42 @@ namespace Seidon
         conversionShader.SetMat4("projectionMatrix", projectionMatrix);
         equirectangularMap.Bind();
 
-        glViewport(0, 0, faceSize, faceSize);
+        GL_CHECK(glViewport(0, 0, faceSize, faceSize));
         conversionFramebuffer.Bind();
 
         for (unsigned int i = 0; i < 6; ++i)
         {
             conversionShader.SetMat4("viewMatrix", viewMatrices[i]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, skyboxID, 0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            
+            GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, skyboxID, 0));
+            
+            conversionFramebuffer.SetDepthStencilRenderBuffer(depthAttachment);
+
+            GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
             DrawCaptureCube();
         }
         conversionFramebuffer.Unbind();
 
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
-        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
     }
 
     void HdrCubemap::GenerateIrradianceMap()
     {
-        glGenTextures(1, &irradianceMapID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID);
+        GL_CHECK(glGenTextures(1, &irradianceMapID));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMapID));
         for (unsigned int i = 0; i < 6; ++i)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irradianceMapSize, irradianceMapSize, 0,
-                GL_RGB, GL_FLOAT, nullptr);
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, irradianceMapSize, irradianceMapSize, 0,
+                GL_RGB, GL_FLOAT, nullptr));
         }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
         glm::mat4 viewMatrices[] =
@@ -366,7 +401,6 @@ namespace Seidon
 
         Framebuffer convolutionFramebuffer;
         convolutionFramebuffer.Create();
-        convolutionFramebuffer.SetDepthStencilRenderBuffer(depthAttachment);
 
         Shader convolutionShader;
         convolutionShader.LoadFromFile("Shaders/Convolution.shader");
@@ -375,19 +409,22 @@ namespace Seidon
         convolutionShader.SetFloat("faceResolution", faceSize);
         convolutionShader.SetMat4("projectionMatrix", projectionMatrix);
         
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
 
-        glViewport(0, 0, irradianceMapSize, irradianceMapSize);
+        GL_CHECK(glViewport(0, 0, irradianceMapSize, irradianceMapSize));
 
         convolutionFramebuffer.Bind();
 
         for (unsigned int i = 0; i < 6; ++i)
         {
             convolutionShader.SetMat4("viewMatrix", viewMatrices[i]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMapID, 0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMapID, 0));
+
+            convolutionFramebuffer.SetDepthStencilRenderBuffer(depthAttachment);
+
+            GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
             DrawCaptureCube();
         }
@@ -397,20 +434,20 @@ namespace Seidon
 
     void HdrCubemap::GeneratePrefilteredMap()
     {
-        glGenTextures(1, &prefilteredMapID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID);
+        GL_CHECK(glGenTextures(1, &prefilteredMapID));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, prefilteredMapID));
         for (unsigned int i = 0; i < 6; ++i)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilteredMapSize, prefilteredMapSize, 0,
-                GL_RGB, GL_FLOAT, nullptr);
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, prefilteredMapSize, prefilteredMapSize, 0,
+                GL_RGB, GL_FLOAT, nullptr));
         }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
-        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
 
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
         glm::mat4 viewMatrices[] =
@@ -433,10 +470,10 @@ namespace Seidon
         convolutionShader.SetInt("environmentMap", 0);
         convolutionShader.SetMat4("projectionMatrix", projectionMatrix);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
 
-        glViewport(0, 0, prefilteredMapSize, prefilteredMapSize);
+        GL_CHECK(glViewport(0, 0, prefilteredMapSize, prefilteredMapSize));
 
         convolutionFramebuffer.Bind();
         
@@ -449,7 +486,7 @@ namespace Seidon
             depthAttachment.Create(mipWidth, mipHeight, RenderBufferType::DEPTH_STENCIL);
             convolutionFramebuffer.SetDepthStencilRenderBuffer(depthAttachment);
 
-            glViewport(0, 0, mipWidth, mipHeight);
+            GL_CHECK(glViewport(0, 0, mipWidth, mipHeight));
 
             float roughness = (float)mip / (float)(maxMipLevels - 1);
             convolutionShader.SetFloat("roughness", roughness);
@@ -457,9 +494,9 @@ namespace Seidon
             for (unsigned int i = 0; i < 6; ++i)
             {
                 convolutionShader.SetMat4("viewMatrix", viewMatrices[i]);
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilteredMapID, mip);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilteredMapID, mip));
+                GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
                 DrawCaptureCube();
             }
@@ -484,8 +521,8 @@ namespace Seidon
         convolutionShader.LoadFromFile("Shaders/BRDFConvolution.shader");
         convolutionShader.Use();
         
-        glViewport(0, 0, BRDFLookupSize, BRDFLookupSize);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        GL_CHECK(glViewport(0, 0, BRDFLookupSize, BRDFLookupSize));
+        GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
         DrawCaptureQuad();
         convolutionFramebuffer.Unbind();
     }
@@ -540,25 +577,25 @@ namespace Seidon
         
         unsigned int cubeVAO = 0;
         unsigned int cubeVBO = 0;
-        glGenVertexArrays(1, &cubeVAO);
-        glGenBuffers(1, &cubeVBO);
+        GL_CHECK(glGenVertexArrays(1, &cubeVAO));
+        GL_CHECK(glGenBuffers(1, &cubeVBO));
         
-        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+        GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, cubeVBO));
+        GL_CHECK(glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW));
         
-        glBindVertexArray(cubeVAO);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        GL_CHECK(glBindVertexArray(cubeVAO));
+        GL_CHECK(glEnableVertexAttribArray(0));
+        GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0));
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
+        GL_CHECK(glBindVertexArray(0));
 
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
+        GL_CHECK(glBindVertexArray(cubeVAO));
+        GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 36));
+        GL_CHECK(glBindVertexArray(0));
 
-        glDeleteBuffers(1, &cubeVBO);
-        glDeleteVertexArrays(1, &cubeVAO);
+        GL_CHECK(glDeleteBuffers(1, &cubeVBO));
+        GL_CHECK(glDeleteVertexArrays(1, &cubeVAO));
     }
 
     void HdrCubemap::DrawCaptureQuad()
@@ -574,21 +611,21 @@ namespace Seidon
              1.0f, -1.0f, 0.0f,     1.0f, 0.0f,
         };
         
-        glGenVertexArrays(1, &quadVAO);
-        glGenBuffers(1, &quadVBO);
-        glBindVertexArray(quadVAO);
-        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        GL_CHECK(glGenVertexArrays(1, &quadVAO));
+        GL_CHECK(glGenBuffers(1, &quadVBO));
+        GL_CHECK(glBindVertexArray(quadVAO));
+        GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, quadVBO));
+        GL_CHECK(glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW));
+        GL_CHECK(glEnableVertexAttribArray(0));
+        GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0));
+        GL_CHECK(glEnableVertexAttribArray(1));
+        GL_CHECK(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))));
 
-        glBindVertexArray(quadVAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindVertexArray(0);
-        glDeleteBuffers(1, &quadVBO);
-        glDeleteVertexArrays(1, &quadVAO);
+        GL_CHECK(glBindVertexArray(quadVAO));
+        GL_CHECK(glDrawArrays(GL_TRIANGLE_STRIP, 0, 4));
+        GL_CHECK(glBindVertexArray(0));
+        GL_CHECK(glDeleteBuffers(1, &quadVBO));
+        GL_CHECK(glDeleteVertexArrays(1, &quadVAO));
     }
 
 }

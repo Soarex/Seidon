@@ -25,7 +25,7 @@ namespace Seidon
 	void Scene::Update(float deltaTime)
 	{
 		for (auto& [typeName, system] : systems)
-			system->Update(deltaTime);
+			system->SysUpdate(deltaTime);
 	}
 
 	void SaveSystems(YAML::Emitter& out, Scene& scene)
@@ -256,7 +256,7 @@ namespace Seidon
 	{
 		for (auto& [typeName, system] : systems)
 		{
-			system->Destroy();
+			system->SysDestroy();
 			delete system;
 		}
 
