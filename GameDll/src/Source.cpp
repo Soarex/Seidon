@@ -29,6 +29,11 @@ public:
 
             glm::vec3 input = glm::vec3(-inputManager->GetMouseOffset().y, inputManager->GetMouseOffset().x, 0);
 
+            if (inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_Y)) != 0 || inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_X)) != 0)
+            {
+                input.x = inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_Y)) * 20;
+                input.y = inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_X)) * 20;
+            }
             orbitAngles += rotationSpeed * deltaTime * input;
 
             if (orbitAngles.y < 0) orbitAngles.y += 360;
@@ -66,6 +71,12 @@ public:
 
             input.x = -inputManager->GetKey(GET_KEYCODE(A)) + inputManager->GetKey(GET_KEYCODE(D));
             input.z = -inputManager->GetKey(GET_KEYCODE(S)) + inputManager->GetKey(GET_KEYCODE(W));
+            
+            if (inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_X)) != 0 || inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_Y)) != 0)
+            {
+                input.x = inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_X));
+                input.z = -inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_Y));
+            }
 
             glm::vec3 forward = cameraTransform.GetForwardDirection();
             forward = glm::normalize(forward);
@@ -76,18 +87,19 @@ public:
             glm::vec3 direction = forward * input.z + right * input.x;
             direction.y = 0;
 
-            if (glm::length2(input) > 0)
+            if (glm::length(direction) > 0)
             {
-                direction /= glm::length2(direction);
+                direction /= glm::length(direction);
                 playerTransform.rotation.y = std::atan2(direction.x, direction.z);
             }
 
             playerComponent.velocity.x = direction.x * playerComponent.speed;
             playerComponent.velocity.z = direction.z * playerComponent.speed;
+
             if (IsGrounded(playerTransform))
             {
                 playerComponent.velocity.y = 0;
-                if (inputManager->GetKeyPressed(GET_KEYCODE(SPACE)))
+                if (inputManager->GetKeyPressed(GET_KEYCODE(SPACE)) || inputManager->GetGamepadButton(GET_GAMEPAD_BUTTONCODE(A)))
                     Jump(playerComponent);
             }
             else

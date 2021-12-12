@@ -14,7 +14,7 @@ namespace Seidon
 			window->SetName("Seidon Runtime");
 			window->SetSize(1280, 720);
 			window->EnableMouseCursor(false);
-			window->EnableFullscreen(false);
+			window->EnableFullscreen(true);
 
 			e.Bind(L"Assets/scripts.dll");
 			e.Init();

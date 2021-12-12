@@ -3,7 +3,8 @@
 #include "Window.h"
 
 #define GET_KEYCODE(x) GLFW_KEY_##x
-
+#define GET_GAMEPAD_BUTTONCODE(x) GLFW_GAMEPAD_BUTTON_##x
+#define GET_GAMEPAD_AXISCODE(x) GLFW_GAMEPAD_AXIS_##x
 
 namespace Seidon
 {
@@ -39,6 +40,8 @@ namespace Seidon
 		bool keysPressedThisFrame[KEY_STATE_COUNT];
 		bool mouseButtonsPressedThisFrame[MOUSE_BUTTON_COUNT];
 
+		GLFWgamepadstate gamepadState;
+
 		bool blockInput;
 	public:
 		void Init(Window* window);
@@ -48,6 +51,10 @@ namespace Seidon
 		bool GetKeyPressed(int keyCode);
 		bool GetKeyDown(int keyCode);
 		bool GetKeyReleased(int keyCode);
+
+		bool IsGamepadConnected(int index);
+		int GetGamepadButton(int buttonCode);
+		float GetGamepadAxis(int axisCode);
 
 		bool GetMouseButton(MouseButton button);
 		bool GetMouseButtonPressed(MouseButton button);

@@ -87,6 +87,26 @@ namespace Seidon
 		return keyStates[keycode] == KeyState::RELEASED;
 	}
 
+	bool InputManager::IsGamepadConnected(int index)
+	{
+		return glfwJoystickIsGamepad(GLFW_JOYSTICK_1 + index);
+	}
+
+	int InputManager::GetGamepadButton(int buttonCode)
+	{
+		return gamepadState.buttons[buttonCode];
+	}
+
+	float InputManager::GetGamepadAxis(int axisCode)
+	{
+		float epsilon = 0.1f;
+
+		if (std::abs(gamepadState.axes[axisCode]) > epsilon)
+			return gamepadState.axes[axisCode];
+		else
+			return 0;
+	}
+
 	bool InputManager::GetMouseButton(MouseButton button)
 	{
 		if (blockInput) return false;
@@ -145,6 +165,9 @@ namespace Seidon
 
 	void InputManager::Update()
 	{
+		if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1))
+			glfwGetGamepadState(GLFW_JOYSTICK_1, &gamepadState);
+
 		for (int i = 0; i < KEY_STATE_COUNT; i++)
 		{
 			if (keyStates[i] == KeyState::PRESSED && keysPressedThisFrame[i] == false)
