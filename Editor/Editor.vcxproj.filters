@@ -36,9 +36,6 @@
     <ClCompile Include="src\EditorCameraControlSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\SceneSerializer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Panels\SystemsPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -74,9 +71,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EditorCameraControlSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SceneSerializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Extensions\Extension.h">

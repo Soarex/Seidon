@@ -58,15 +58,26 @@ namespace Seidon
         // vertex positions
         GL_CHECK(glEnableVertexAttribArray(0));
         GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0));
+
         // vertex normals
         GL_CHECK(glEnableVertexAttribArray(1));
         GL_CHECK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
+
         // vertex tangent
         GL_CHECK(glEnableVertexAttribArray(2));
         GL_CHECK(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent)));
+
         // vertex texture coords
         GL_CHECK(glEnableVertexAttribArray(3));
         GL_CHECK(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords)));
+
+        // vertex bone ids
+        GL_CHECK(glEnableVertexAttribArray(3));
+        GL_CHECK(glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneIds)));
+
+        // vertex weights
+        GL_CHECK(glEnableVertexAttribArray(3));
+        GL_CHECK(glVertexAttribPointer(5, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights)));
 
         GL_CHECK(glBindVertexArray(0));
 

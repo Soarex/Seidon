@@ -1,5 +1,6 @@
 #include "ModelImporter.h"
 #include <filesystem>
+#include <unordered_map>
 
 namespace Seidon
 {
@@ -24,41 +25,168 @@ namespace Seidon
             res.materials.push_back(ProcessMaterial(scene->mMaterials[i], directory));
         }
 
-        ProcessNode(scene->mRootNode, scene, res, aiMatrix4x4(), directory);
-        return res;
-	}
+        for (int i = 0; i < scene->mNumAnimations; i++)
+        {
+            Animation animation;
+            animation.name = scene->mAnimations[i]->mName.C_Str();
+            animation.duration = scene->mAnimations[i]->mDuration;
+            animation.ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
 
-    void ModelImporter::ProcessNode(aiNode* node, const aiScene* scene, ModelImportData& importData, const aiMatrix4x4& transform, const std::string& directory)
+            animation.channels.reserve(scene->mAnimations[i]->mNumChannels);
+
+            for (int j = 0; j < scene->mAnimations[i]->mNumChannels; j++)
+            {
+                AnimationChannel channel;
+                channel.boneName = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
+                channel.positionKeys.reserve(scene->mAnimations[i]->mChannels[j]->mNumPositionKeys);
+
+                for (int k = 0; k < scene->mAnimations[i]->mChannels[j]->mNumPositionKeys; k++)
+                {
+                    AnimationKey key;
+                    key.time = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mTime;
+                    key.value.x = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.x;
+                    key.value.y = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.y;
+                    key.value.z = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.z;
+                    key.value.w = 1;
+
+                    channel.positionKeys.push_back(key);
+                }
+
+
+                channel.rotationKeys.reserve(scene->mAnimations[i]->mChannels[j]->mNumRotationKeys);
+
+                for (int k = 0; k < scene->mAnimations[i]->mChannels[j]->mNumRotationKeys; k++)
+                {
+                    AnimationKey key;
+                    key.time = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mTime;
+                    key.value.x = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.x;
+                    key.value.y = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.y;
+                    key.value.z = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.z;
+                    key.value.w = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.w;
+
+                    channel.rotationKeys.push_back(key);
+                }
+
+
+                channel.scalingKeys.reserve(scene->mAnimations[i]->mChannels[j]->mNumScalingKeys);
+
+                for (int k = 0; k < scene->mAnimations[i]->mChannels[j]->mNumScalingKeys; k++)
+                {
+                    AnimationKey key;
+                    key.time = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mTime;
+                    key.value.x = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.x;
+                    key.value.y = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.y;
+                    key.value.z = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.z;
+                    key.value.w = 1;
+
+                    channel.scalingKeys.push_back(key);
+                }
+
+                animation.channels.push_back(channel);
+            }
+        }
+
+        std::vector<aiNode*> meshRootNodes;
+        std::vector<aiNode*> armatureRootNodes;
+
+        for (int i = 0; i < scene->mRootNode->mNumChildren; i++)
+        {
+            if (ContainsMeshes(scene->mRootNode->mChildren[i]))
+                meshRootNodes.push_back(scene->mRootNode->mChildren[i]);
+            else
+                armatureRootNodes.push_back(scene->mRootNode->mChildren[i]);
+        }
+
+        for (aiNode* armatureRootNode : armatureRootNodes)
+        {
+            Armature armature;
+            ProcessBones(armatureRootNode, scene, armature, -1);
+            res.armatures.push_back(armature);
+        }
+
+        for(aiNode* meshRootNode : meshRootNodes)
+            ProcessMeshes(meshRootNode, scene, res, aiMatrix4x4(), directory);
+
+        for (Armature& a : res.armatures)
+            for (int i = 0; i < a.bones.size(); i++)
+            {
+                std::cout << i << "\t" << a.bones[i].name << "\t" << a.bones[i].parentId << std::endl;
+                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[0].x << ", " << a.bones[i].inverseBindPoseMatrix[0].y << ", " << a.bones[i].inverseBindPoseMatrix[0].z << ", " << a.bones[i].inverseBindPoseMatrix[0].w << "]" << std::endl;
+                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[1].x << ", " << a.bones[i].inverseBindPoseMatrix[1].y << ", " << a.bones[i].inverseBindPoseMatrix[1].z << ", " << a.bones[i].inverseBindPoseMatrix[1].w << "]" << std::endl;
+                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[2].x << ", " << a.bones[i].inverseBindPoseMatrix[2].y << ", " << a.bones[i].inverseBindPoseMatrix[2].z << ", " << a.bones[i].inverseBindPoseMatrix[2].w << "]" << std::endl;
+                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[3].x << ", " << a.bones[i].inverseBindPoseMatrix[3].y << ", " << a.bones[i].inverseBindPoseMatrix[3].z << ", " << a.bones[i].inverseBindPoseMatrix[3].w << "]" << std::endl << std::endl;
+            }
+        return res;
+	} 
+
+    bool ModelImporter::ContainsMeshes(aiNode* node)
+    {
+        if (node->mNumMeshes > 0) return true;
+
+        for (int i = 0; i < node->mNumChildren; i++)
+            if (ContainsMeshes(node->mChildren[i])) return true;
+        
+        return false;
+    }
+
+    void ModelImporter::ProcessBones(aiNode* node, const aiScene* scene, Armature& importData, int parentId)
+    {
+        BoneData bone;
+        bone.name = node->mName.C_Str();
+        bone.id = importData.bones.size();
+        bone.parentId = parentId;
+        
+        importData.bones.push_back(bone);
+
+        for (unsigned int i = 0; i < node->mNumChildren; i++)
+            ProcessBones(node->mChildren[i], scene, importData, bone.id);
+    }
+
+    void ModelImporter::ProcessMeshes(aiNode* node, const aiScene* scene, ModelImportData& importData, const aiMatrix4x4& transform, const std::string& directory)
     {
         aiMatrix4x4 worldTransform = node->mTransformation * transform;
         importData.localTransforms.push_back(glm::make_mat4x4((float*)&(worldTransform.Transpose())));
         //importData.parents.push_back(i - 1);
 
-        MeshImportData meshData;
-        meshData.name = node->mName.C_Str();
-        for (int i = 0; i < node->mNumMeshes; i++)
+        if (node->mNumMeshes > 0)
         {
-            aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-            SubMeshImportData subMesh = ProcessSubMesh(mesh);
+            MeshImportData meshData;
+            meshData.name = node->mName.C_Str();
 
-            meshData.subMeshes.push_back(subMesh);
+            for (int i = 0; i < node->mNumMeshes; i++)
+            {
+                aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+
+                Armature* armature = nullptr;
+                if (mesh->HasBones())
+                {
+                    std::string rootBoneName = mesh->mBones[0]->mName.C_Str();
+                    for (Armature& a : importData.armatures)
+                        if (a.bones[0].name == rootBoneName)
+                            armature = &a;
+                }
+
+                SubMeshImportData subMesh = ProcessSubMesh(mesh, armature);
+
+                meshData.subMeshes.push_back(subMesh);
+            }
+
+            importData.meshes.push_back(meshData);
         }
-
-        importData.meshes.push_back(meshData);
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
-        {
-            ProcessNode(node->mChildren[i], scene, importData, worldTransform, directory);
-        }
+            ProcessMeshes(node->mChildren[i], scene, importData, worldTransform, directory);
     }
 
-    SubMeshImportData ModelImporter::ProcessSubMesh(aiMesh* mesh)
+    SubMeshImportData ModelImporter::ProcessSubMesh(aiMesh* mesh, Armature* armature)
     {
         SubMeshImportData importData;
 
         importData.name = std::string(mesh->mName.C_Str());
         importData.materialId = mesh->mMaterialIndex;
 
+        importData.vertices.reserve(mesh->mNumVertices);
+        
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
             Vertex vertex;
@@ -102,6 +230,40 @@ namespace Seidon
             for (unsigned int j = 0; j < face.mNumIndices; j++)
                 importData.indices.push_back(face.mIndices[j]);
         }
+
+        std::unordered_map<std::string, int> boneNameToIndex;
+
+        for (int i = 0; i < mesh->mNumBones; i++)
+        {
+            aiBone* bone = mesh->mBones[i];
+
+            std::string boneName = bone->mName.C_Str();
+
+            if (boneNameToIndex.count(boneName) < 0)
+            {
+                int i = 0;
+                for (BoneData& data : armature->bones)
+                {
+                    if (data.name == boneName)
+                    {
+                        data.inverseBindPoseMatrix = glm::make_mat4x4((float*)&(bone->mOffsetMatrix.Transpose()));
+                        
+                        boneNameToIndex[boneName] = i;
+                    }
+
+                    i++;
+                }
+            }
+
+            for (int j = 0; j < bone->mNumWeights; j++)
+            {
+                aiVertexWeight& weight = bone->mWeights[j];
+            
+                importData.vertices[weight.mVertexId].weights.push_back(weight.mWeight);
+                importData.vertices[weight.mVertexId].boneIds.push_back(boneNameToIndex[boneName]);
+            }
+        }
+
 
         return importData;
     }

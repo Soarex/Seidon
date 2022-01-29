@@ -6,6 +6,7 @@
 #include "HdrCubemap.h"
 #include "Material.h"
 #include "Mesh.h"
+#include "Armature.h"
 #include "RenderBuffer.h"
 #include "Shader.h"
 #include "Texture.h"

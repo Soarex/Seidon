@@ -66,8 +66,8 @@ namespace Seidon
             std::cerr << "Failed to create GLFW window" << std::endl;
             glfwTerminate();
         }
-
         glfwMakeContextCurrent(handle);
+        glfwSwapInterval(0);
 
         SD_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 

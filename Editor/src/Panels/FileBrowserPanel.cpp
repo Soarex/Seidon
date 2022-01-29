@@ -190,7 +190,7 @@ namespace Seidon
 					{
 						ModelImporter importer;
 						ModelImportData importData = importer.Import(directoryEntry.path().string());
-						
+
 						Application::Get()->GetResourceManager()->CreateFromImportData(importData);
 						ImGui::CloseCurrentPopup();
 					}

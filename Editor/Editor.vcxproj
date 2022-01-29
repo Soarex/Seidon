@@ -163,7 +163,6 @@
     <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\Panels\InspectorPanel.cpp" />
     <ClCompile Include="src\Panels\SystemsPanel.cpp" />
-    <ClCompile Include="src\SceneSerializer.cpp" />
     <ClCompile Include="src\Utils\DrawFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -193,7 +192,6 @@
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />
     <ClInclude Include="src\Panels\SystemsPanel.h" />
-    <ClInclude Include="src\SceneSerializer.h" />
     <ClInclude Include="src\Utils\Dialogs.h" />
     <ClInclude Include="src\Utils\DrawFunctions.h" />
   </ItemGroup>

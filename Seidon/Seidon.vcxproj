@@ -170,6 +170,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Animation\Animation.cpp" />
     <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Core\UUID.cpp" />
     <ClCompile Include="src\Debug\Debug.cpp" />
@@ -240,6 +241,7 @@
     <ClCompile Include="src\Vendor\yaml-cpp\YamlBuild.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Animation\Animation.h" />
     <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Core\UUID.h" />
     <ClInclude Include="src\Debug\Debug.h" />
@@ -254,6 +256,7 @@
     <ClInclude Include="src\ExtensionEntryPoint.h" />
     <ClInclude Include="src\Extensions\Extension.h" />
     <ClInclude Include="src\Extensions\Extensions.h" />
+    <ClInclude Include="src\Graphics\Armature.h" />
     <ClInclude Include="src\Graphics\CaptureCube.h" />
     <ClInclude Include="src\Graphics\Graphics.h" />
     <ClInclude Include="src\Graphics\HdrCubemap.h" />

@@ -39,5 +39,8 @@ namespace Seidon
         void Init() override;
         void Update() override;
         void Destroy() override;
+
+        void SaveCurrentScene();
+        void LoadScene();
     };
 }

@@ -3,7 +3,6 @@
 
 #include <glm/glm.hpp>
 
-#include "SceneSerializer.h"
 #include "Utils/Dialogs.h"
 #include "EditorCameraControlSystem.h"
 
@@ -202,18 +201,25 @@ namespace Seidon
         
         if (ImGui::BeginDragDropTarget())
         {
-            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE"))
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_SCENE"))
             {
                 std::string path = (const char*)payload->Data;
-                SceneSerializer serializer;
-                scene = serializer.Load(path);
+            
+                runtimeSystems.Destroy();
+                scene->Destroy();
 
-                if (scene)
-                {
-                    sceneManager->ChangeActiveScene(scene);
-                    selectedEntity = { entt::null, nullptr };
-                }
+                Scene tempScene;
+                tempScene.LoadText(path);
+
+                tempScene.CopyEntities(scene);
+                tempScene.CopySystems(&runtimeSystems);
+
+                scene->AddSystem<RenderSystem>();
+                scene->AddSystem<EditorCameraControlSystem>();
+
+                selectedEntity = { entt::null, nullptr };
             }
+
             ImGui::EndDragDropTarget();
         }
 
