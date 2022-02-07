@@ -58,6 +58,16 @@ namespace Seidon
         Mesh* mesh = new Mesh();
         mesh->name = "Empty Mesh";
         AddMesh("empty_mesh", mesh);
+
+        Armature* armature = new Armature();
+        armature->name = "Default Armature";
+        AddArmature("default_armature", armature);
+
+        Animation* animation = new Animation();
+        animation->name = "Default Animation";
+        animation->duration = 0;
+        animation->ticksPerSecond = 24;
+        AddAnimation("default_animation", animation);
     }
 
     void ResourceManager::Destroy()
@@ -432,6 +442,25 @@ namespace Seidon
             for (int j = 0; j < meshImportData.subMeshes.size(); j++)
                 materials.push_back(modelMaterials[meshImportData.subMeshes[j].materialId]);
 
+            res.content.push_back({ mesh, materials });
+        }
+
+        for (auto& animation : importData.animations)
+            AddAnimation(animation.name, new Animation(animation));
+
+        for (auto& armature : importData.armatures)
+            AddArmature(armature.name, new Armature(armature));
+
+        for (auto& meshImportData : importData.meshes)
+        {
+            Mesh* mesh = CreateMesh(meshImportData);
+            mesh->filepath = importData.filepath;
+            idToMeshPath[mesh->id] = importData.filepath;
+
+            std::vector<Material*> materials;
+            for (int j = 0; j < meshImportData.subMeshes.size(); j++)
+                materials.push_back(modelMaterials[meshImportData.subMeshes[j].materialId]);
+
 
             res.content.push_back({ mesh, materials });
         }
@@ -556,6 +585,26 @@ namespace Seidon
 
         for (auto& [key, cubemap] : cubemaps)
             res.push_back(cubemap);
+
+        return res;
+    }
+
+    std::vector<Armature*>	ResourceManager::GetArmatures()
+    {
+        std::vector<Armature*> res;
+
+        for (auto& [key, armature] : armatures)
+            res.push_back(armature);
+
+        return res;
+    }
+
+    std::vector<Animation*>	ResourceManager::GetAnimations()
+    {
+        std::vector<Animation*> res;
+
+        for (auto& [key, animation] : animations)
+            res.push_back(animation);
 
         return res;
     }

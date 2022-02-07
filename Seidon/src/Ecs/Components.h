@@ -1,8 +1,11 @@
 #pragma once
 #include "Core/UUID.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Armature.h"
 #include "Graphics/Material.h"
 #include "Graphics/HdrCubemap.h"
+
+#include "Animation/Animation.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -111,6 +114,21 @@ namespace Seidon
 		void SetMesh(Mesh* mesh);
 	};
 
+	struct SkinnedRenderComponent : public RenderComponent
+	{
+		Armature* armature;
+
+		SkinnedRenderComponent();
+		SkinnedRenderComponent(const SkinnedRenderComponent&) = default;
+
+		SkinnedRenderComponent(Mesh* mesh, const std::vector<Material*>& materials)
+		{
+			this->materials = materials;
+			SetMesh(mesh);
+		}
+
+	};
+
 	struct CubemapComponent
 	{
 		HdrCubemap* cubemap;
@@ -158,6 +176,13 @@ namespace Seidon
 		}
 	};
 
+	struct AnimationComponent
+	{
+		Animation* animation;
+
+		AnimationComponent();
+		AnimationComponent(const AnimationComponent&) = default;
+	};
 
 	struct CubeColliderComponent
 	{

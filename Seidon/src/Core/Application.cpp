@@ -51,6 +51,11 @@ namespace Seidon
 			.AddMember("Mesh", &RenderComponent::mesh)
 			.AddMember("Materials", &RenderComponent::materials);
 
+		RegisterComponent<SkinnedRenderComponent>()
+			.AddMember("Mesh", &SkinnedRenderComponent::mesh)
+			.AddMember("Materials", &SkinnedRenderComponent::materials)
+			.AddMember("Armature", &SkinnedRenderComponent::armature);
+
 		RegisterComponent<CubemapComponent>()
 			.AddMember("Cubemap", &CubemapComponent::cubemap);
 
@@ -65,6 +70,9 @@ namespace Seidon
 			.AddMember("Near Plane", &CameraComponent::nearPlane)
 			.AddMember("Far Plane", &CameraComponent::farPlane)
 			.AddMember("Exposure", &CameraComponent::exposure);
+
+		RegisterComponent<AnimationComponent>()
+			.AddMember("Animation", &AnimationComponent::animation);
 
 		RegisterComponent<CubeColliderComponent>()
 			.AddMember("Half Extents", &CubeColliderComponent::halfExtents);

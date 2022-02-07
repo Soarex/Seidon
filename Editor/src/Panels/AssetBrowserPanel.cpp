@@ -13,6 +13,8 @@ namespace Seidon
 		folderIcon = resourceManager.GetOrImportTexture("Resources/FolderIcon.png");
 		modelIcon = resourceManager.GetOrImportTexture("Resources/ModelIcon.png");
 		materialIcon = resourceManager.GetOrImportTexture("Resources/MaterialIcon.png");
+		animationIcon = resourceManager.GetOrImportTexture("Resources/AnimationIcon.png");
+		armatureIcon = resourceManager.GetOrImportTexture("Resources/ArmatureIcon.png");
 	}
 
 	void AssetBrowserPanel::Draw()
@@ -107,6 +109,30 @@ namespace Seidon
 				selectedResource = ResourceType::SHADER;
 
 			ImGui::TextWrapped("Shaders");
+			ImGui::NextColumn();
+
+			ImGui::PopID();
+			//------------------------------
+			ImGui::PushID("ArmaturesButton");
+
+			ImGui::ImageButton((ImTextureID)folderIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				selectedResource = ResourceType::ARMATURE;
+
+			ImGui::TextWrapped("Armatures");
+			ImGui::NextColumn();
+
+			ImGui::PopID();
+			//------------------------------
+			ImGui::PushID("AnimationsButton");
+
+			ImGui::ImageButton((ImTextureID)folderIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+				selectedResource = ResourceType::ANIMATION;
+
+			ImGui::TextWrapped("Animations");
 			ImGui::NextColumn();
 
 			ImGui::PopID();
@@ -205,6 +231,42 @@ namespace Seidon
 				}
 
 				ImGui::TextWrapped(shader->GetPath().c_str());
+				ImGui::NextColumn();
+
+				ImGui::PopID();
+			}
+
+		if (selectedResource == ResourceType::ARMATURE || selectedResource == ResourceType::ALL)
+			for (Armature* armature : resourceManager->GetArmatures())
+			{
+				ImGui::PushID(armature);
+
+				ImGui::ImageButton((ImTextureID)armatureIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				if (ImGui::BeginDragDropSource())
+				{
+					ImGui::SetDragDropPayload("CONTENT_BROWSER_ARMATURE", &armature, sizeof(Armature*));
+					ImGui::EndDragDropSource();
+				}
+
+				ImGui::TextWrapped(armature->name.c_str());
+				ImGui::NextColumn();
+
+				ImGui::PopID();
+			}
+
+		if (selectedResource == ResourceType::ANIMATION || selectedResource == ResourceType::ALL)
+			for (Animation* animation : resourceManager->GetAnimations())
+			{
+				ImGui::PushID(animation);
+
+				ImGui::ImageButton((ImTextureID)animationIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+				if (ImGui::BeginDragDropSource())
+				{
+					ImGui::SetDragDropPayload("CONTENT_BROWSER_ANIMATION", &animation, sizeof(Animation*));
+					ImGui::EndDragDropSource();
+				}
+
+				ImGui::TextWrapped(animation->name.c_str());
 				ImGui::NextColumn();
 
 				ImGui::PopID();

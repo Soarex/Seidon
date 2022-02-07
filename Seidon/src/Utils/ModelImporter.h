@@ -61,8 +61,9 @@ namespace Seidon
 	private:
 		bool ContainsMeshes(aiNode* node);
 
+		void ProcessAnimations(const aiScene* scene, ModelImportData& importData);
 		void ProcessMeshes(aiNode* node, const aiScene* scene, ModelImportData& importData, const aiMatrix4x4& transform, const std::string& directory);
-		void ProcessBones(aiNode* node, const aiScene* scene, Armature& importData, int parentId);
+		void ProcessBones(aiNode* node, const aiScene* scene, Armature& armature, int parentId);
 		SubMeshImportData ProcessSubMesh(aiMesh* mesh, Armature* armature);
 		MaterialImportData ProcessMaterial(aiMaterial* material, const std::string& directory);
 	};

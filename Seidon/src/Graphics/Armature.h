@@ -1,4 +1,6 @@
 #pragma once
+#include "../Core/UUID.h"
+
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -16,6 +18,8 @@ namespace Seidon
 
 	struct Armature
 	{
+		UUID id;
+		std::string name;
 		std::vector<BoneData> bones;
 	};
 }

@@ -3,6 +3,8 @@
 #include "Graphics/Texture.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Shader.h"
+#include "Animation/Animation.h"
+#include "Graphics/Armature.h"
 #include "Graphics/HdrCubemap.h"
 
 #include "Utils/ModelImporter.h"
@@ -28,18 +30,24 @@ namespace Seidon
 		std::unordered_map<UUID, Material*>		materials;
 		std::unordered_map<UUID, Mesh*>			meshes;
 		std::unordered_map<UUID, Shader*>		shaders;
+		std::unordered_map<UUID, Animation*>	animations;
+		std::unordered_map<UUID, Armature*>		armatures;
 
 		std::unordered_map<std::string, UUID> nameToTextureId;
 		std::unordered_map<std::string, UUID> nameToCubemapId;
 		std::unordered_map<std::string, UUID> nameToMaterialId;
 		std::unordered_map<std::string, UUID> nameToMeshId;
 		std::unordered_map<std::string, UUID> nameToShaderId;
+		std::unordered_map<std::string, UUID> nameToAnimationId;
+		std::unordered_map<std::string, UUID> nameToArmatureId;
 
 		std::unordered_map<UUID, std::string> idToTexturePath;
 		std::unordered_map<UUID, std::string> idToCubemapPath;
 		std::unordered_map<UUID, std::string> idToMaterialPath;
 		std::unordered_map<UUID, std::string> idToMeshPath;
 		std::unordered_map<UUID, std::string> idToShaderPath;
+		std::unordered_map<UUID, std::string> idToAnimationPath;
+		std::unordered_map<UUID, std::string> idToArmaturePath;
 	public:
 		void Init();
 		void Destroy();
@@ -75,12 +83,16 @@ namespace Seidon
 		inline Shader*		GetShader(const std::string& name)		{ return shaders[nameToShaderId.at(name)];		}
 		inline Material*	GetMaterial(const std::string& name)	{ return materials[nameToMaterialId.at(name)];	}
 		inline HdrCubemap*	GetCubemap(const std::string& name)		{ return cubemaps[nameToCubemapId.at(name)];	}
+		inline Armature*	GetArmature(const std::string& name)	{ return armatures[nameToArmatureId.at(name)]; }
+		inline Animation*	GetAnimation(const std::string& name)	{ return animations[nameToAnimationId.at(name)]; }
 
 		inline Texture*		GetTexture(UUID id) { return textures[id]; }
 		inline Mesh*		GetMesh(UUID id) { return meshes[id]; }
 		inline Shader*		GetShader(UUID id) { return shaders[id]; }
 		inline Material*	GetMaterial(UUID id) { return materials[id]; }
 		inline HdrCubemap*	GetCubemap(UUID id) { return cubemaps[id]; }
+		inline Armature*	GetArmature(UUID id) { return armatures[id]; }
+		inline Animation*	GetAnimation(UUID id) { return animations[id]; }
 
 		Texture*	GetOrLoadTexture(const std::string& name);
 		Mesh*		GetOrLoadMesh(const std::string& name);
@@ -99,12 +111,16 @@ namespace Seidon
 		std::vector<Shader*>		GetShaders();
 		std::vector<Material*>		GetMaterials();
 		std::vector<HdrCubemap*>	GetCubemaps();
+		std::vector<Armature*>		GetArmatures();
+		std::vector<Animation*>		GetAnimations();
 
 		inline void AddTexture(const std::string& name, Texture* texture) { textures[texture->GetId()] = texture; nameToTextureId[name] = texture->GetId(); }
 		inline void AddMesh(const std::string& name, Mesh* mesh) { meshes[mesh->id] = mesh; nameToMeshId[name] = mesh->id; }
 		inline void AddShader(const std::string& name, Shader* shader) { shaders[shader->GetId()] = shader; nameToShaderId[name] = shader->GetId(); }
 		inline void AddMaterial(const std::string& name, Material* material) { materials[material->id] = material; nameToMaterialId[name] = material->id; }
 		inline void AddCubemap(const std::string& name, HdrCubemap* cubemap) { cubemaps[cubemap->GetId()] = cubemap; nameToCubemapId[name] = cubemap->GetId(); }
+		inline void AddAnimation(const std::string& name, Animation* animation) { animations[animation->id] = animation; nameToAnimationId[name] = animation->id; }
+		inline void AddArmature(const std::string& name, Armature* armature) { armatures[armature->id] = armature; nameToArmatureId[name] = armature->id; }
 
 		inline bool IsTextureLoaded(const std::string& name) { return nameToTextureId.count(name) > 0; }
 		inline bool IsCubemapLoaded(const std::string& name) { return nameToCubemapId.count(name) > 0; }

@@ -10,6 +10,8 @@ namespace Seidon
 		MESH,
 		MATERIAL,
 		SHADER,
+		ARMATURE,
+		ANIMATION,
 		ALL,
 		NONE
 	};
@@ -21,6 +23,8 @@ namespace Seidon
 		Texture* folderIcon;
 		Texture* modelIcon;
 		Texture* materialIcon;
+		Texture* armatureIcon;
+		Texture* animationIcon;
 		Texture* backIcon;
 		ResourceType selectedResource;
 	public:

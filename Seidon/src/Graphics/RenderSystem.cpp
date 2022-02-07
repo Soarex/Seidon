@@ -92,6 +92,7 @@ namespace Seidon
 		entt::basic_group cameras   = scene->GetRegistry().group<CameraComponent, TransformComponent>();
 		entt::basic_view cubemaps   = scene->GetRegistry().view<CubemapComponent>();
 		entt::basic_group renderGroup = scene->GetRegistry().group<RenderComponent>(entt::get<TransformComponent>);
+		entt::basic_group skinnedRenderGroup = scene->GetRegistry().group<SkinnedRenderComponent>(entt::get<TransformComponent>);
 
 		DirectionalLightComponent light;
 		TransformComponent lightTransform;
@@ -167,6 +168,20 @@ namespace Seidon
 				}
 			}
 
+			for (entt::entity e : skinnedRenderGroup)
+			{
+				SkinnedRenderComponent r = skinnedRenderGroup.get<SkinnedRenderComponent>(e);
+				TransformComponent t = skinnedRenderGroup.get<TransformComponent>(e);
+				glm::mat4 modelMatrix = t.GetTransformMatrix();
+				depthShader.SetMat4("modelMatrix", modelMatrix);
+
+				for (SubMesh* subMesh : r.mesh->subMeshes)
+				{
+					GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
+					GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
+				}
+			}
+
 			depthFramebuffers[i].Unbind();
 		}
 
@@ -227,6 +242,38 @@ namespace Seidon
 
 				GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
 				
+				GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
+
+				i++;
+			}
+		}
+
+		for (entt::entity e : skinnedRenderGroup)
+		{
+			SkinnedRenderComponent& r = skinnedRenderGroup.get<SkinnedRenderComponent>(e);
+			TransformComponent& t = skinnedRenderGroup.get<TransformComponent>(e);
+
+			glm::mat4 modelMatrix = t.GetTransformMatrix();
+
+			shader.SetMat4("modelMatrix", modelMatrix);
+
+			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
+			shader.SetMat3("normalMatrix", normalMatrix);
+
+			int i = 0;
+			for (SubMesh* subMesh : r.mesh->subMeshes)
+			{
+				if (r.materials.size() <= i) r.materials.push_back(resourceManager->GetMaterial("default_material"));
+
+				shader.SetVec3("tint", r.materials[i]->tint);
+				r.materials[i]->albedo->Bind(0);
+				r.materials[i]->roughness->Bind(1);
+				r.materials[i]->normal->Bind(2);
+				r.materials[i]->metallic->Bind(3);
+				r.materials[i]->ao->Bind(4);
+
+				GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
+
 				GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
 
 				i++;

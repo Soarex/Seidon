@@ -25,6 +25,45 @@ namespace Seidon
             res.materials.push_back(ProcessMaterial(scene->mMaterials[i], directory));
         }
 
+        std::vector<aiNode*> meshRootNodes;
+        std::vector<aiNode*> armatureRootNodes;
+
+        for (int i = 0; i < scene->mRootNode->mNumChildren; i++)
+        {
+            if (ContainsMeshes(scene->mRootNode->mChildren[i]))
+                meshRootNodes.push_back(scene->mRootNode->mChildren[i]);
+            else
+                armatureRootNodes.push_back(scene->mRootNode->mChildren[i]);
+        }
+
+        for (aiNode* armatureRootNode : armatureRootNodes)
+        {
+            Armature armature;
+            armature.name = armatureRootNode->mName.C_Str();
+            ProcessBones(armatureRootNode, scene, armature, -1);
+            res.armatures.push_back(armature);
+        }
+
+        for(aiNode* meshRootNode : meshRootNodes)
+            ProcessMeshes(meshRootNode, scene, res, aiMatrix4x4(), directory);
+       
+        ProcessAnimations(scene, res);
+        
+        return res;
+	} 
+
+    bool ModelImporter::ContainsMeshes(aiNode* node)
+    {
+        if (node->mNumMeshes > 0) return true;
+
+        for (int i = 0; i < node->mNumChildren; i++)
+            if (ContainsMeshes(node->mChildren[i])) return true;
+        
+        return false;
+    }
+
+    void ModelImporter::ProcessAnimations(const aiScene* scene, ModelImportData& importData)
+    {
         for (int i = 0; i < scene->mNumAnimations; i++)
         {
             Animation animation;
@@ -38,6 +77,12 @@ namespace Seidon
             {
                 AnimationChannel channel;
                 channel.boneName = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
+
+                for (Armature& armature : importData.armatures)
+                    for (BoneData& bone : armature.bones)
+                        if (channel.boneName == bone.name)
+                            channel.boneId = bone.id;
+
                 channel.positionKeys.reserve(scene->mAnimations[i]->mChannels[j]->mNumPositionKeys);
 
                 for (int k = 0; k < scene->mAnimations[i]->mChannels[j]->mNumPositionKeys; k++)
@@ -84,62 +129,23 @@ namespace Seidon
 
                 animation.channels.push_back(channel);
             }
+
+            importData.animations.push_back(animation);
         }
-
-        std::vector<aiNode*> meshRootNodes;
-        std::vector<aiNode*> armatureRootNodes;
-
-        for (int i = 0; i < scene->mRootNode->mNumChildren; i++)
-        {
-            if (ContainsMeshes(scene->mRootNode->mChildren[i]))
-                meshRootNodes.push_back(scene->mRootNode->mChildren[i]);
-            else
-                armatureRootNodes.push_back(scene->mRootNode->mChildren[i]);
-        }
-
-        for (aiNode* armatureRootNode : armatureRootNodes)
-        {
-            Armature armature;
-            ProcessBones(armatureRootNode, scene, armature, -1);
-            res.armatures.push_back(armature);
-        }
-
-        for(aiNode* meshRootNode : meshRootNodes)
-            ProcessMeshes(meshRootNode, scene, res, aiMatrix4x4(), directory);
-
-        for (Armature& a : res.armatures)
-            for (int i = 0; i < a.bones.size(); i++)
-            {
-                std::cout << i << "\t" << a.bones[i].name << "\t" << a.bones[i].parentId << std::endl;
-                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[0].x << ", " << a.bones[i].inverseBindPoseMatrix[0].y << ", " << a.bones[i].inverseBindPoseMatrix[0].z << ", " << a.bones[i].inverseBindPoseMatrix[0].w << "]" << std::endl;
-                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[1].x << ", " << a.bones[i].inverseBindPoseMatrix[1].y << ", " << a.bones[i].inverseBindPoseMatrix[1].z << ", " << a.bones[i].inverseBindPoseMatrix[1].w << "]" << std::endl;
-                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[2].x << ", " << a.bones[i].inverseBindPoseMatrix[2].y << ", " << a.bones[i].inverseBindPoseMatrix[2].z << ", " << a.bones[i].inverseBindPoseMatrix[2].w << "]" << std::endl;
-                std::cout << "[" << a.bones[i].inverseBindPoseMatrix[3].x << ", " << a.bones[i].inverseBindPoseMatrix[3].y << ", " << a.bones[i].inverseBindPoseMatrix[3].z << ", " << a.bones[i].inverseBindPoseMatrix[3].w << "]" << std::endl << std::endl;
-            }
-        return res;
-	} 
-
-    bool ModelImporter::ContainsMeshes(aiNode* node)
-    {
-        if (node->mNumMeshes > 0) return true;
-
-        for (int i = 0; i < node->mNumChildren; i++)
-            if (ContainsMeshes(node->mChildren[i])) return true;
-        
-        return false;
     }
 
-    void ModelImporter::ProcessBones(aiNode* node, const aiScene* scene, Armature& importData, int parentId)
+    void ModelImporter::ProcessBones(aiNode* node, const aiScene* scene, Armature& armature, int parentId)
     {
         BoneData bone;
         bone.name = node->mName.C_Str();
-        bone.id = importData.bones.size();
+        bone.id = armature.bones.size();
         bone.parentId = parentId;
+        bone.inverseBindPoseMatrix = glm::identity<glm::mat4>();
         
-        importData.bones.push_back(bone);
+        armature.bones.push_back(bone);
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
-            ProcessBones(node->mChildren[i], scene, importData, bone.id);
+            ProcessBones(node->mChildren[i], scene, armature, bone.id);
     }
 
     void ModelImporter::ProcessMeshes(aiNode* node, const aiScene* scene, ModelImportData& importData, const aiMatrix4x4& transform, const std::string& directory)
@@ -162,7 +168,7 @@ namespace Seidon
                 {
                     std::string rootBoneName = mesh->mBones[0]->mName.C_Str();
                     for (Armature& a : importData.armatures)
-                        if (a.bones[0].name == rootBoneName)
+                        if (a.bones[1].name == rootBoneName)
                             armature = &a;
                 }
 
@@ -231,6 +237,8 @@ namespace Seidon
                 importData.indices.push_back(face.mIndices[j]);
         }
 
+        if (!armature) return importData;
+
         std::unordered_map<std::string, int> boneNameToIndex;
 
         for (int i = 0; i < mesh->mNumBones; i++)
@@ -239,7 +247,7 @@ namespace Seidon
 
             std::string boneName = bone->mName.C_Str();
 
-            if (boneNameToIndex.count(boneName) < 0)
+            if (boneNameToIndex.count(boneName) == 0)
             {
                 int i = 0;
                 for (BoneData& data : armature->bones)
@@ -247,7 +255,7 @@ namespace Seidon
                     if (data.name == boneName)
                     {
                         data.inverseBindPoseMatrix = glm::make_mat4x4((float*)&(bone->mOffsetMatrix.Transpose()));
-                        
+
                         boneNameToIndex[boneName] = i;
                     }
 

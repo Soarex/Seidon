@@ -3,6 +3,9 @@
 #include "../Graphics/Texture.h"
 #include "../Graphics/HdrCubemap.h"
 #include "../Graphics/Mesh.h"
+#include "../Graphics/Armature.h"
+
+#include "../Animation/Animation.h"
 
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
@@ -35,7 +38,9 @@ namespace Seidon
 		TEXTURE_VECTOR,
 		TEXTURE,
 		CUBEMAP,
-		MESH
+		MESH,
+		ARMATURE,
+		ANIMATION
 	};
 
 	template<typename T, typename U> 
@@ -111,6 +116,12 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(Mesh*).hash_code())
 				data.type = Types::MESH;
+
+			if (typeid(U).hash_code() == typeid(Animation*).hash_code())
+				data.type = Types::ANIMATION;
+
+			if (typeid(U).hash_code() == typeid(Armature*).hash_code())
+				data.type = Types::ARMATURE;
 
 			members.push_back(data);
 
@@ -188,6 +199,12 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(Mesh*).hash_code())
 				data.type = Types::MESH;
+
+			if (typeid(U).hash_code() == typeid(Animation*).hash_code())
+				data.type = Types::ANIMATION;
+
+			if (typeid(U).hash_code() == typeid(Armature*).hash_code())
+				data.type = Types::ARMATURE;
 
 			members.push_back(data);
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "../Core/UUID.h"
 
 #include <glm/glm.hpp>
 
@@ -16,6 +17,7 @@ namespace Seidon
 	struct AnimationChannel
 	{
 		std::string boneName;
+		int boneId;
 		std::vector<AnimationKey> positionKeys;
 		std::vector<AnimationKey> rotationKeys;
 		std::vector<AnimationKey> scalingKeys;
@@ -24,6 +26,7 @@ namespace Seidon
 	class Animation
 	{
 	public:
+		UUID id;
 		std::string name;
 		float duration;
 		float ticksPerSecond;

@@ -329,6 +329,60 @@ namespace Seidon
 		ImGui::End();
 	}
 
+	void DrawArmatureControl(const std::string& label, Armature** armature, float size)
+	{
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		ImGui::PushID(label.c_str());
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/ArmatureIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ARMATURE"))
+				*armature = *(Armature**)payload->Data;
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::NextColumn();
+
+		ImGui::Text((*armature)->name.c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+
+	void DrawAnimationControl(const std::string& label, Animation** animation, float size)
+	{
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		ImGui::PushID(label.c_str());
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/AnimationIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ANIMATION"))
+				*animation = *(Animation**)payload->Data;
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::NextColumn();
+
+		ImGui::Text((*animation)->name.c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+
 	void DrawReflectedMember(void* object, MemberData& member)
 	{
 		char* obj = (char*) object;
@@ -387,6 +441,18 @@ namespace Seidon
 		{
 			HdrCubemap** c = (HdrCubemap**)(obj + member.offset);
 			DrawCubemapControl(member.name.c_str(), c);
+		}
+
+		if (member.type == Types::ARMATURE)
+		{
+			Armature** a = (Armature**)(obj + member.offset);
+			DrawArmatureControl(member.name.c_str(), a);
+		}
+
+		if (member.type == Types::ANIMATION)
+		{
+			Animation** a = (Animation**)(obj + member.offset);
+			DrawAnimationControl(member.name.c_str(), a);
 		}
 	}
 
