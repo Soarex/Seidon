@@ -1,11 +1,15 @@
 ~VERTEX SHADER
 #version 330 core
 #define MAX_CASCADE_COUNT 8
+#define MAX_BONE_COUNT 100
+#define MAX_BONE_INFLUENCE 4
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexNormal;
 layout(location = 2) in vec3 vertexTangent;
 layout(location = 3) in vec2 vertexUV;
+layout(location = 4) in ivec4 boneIds;
+layout(location = 5) in vec4 boneWeights;
 
 out VS_OUT
 {
@@ -17,6 +21,7 @@ out VS_OUT
     mat3 TBN;
 } vs_out;
 
+out vec4 acolor;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
@@ -25,8 +30,19 @@ uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
 uniform mat4 lightSpaceMatrices[MAX_CASCADE_COUNT];
 
+uniform mat4 boneMatrices[MAX_BONE_COUNT];
+
 void main()
 {
+    mat4 boneTransformMatrix = mat4(1.0);
+
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+        if (boneIds[i] > -1)
+            boneTransformMatrix += boneMatrices[boneIds[i]] * boneWeights[i];
+
+    //acolor = vec4(boneIds[0] / 20.0, boneIds[1] / 20.0, boneIds[2] / 20.0, 1);
+    //acolor = vec4(boneWeights[0], boneWeights[1], boneWeights[2], 1);
+
     vec3 T = normalize(vec3(modelMatrix * vec4(vertexTangent, 0.0)));
     vec3 N = normalize(vec3(modelMatrix * vec4(vertexNormal, 0.0)));
 
@@ -34,7 +50,7 @@ void main()
 
     vec3 B = cross(N, T);
 
-    vs_out.worldSpaceFragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0));
+    vs_out.worldSpaceFragmentPosition = vec3(modelMatrix * boneTransformMatrix * vec4(vertexPosition, 1.0));
     vs_out.normal = normalMatrix * vertexNormal;
     vs_out.UV = vertexUV;
 
@@ -64,6 +80,8 @@ in VS_OUT
     float viewSpaceZ;
     mat3 TBN;
 } fs_in;
+
+in vec4 acolor;
 
 struct DirectionalLight
 {
@@ -160,6 +178,7 @@ void main()
     vec3 color = ambient + (1 - shadow) * Lo;
     
     fragmentColor = vec4(color, 1.0f);
+    //fragmentColor = acolor;
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

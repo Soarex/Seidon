@@ -11,7 +11,7 @@ namespace Seidon
         glm::vec3 normal;
         glm::vec3 tangent;
         glm::vec2 texCoords;
-        std::vector<int> boneIds = { -1, -1, -1, -1 };
-        std::vector<int> weights = { 0, 0, 0, 0 };
+        glm::ivec4 boneIds = { -1, -1, -1, -1 };
+        glm::vec4 weights = { 0, 0, 0, 0 };
     };
 }

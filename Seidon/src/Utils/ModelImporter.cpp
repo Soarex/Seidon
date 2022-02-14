@@ -48,7 +48,7 @@ namespace Seidon
             ProcessMeshes(meshRootNode, scene, res, aiMatrix4x4(), directory);
        
         ProcessAnimations(scene, res);
-        
+
         return res;
 	} 
 
@@ -70,6 +70,7 @@ namespace Seidon
             animation.name = scene->mAnimations[i]->mName.C_Str();
             animation.duration = scene->mAnimations[i]->mDuration;
             animation.ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
+            animation.sceneTransform = glm::make_mat4x4((float*)&(scene->mRootNode->mTransformation.Transpose()));
 
             animation.channels.reserve(scene->mAnimations[i]->mNumChannels);
 
@@ -87,12 +88,11 @@ namespace Seidon
 
                 for (int k = 0; k < scene->mAnimations[i]->mChannels[j]->mNumPositionKeys; k++)
                 {
-                    AnimationKey key;
+                    PositionKey key;
                     key.time = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mTime;
                     key.value.x = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.x;
                     key.value.y = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.y;
                     key.value.z = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.z;
-                    key.value.w = 1;
 
                     channel.positionKeys.push_back(key);
                 }
@@ -102,8 +102,9 @@ namespace Seidon
 
                 for (int k = 0; k < scene->mAnimations[i]->mChannels[j]->mNumRotationKeys; k++)
                 {
-                    AnimationKey key;
+                    RotationKey key;
                     key.time = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mTime;
+
                     key.value.x = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.x;
                     key.value.y = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.y;
                     key.value.z = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.z;
@@ -117,12 +118,11 @@ namespace Seidon
 
                 for (int k = 0; k < scene->mAnimations[i]->mChannels[j]->mNumScalingKeys; k++)
                 {
-                    AnimationKey key;
+                    ScalingKey key;
                     key.time = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mTime;
                     key.value.x = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.x;
                     key.value.y = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.y;
                     key.value.z = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.z;
-                    key.value.w = 1;
 
                     channel.scalingKeys.push_back(key);
                 }
@@ -130,6 +130,27 @@ namespace Seidon
                 animation.channels.push_back(channel);
             }
 
+            std::vector<bool> foundIds;
+            foundIds.resize(100);
+
+            for (AnimationChannel& channel : animation.channels)
+                foundIds[channel.boneId] = true;
+
+            for(int i = 0; i < foundIds.size(); i++)
+                if (!foundIds[i])
+                {
+                    AnimationChannel c;
+                    c.boneId = i;
+                    c.boneName = "";
+
+                    c.positionKeys.push_back(PositionKey());
+                    c.rotationKeys.push_back(RotationKey());
+                    c.scalingKeys.push_back(ScalingKey());
+
+                    animation.channels.push_back(c);
+                }
+
+            std::sort(animation.channels.begin(), animation.channels.end(), [](AnimationChannel& a, AnimationChannel& b) { return a.boneId <= b.boneId; });
             importData.animations.push_back(animation);
         }
     }
@@ -138,12 +159,16 @@ namespace Seidon
     {
         BoneData bone;
         bone.name = node->mName.C_Str();
-        bone.id = armature.bones.size();
-        bone.parentId = parentId;
-        bone.inverseBindPoseMatrix = glm::identity<glm::mat4>();
         
-        armature.bones.push_back(bone);
+        //if (bone.name.compare(bone.name.size() - 3, 3, "End") != 0)
+        //{
+            bone.id = armature.bones.size();
+            bone.parentId = parentId;
+            bone.inverseBindPoseMatrix = glm::identity<glm::mat4>();
 
+            armature.bones.push_back(bone);
+        //}
+        
         for (unsigned int i = 0; i < node->mNumChildren; i++)
             ProcessBones(node->mChildren[i], scene, armature, bone.id);
     }
@@ -168,7 +193,7 @@ namespace Seidon
                 {
                     std::string rootBoneName = mesh->mBones[0]->mName.C_Str();
                     for (Armature& a : importData.armatures)
-                        if (a.bones[1].name == rootBoneName)
+                        if (a.bones[0].name == rootBoneName || a.bones[1].name == rootBoneName)
                             armature = &a;
                 }
 
@@ -267,8 +292,15 @@ namespace Seidon
             {
                 aiVertexWeight& weight = bone->mWeights[j];
             
-                importData.vertices[weight.mVertexId].weights.push_back(weight.mWeight);
-                importData.vertices[weight.mVertexId].boneIds.push_back(boneNameToIndex[boneName]);
+                for (int k = 0; k < Vertex::MAX_BONES_PER_VERTEX; k++)
+                {
+                    if (importData.vertices[weight.mVertexId].boneIds[k] != -1) continue;
+
+                    importData.vertices[weight.mVertexId].weights[k] = weight.mWeight;
+                    importData.vertices[weight.mVertexId].boneIds[k] = boneNameToIndex[boneName];
+
+                    break;
+                }
             }
         }
 

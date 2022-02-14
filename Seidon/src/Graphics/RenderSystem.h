@@ -50,9 +50,9 @@ namespace Seidon
 	public:
 		RenderSystem() = default;
 		~RenderSystem() = default;
-		void Init();
-		void Update(float deltatime);
-		void Destroy();
+		void Init() override;
+		void Update(float deltatime) override;
+		void Destroy() override;
 
 		void ResizeFramebuffer(unsigned int width, unsigned int height);
 

@@ -2,25 +2,56 @@
 #include "../Core/UUID.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <string>
 #include <vector>
 
 namespace Seidon
 {
-	struct AnimationKey
+	struct PositionKey
 	{
 		float time;
-		glm::vec4 value;
+		glm::vec3 value;
+
+		PositionKey()
+		{
+			time = 0;
+			value = glm::vec3(1);
+		}
+	};
+	
+	struct RotationKey
+	{
+		float time;
+		glm::quat value;
+
+		RotationKey()
+		{
+			time = 0;
+			value = glm::quat(1, 0, 0, 0);
+		}
+	};
+
+	struct ScalingKey
+	{
+		float time;
+		glm::vec3 value;
+
+		ScalingKey()
+		{
+			time = 0;
+			value = glm::vec3(1);
+		}
 	};
 
 	struct AnimationChannel
 	{
 		std::string boneName;
 		int boneId;
-		std::vector<AnimationKey> positionKeys;
-		std::vector<AnimationKey> rotationKeys;
-		std::vector<AnimationKey> scalingKeys;
+		std::vector<PositionKey> positionKeys;
+		std::vector<RotationKey> rotationKeys;
+		std::vector<ScalingKey> scalingKeys;
 	};
 
 	class Animation
@@ -30,7 +61,11 @@ namespace Seidon
 		std::string name;
 		float duration;
 		float ticksPerSecond;
+
+		glm::mat4 sceneTransform;
 		
 		std::vector<AnimationChannel> channels;
+	public:
+		Animation() = default;
 	};
 }

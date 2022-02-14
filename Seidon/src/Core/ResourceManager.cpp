@@ -461,7 +461,6 @@ namespace Seidon
             for (int j = 0; j < meshImportData.subMeshes.size(); j++)
                 materials.push_back(modelMaterials[meshImportData.subMeshes[j].materialId]);
 
-
             res.content.push_back({ mesh, materials });
         }
 

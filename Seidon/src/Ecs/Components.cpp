@@ -34,5 +34,6 @@ namespace Seidon
 	AnimationComponent::AnimationComponent()
 	{
 		animation = Application::Get()->GetResourceManager()->GetAnimation("default_animation");
+		runtimeBoneMatrices.reserve(100);
 	}
 }

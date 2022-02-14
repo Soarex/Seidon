@@ -180,6 +180,9 @@ namespace Seidon
 	{
 		Animation* animation;
 
+		float runtimeTime = 0;
+		std::vector<glm::mat4> runtimeBoneMatrices;
+
 		AnimationComponent();
 		AnimationComponent(const AnimationComponent&) = default;
 	};

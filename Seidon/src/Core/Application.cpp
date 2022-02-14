@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Ecs/Components.h"
 #include "../Graphics/RenderSystem.h"
+#include "../Animation/AnimationSystem.h"
 #include "../Physics/PhysicSystem.h"
 #include "../Utils/FlyingCameraControlSystem.h"
 
@@ -34,6 +35,7 @@ namespace Seidon
 		//	.AddMember("Mouse Sensitivity", &FlyingCameraControlSystem::mouseSensitivity)
 		//	.AddMember("Movement Speed", &FlyingCameraControlSystem::speed);
 
+		RegisterSystem<AnimationSystem>();
 		RegisterSystem<PhysicSystem>();
 
 		RegisterComponent<IDComponent>()

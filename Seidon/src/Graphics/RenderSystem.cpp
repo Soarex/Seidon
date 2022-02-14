@@ -272,6 +272,18 @@ namespace Seidon
 				r.materials[i]->metallic->Bind(3);
 				r.materials[i]->ao->Bind(4);
 
+				if (scene->GetRegistry().all_of<AnimationComponent>(e))
+				{
+					AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
+					
+					//if(a.runtimeBoneMatrices.size() > 0)
+						//for (int j = 0; j < 4; j++)
+							//std::cout << "[" << a.runtimeBoneMatrices[0][j].x << ", "<< a.runtimeBoneMatrices[0][j].y << ", " << a.runtimeBoneMatrices[0][j].z << ", " << a.runtimeBoneMatrices[0][j].w << "]" << std::endl;
+
+					for (int i = 0; i < a.runtimeBoneMatrices.size(); i++)
+						shader.SetMat4("boneMatrices[" + std::to_string(i) + "]", a.runtimeBoneMatrices[i]);
+				}
+
 				GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
 
 				GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
