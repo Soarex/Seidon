@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#define MAX_BONE_COUNT 150
+
 namespace Seidon
 {
 	struct PositionKey
@@ -17,7 +19,7 @@ namespace Seidon
 		PositionKey()
 		{
 			time = 0;
-			value = glm::vec3(1);
+			value = glm::vec3(0);
 		}
 	};
 	
@@ -61,8 +63,6 @@ namespace Seidon
 		std::string name;
 		float duration;
 		float ticksPerSecond;
-
-		glm::mat4 sceneTransform;
 		
 		std::vector<AnimationChannel> channels;
 	public:

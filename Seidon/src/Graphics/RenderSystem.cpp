@@ -175,6 +175,14 @@ namespace Seidon
 				glm::mat4 modelMatrix = t.GetTransformMatrix();
 				depthShader.SetMat4("modelMatrix", modelMatrix);
 
+				if (scene->GetRegistry().all_of<AnimationComponent>(e))
+				{
+					AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
+
+					for (int j = 0; j < a.runtimeBoneMatrices.size(); j++)
+						depthShader.SetMat4("boneMatrices[" + std::to_string(j) + "]", a.runtimeBoneMatrices[j]);
+				}
+				
 				for (SubMesh* subMesh : r.mesh->subMeshes)
 				{
 					GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
@@ -260,6 +268,14 @@ namespace Seidon
 			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
 			shader.SetMat3("normalMatrix", normalMatrix);
 
+			if (scene->GetRegistry().all_of<AnimationComponent>(e))
+			{
+				AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
+					
+				for (int i = 0; i < a.runtimeBoneMatrices.size(); i++)
+					shader.SetMat4("boneMatrices[" + std::to_string(i) + "]", a.runtimeBoneMatrices[i]);
+			}
+
 			int i = 0;
 			for (SubMesh* subMesh : r.mesh->subMeshes)
 			{
@@ -271,18 +287,6 @@ namespace Seidon
 				r.materials[i]->normal->Bind(2);
 				r.materials[i]->metallic->Bind(3);
 				r.materials[i]->ao->Bind(4);
-
-				if (scene->GetRegistry().all_of<AnimationComponent>(e))
-				{
-					AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
-					
-					//if(a.runtimeBoneMatrices.size() > 0)
-						//for (int j = 0; j < 4; j++)
-							//std::cout << "[" << a.runtimeBoneMatrices[0][j].x << ", "<< a.runtimeBoneMatrices[0][j].y << ", " << a.runtimeBoneMatrices[0][j].z << ", " << a.runtimeBoneMatrices[0][j].w << "]" << std::endl;
-
-					for (int i = 0; i < a.runtimeBoneMatrices.size(); i++)
-						shader.SetMat4("boneMatrices[" + std::to_string(i) + "]", a.runtimeBoneMatrices[i]);
-				}
 
 				GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
 

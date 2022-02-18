@@ -10,11 +10,7 @@ namespace Seidon
 	class AnimationSystem : public System
 	{
 	private:
-		glm::mat4 localBoneMatrices[100];
-
-		float lastPositionKeyIndices[100];
-		float lastRotationKeyIndices[100];
-		float lastScalingKeyIndices[100];
+		
 	public:
 		AnimationSystem() = default;
 		~AnimationSystem() = default;

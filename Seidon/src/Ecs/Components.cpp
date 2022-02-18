@@ -34,6 +34,14 @@ namespace Seidon
 	AnimationComponent::AnimationComponent()
 	{
 		animation = Application::Get()->GetResourceManager()->GetAnimation("default_animation");
-		runtimeBoneMatrices.reserve(100);
+		runtimeBoneMatrices.reserve(MAX_BONE_COUNT);
+
+		for (int i = 0; i < MAX_BONE_COUNT; i++)
+		{
+			localBoneMatrices[i] = glm::identity<glm::mat4>();
+			lastPositionKeyIndices[i] = 0;
+			lastRotationKeyIndices[i] = 0;
+			lastScalingKeyIndices[i] = 0;
+		}
 	}
 }

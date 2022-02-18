@@ -180,7 +180,15 @@ namespace Seidon
 	{
 		Animation* animation;
 
+		//Runtime data
 		float runtimeTime = 0;
+
+		glm::mat4 localBoneMatrices[MAX_BONE_COUNT];
+
+		float lastPositionKeyIndices[MAX_BONE_COUNT];
+		float lastRotationKeyIndices[MAX_BONE_COUNT];
+		float lastScalingKeyIndices[MAX_BONE_COUNT];
+
 		std::vector<glm::mat4> runtimeBoneMatrices;
 
 		AnimationComponent();

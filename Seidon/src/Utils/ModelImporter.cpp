@@ -49,6 +49,16 @@ namespace Seidon
        
         ProcessAnimations(scene, res);
 
+        for (auto& m : res.meshes)
+            for (auto& s : m.subMeshes)
+                for (auto& v : s.vertices)
+                {
+                    float weightSum = v.weights[0] + v.weights[1] + v.weights[2] + v.weights[3];
+
+                    if(weightSum > 0)
+                        v.weights /= weightSum;
+                }
+
         return res;
 	} 
 
@@ -70,18 +80,32 @@ namespace Seidon
             animation.name = scene->mAnimations[i]->mName.C_Str();
             animation.duration = scene->mAnimations[i]->mDuration;
             animation.ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
-            animation.sceneTransform = glm::make_mat4x4((float*)&(scene->mRootNode->mTransformation.Transpose()));
 
             animation.channels.reserve(scene->mAnimations[i]->mNumChannels);
+
+            Armature* armature = nullptr;
 
             for (int j = 0; j < scene->mAnimations[i]->mNumChannels; j++)
             {
                 AnimationChannel channel;
                 channel.boneName = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
 
-                for (Armature& armature : importData.armatures)
-                    for (BoneData& bone : armature.bones)
-                        if (channel.boneName == bone.name)
+                if (!armature)
+                {
+                    for (Armature& a : importData.armatures)
+                        for (BoneData& bone : a.bones)
+                            if (channel.boneName == bone.name)
+                                armature = &a;
+
+                    if (!armature)
+                    {
+                        std::cerr << "Error importing animation " << animation.name << ": Couldn't find matching armature" << std::endl;
+                        return;
+                    }
+                }
+
+                for (BoneData& bone : armature->bones)
+                    if (channel.boneName == bone.name)
                             channel.boneId = bone.id;
 
                 channel.positionKeys.reserve(scene->mAnimations[i]->mChannels[j]->mNumPositionKeys);
@@ -131,7 +155,7 @@ namespace Seidon
             }
 
             std::vector<bool> foundIds;
-            foundIds.resize(100);
+            foundIds.resize(armature->bones.size());
 
             for (AnimationChannel& channel : animation.channels)
                 foundIds[channel.boneId] = true;
@@ -150,7 +174,7 @@ namespace Seidon
                     animation.channels.push_back(c);
                 }
 
-            std::sort(animation.channels.begin(), animation.channels.end(), [](AnimationChannel& a, AnimationChannel& b) { return a.boneId <= b.boneId; });
+            std::sort(animation.channels.begin(), animation.channels.end(), [](AnimationChannel& a, AnimationChannel& b) { return a.boneId < b.boneId; });
             importData.animations.push_back(animation);
         }
     }
@@ -160,14 +184,14 @@ namespace Seidon
         BoneData bone;
         bone.name = node->mName.C_Str();
         
-        //if (bone.name.compare(bone.name.size() - 3, 3, "End") != 0)
-        //{
+        if (bone.name.compare(bone.name.size() - 3, 3, "End") != 0)
+        {
             bone.id = armature.bones.size();
             bone.parentId = parentId;
             bone.inverseBindPoseMatrix = glm::identity<glm::mat4>();
 
             armature.bones.push_back(bone);
-        //}
+        }
         
         for (unsigned int i = 0; i < node->mNumChildren; i++)
             ProcessBones(node->mChildren[i], scene, armature, bone.id);
@@ -294,7 +318,7 @@ namespace Seidon
             
                 for (int k = 0; k < Vertex::MAX_BONES_PER_VERTEX; k++)
                 {
-                    if (importData.vertices[weight.mVertexId].boneIds[k] != -1) continue;
+                    if (importData.vertices[weight.mVertexId].weights[k] != 0) continue;
 
                     importData.vertices[weight.mVertexId].weights[k] = weight.mWeight;
                     importData.vertices[weight.mVertexId].boneIds[k] = boneNameToIndex[boneName];
@@ -320,6 +344,7 @@ namespace Seidon
         if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
             material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
+
             importData.albedoMapPath = directory + "\\" + std::string(str.C_Str());
         }
 
