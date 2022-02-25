@@ -21,5 +21,10 @@ namespace Seidon
 		UUID id;
 		std::string name;
 		std::vector<BoneData> bones;
+
+		void Save(const std::string& path);
+		void SaveAsync(const std::string& path);
+		void Load(const std::string& path);
+		void LoadAsync(const std::string& path);
 	};
 }

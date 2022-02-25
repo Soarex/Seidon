@@ -67,5 +67,10 @@ namespace Seidon
 		std::vector<AnimationChannel> channels;
 	public:
 		Animation() = default;
+
+		void Save(const std::string& path);
+		void SaveAsync(const std::string& path);
+		void Load(const std::string& path);
+		void LoadAsync(const std::string& path);
 	};
 }

@@ -1,75 +1,103 @@
-Id: 1791639065718033483
+Id: 6497954938034892939
 Name: Scene
 ResourceManager:
   Resources:
     Textures:
-      - Id: 9631171491355112742
-        Path: Assets/Imported/9631171491355112742.sdtex
-      - Id: 8402525218331444230
-        Path: Assets/Imported/8402525218331444230.sdtex
-      - Id: 2027594283562450925
-        Path: Assets/Imported/2027594283562450925.sdtex
-      - Id: 8116546387144539744
-        Path: Assets/Imported/8116546387144539744.sdtex
-      - Id: 12917460169747282149
-        Path: Assets/Imported/12917460169747282149.sdtex
-      - Id: 5311351162827066928
-        Path: Assets/Imported/5311351162827066928.sdtex
-      - Id: 12928005779588468906
-        Path: Assets/Imported/12928005779588468906.sdtex
-      - Id: 8370726165398674377
-        Path: Assets/Imported/8370726165398674377.sdtex
-      - Id: 12099637291022361116
-        Path: Assets/Imported/12099637291022361116.sdtex
-      - Id: 5575680815793208437
-        Path: Assets/Imported/5575680815793208437.sdtex
-      - Id: 15726327222702353912
-        Path: Assets/Imported/15726327222702353912.sdtex
-      - Id: 6071972043489126000
-        Path: Assets/Imported/6071972043489126000.sdtex
+      - Id: 14598545057860480588
+        Path: Assets/Imported/14598545057860480588.sdtex
+      - Id: 11485267819672486297
+        Path: Assets/Imported/11485267819672486297.sdtex
+      - Id: 12956918982099782576
+        Path: Assets/Imported/12956918982099782576.sdtex
+      - Id: 16068805740244844713
+        Path: Assets/Imported/16068805740244844713.sdtex
+      - Id: 16722285863051241101
+        Path: Assets/Imported/16722285863051241101.sdtex
+      - Id: 13657672839856843336
+        Path: Assets/Imported/13657672839856843336.sdtex
+      - Id: 17521887786787303150
+        Path: Assets/Imported/17521887786787303150.sdtex
+      - Id: 4911716079691942134
+        Path: Assets/Imported/4911716079691942134.sdtex
+      - Id: 608838840401289638
+        Path: Assets/Imported/608838840401289638.sdtex
+      - Id: 12252650863773635360
+        Path: Assets/Imported/12252650863773635360.sdtex
+      - Id: 7031948802160079806
+        Path: Assets/Imported/7031948802160079806.sdtex
+      - Id: 11236860117581455702
+        Path: Assets/Imported/11236860117581455702.sdtex
     Meshes:
-      - Id: 15101349135922851927
-        Path: Assets/Imported/15101349135922851927.sdmesh
-      - Id: 4267916042907988750
-        Path: Assets/Imported/4267916042907988750.sdmesh
-      - Id: 17278254166514138245
-        Path: Assets/Imported/17278254166514138245.sdmesh
-      - Id: 10700892284197861150
-        Path: Assets/Imported/10700892284197861150.sdmesh
-      - Id: 17659336635418576535
-        Path: Assets/Imported/17659336635418576535.sdmesh
-      - Id: 16889389548145207735
-        Path: Assets/Imported/16889389548145207735.sdmesh
-      - Id: 17161140687801958778
-        Path: Assets/Imported/17161140687801958778.sdmesh
-      - Id: 1903436693574712802
-        Path: Assets/Imported/1903436693574712802.sdmesh
-      - Id: 4867628953739980317
-        Path: Assets/Imported/4867628953739980317.sdmesh
-      - Id: 3437626001735618031
-        Path: Assets/Imported/3437626001735618031.sdmesh
-      - Id: 13853523774323279225
-        Path: Assets/Imported/13853523774323279225.sdmesh
-      - Id: 3390854223934846772
-        Path: Assets/Imported/3390854223934846772.sdmesh
-      - Id: 14165793480302812011
-        Path: Assets/Imported/14165793480302812011.sdmesh
+      - Id: 2469150811757405398
+        Path: Assets/Imported/2469150811757405398.sdmesh
+      - Id: 10059187623366866776
+        Path: Assets/Imported/10059187623366866776.sdmesh
+      - Id: 11629857927376738145
+        Path: Assets/Imported/11629857927376738145.sdmesh
+      - Id: 8650598064390681555
+        Path: Assets/Imported/8650598064390681555.sdmesh
+      - Id: 13736958385324957423
+        Path: Assets/Imported/13736958385324957423.sdmesh
+      - Id: 14977516978203527648
+        Path: Assets/Imported/14977516978203527648.sdmesh
+      - Id: 10238928542288948024
+        Path: Assets/Imported/10238928542288948024.sdmesh
+      - Id: 12711554906103261531
+        Path: Assets/Imported/12711554906103261531.sdmesh
+      - Id: 798587877991252347
+        Path: Assets/Imported/798587877991252347.sdmesh
+      - Id: 4239031164325920781
+        Path: Assets/Imported/4239031164325920781.sdmesh
+      - Id: 2026710619840771957
+        Path: Assets/Imported/2026710619840771957.sdmesh
+      - Id: 16858857072813400678
+        Path: Assets/Imported/16858857072813400678.sdmesh
+      - Id: 7726039333763194522
+        Path: Assets/Imported/7726039333763194522.sdmesh
+      - Id: 18186250512539639987
+        Path: Assets/Imported/18186250512539639987.sdmesh
+      - Id: 16881507087255711733
+        Path: Assets/Imported/16881507087255711733.sdmesh
+      - Id: 6158453646861805341
+        Path: Assets/Imported/6158453646861805341.sdmesh
+      - Id: 16615606979642969365
+        Path: Assets/Imported/16615606979642969365.sdmesh
+      - Id: 12566350851956767084
+        Path: Assets/Imported/12566350851956767084.sdmesh
+      - Id: 2622066512278435039
+        Path: Assets/Imported/2622066512278435039.sdmesh
     Materials:
-      - Id: 18441177015505986850
-        Path: Assets/Imported/18441177015505986850.sdmat
-      - Id: 1772491561107340276
-        Path: Assets/Imported/1772491561107340276.sdmat
-      - Id: 11675765909506894534
-        Path: Assets/Imported/11675765909506894534.sdmat
-      - Id: 13212075361930143806
-        Path: Assets/Imported/13212075361930143806.sdmat
-      - Id: 2964437480314473107
-        Path: Assets/Imported/2964437480314473107.sdmat
+      - Id: 16692207015799686153
+        Path: Assets/Imported/16692207015799686153.sdmat
+      - Id: 16933147188583344433
+        Path: Assets/Imported/16933147188583344433.sdmat
+      - Id: 16821275197172749023
+        Path: Assets/Imported/16821275197172749023.sdmat
+      - Id: 608081581017498154
+        Path: Assets/Imported/608081581017498154.sdmat
+      - Id: 2677014765823736993
+        Path: Assets/Imported/2677014765823736993.sdmat
+      - Id: 10762170193788113906
+        Path: Assets/Imported/10762170193788113906.sdmat
     Cubemaps:
-      - Id: 11995583010301391579
-        Path: Assets/Imported/11995583010301391579.sdhdr
-      - Id: 3975065293555215055
-        Path: Assets/Imported/3975065293555215055.sdhdr
+      - Id: 16870150689142504340
+        Path: Assets/Imported/16870150689142504340.sdhdr
+      - Id: 4687563163025455353
+        Path: Assets/Imported/4687563163025455353.sdhdr
+    Armatures:
+      - Id: 1756096860066115603
+        Path: Assets/Imported/1756096860066115603.sdarm
+      - Id: 6295578591598324482
+        Path: Assets/Imported/6295578591598324482.sdarm
+      - Id: 18291479688844582426
+        Path: Assets/Imported/18291479688844582426.sdarm
+    Animations:
+      - Id: 11271069421826257952
+        Path: Assets/Imported/11271069421826257952.sdanim
+      - Id: 10349793558208976269
+        Path: Assets/Imported/10349793558208976269.sdanim
+      - Id: 11173248738288737726
+        Path: Assets/Imported/11173248738288737726.sdanim
     Shaders:
       []
 Entities:
@@ -78,7 +106,69 @@ Entities:
         Members:
           - Name: ID
             Type: 5
-            Value: 8748194735581069872
+            Value: 7426191512050524622
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Cube
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [-9.30695915, 1.51300359, 0]
+          - Name: Rotation
+            Type: 9
+            Value: [0, 0, -2.74947638e-07]
+          - Name: Scale
+            Type: 7
+            Value: [0.999999583, 0.99999994, 0.99999994]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 17
+            Value: 18186250512539639987
+          - Name: Materials
+            Type: 12
+            Value:
+              - Id: 10762170193788113906
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 6478393406683260703
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Floor
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [0, 0, 0]
+          - Name: Rotation
+            Type: 9
+            Value: [0, 0, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 17
+            Value: 16881507087255711733
+          - Name: Materials
+            Type: 12
+            Value:
+              - Id: 608081581017498154
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 10088778910270578536
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
@@ -88,10 +178,10 @@ Entities:
         Members:
           - Name: Position
             Type: 7
-            Value: [2.28402424, 5.76546955, 13.3373375]
+            Value: [13.0051794, 9.612957, 1.90195346]
           - Name: Rotation
             Type: 9
-            Value: [-0.357792497, 0.139626339, 0]
+            Value: [-0.52359879, 7.9848814, 0]
           - Name: Scale
             Type: 7
             Value: [1, 1, 1]
@@ -119,7 +209,7 @@ Entities:
         Members:
           - Name: ID
             Type: 5
-            Value: 2763514255401732057
+            Value: 17963156939117761323
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
@@ -129,94 +219,26 @@ Entities:
         Members:
           - Name: Position
             Type: 7
-            Value: [0, 0, 0]
+            Value: [0, -0.442566752, 0]
           - Name: Rotation
             Type: 9
-            Value: [1.30271173, 1.11465037, 5.41255872e-07]
+            Value: [0.66206342, 0.739504516, -0.292509794]
           - Name: Scale
             Type: 7
-            Value: [0.999998569, 0.999996126, 0.999995649]
+            Value: [0.999997914, 0.999996603, 0.999994099]
       - Name: struct Seidon::CubemapComponent
         Members:
           - Name: Cubemap
             Type: 16
-            Value: 3975065293555215055
+            Value: 4687563163025455353
       - Name: struct Seidon::DirectionalLightComponent
         Members:
           - Name: Color
             Type: 8
-            Value: [1, 1, 1]
+            Value: [0.811764717, 0.968627453, 0.996078432]
           - Name: Intensity
             Type: 2
-            Value: 1
-  - Components:
-      - Name: struct Seidon::IDComponent
-        Members:
-          - Name: ID
-            Type: 5
-            Value: 7893585407142906793
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 4
-            Value: " Floor"
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 7
-            Value: [0, 0, 0]
-          - Name: Rotation
-            Type: 9
-            Value: [0, 0, 0]
-          - Name: Scale
-            Type: 7
-            Value: [1, 0.99999994, 0.99999994]
-      - Name: struct Seidon::RenderComponent
-        Members:
-          - Name: Mesh
-            Type: 17
-            Value: 10700892284197861150
-          - Name: Materials
-            Type: 12
-            Value:
-              - Id: 1772491561107340276
-  - Components:
-      - Name: struct Seidon::IDComponent
-        Members:
-          - Name: ID
-            Type: 5
-            Value: 10260900571633515171
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 4
-            Value: Test
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 7
-            Value: [0, 0, 0]
-          - Name: Rotation
-            Type: 9
-            Value: [0, 0, 0]
-          - Name: Scale
-            Type: 7
-            Value: [1, 1, 1]
-      - Name: struct Seidon::SkinnedRenderComponent
-        Members:
-          - Name: Mesh
-            Type: 17
-            Value: 15101349135922851927
-          - Name: Materials
-            Type: 12
-            Value:
-              []
-          - Name: Armature
-            Type: 18
-      - Name: struct Seidon::AnimationComponent
-        Members:
-          - Name: Animation
-            Type: 19
+            Value: 3
 Systems:
   - Name: class Seidon::RenderSystem
     Members:

@@ -179,6 +179,7 @@
     <ClCompile Include="src\Ecs\Scene.cpp" />
     <ClCompile Include="src\Ecs\SceneManager.cpp" />
     <ClCompile Include="src\Extensions\Extension.cpp" />
+    <ClCompile Include="src\Graphics\Armature.cpp" />
     <ClCompile Include="src\Graphics\CaptureCube.cpp" />
     <ClCompile Include="src\Graphics\Framebuffer.cpp" />
     <ClCompile Include="src\Core\InputManager.cpp" />

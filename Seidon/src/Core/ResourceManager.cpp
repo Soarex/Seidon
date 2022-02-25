@@ -101,6 +101,18 @@ namespace Seidon
         cubemaps.clear();
         nameToCubemapId.clear();
         idToCubemapPath.clear();
+
+        for (auto [id, armature] : armatures)
+            delete armature;
+        armatures.clear();
+        nameToArmatureId.clear();
+        idToArmaturePath.clear();
+
+        for (auto [id, animation] : animations)
+            delete animation;
+        animations.clear();
+        nameToAnimationId.clear();
+        idToAnimationPath.clear();
     }
 
     void ResourceManager::SaveText(YAML::Emitter& out)
@@ -135,6 +147,22 @@ namespace Seidon
             std::string path = "Assets/Imported/" + std::to_string(id) + ".sdhdr";
             cubemap->Save(path);
             idToCubemapPath[id] = path;
+        }
+
+        idToArmaturePath.clear();
+        for (auto& [id, armature] : armatures)
+        {
+            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdarm";
+            armature->Save(path);
+            idToArmaturePath[id] = path;
+        }
+
+        idToAnimationPath.clear();
+        for (auto& [id, animation] : animations)
+        {
+            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdanim";
+            animation->Save(path);
+            idToAnimationPath[id] = path;
         }
 
         out << YAML::BeginMap;
@@ -182,6 +210,26 @@ namespace Seidon
         }
         out << YAML::EndSeq;
 
+        out << YAML::Key << "Armatures" << YAML::BeginSeq;
+        for (auto& [id, path] : idToArmaturePath)
+        {
+            out << YAML::BeginMap;
+            out << YAML::Key << "Id" << YAML::Value << id;
+            out << YAML::Key << "Path" << YAML::Value << path;
+            out << YAML::EndMap;
+        }
+        out << YAML::EndSeq;
+
+        out << YAML::Key << "Animations" << YAML::BeginSeq;
+        for (auto& [id, path] : idToAnimationPath)
+        {
+            out << YAML::BeginMap;
+            out << YAML::Key << "Id" << YAML::Value << id;
+            out << YAML::Key << "Path" << YAML::Value << path;
+            out << YAML::EndMap;
+        }
+        out << YAML::EndSeq;
+
         out << YAML::Key << "Shaders" << YAML::BeginSeq;
         for (auto& [id, path] : idToShaderPath)
         {
@@ -217,6 +265,12 @@ namespace Seidon
 
         for (YAML::Node cubemap : resources["Cubemaps"])
             idToCubemapPath[cubemap["Id"].as<uint64_t>()] = cubemap["Path"].as<std::string>();
+
+        for (YAML::Node armature : resources["Armatures"])
+            idToArmaturePath[armature["Id"].as<uint64_t>()] = armature["Path"].as<std::string>();
+
+        for (YAML::Node animation : resources["Animations"])
+            idToAnimationPath[animation["Id"].as<uint64_t>()] = animation["Path"].as<std::string>();
     }
 
 
@@ -274,6 +328,28 @@ namespace Seidon
 
         idToCubemapPath[c->GetId()] = path;
         return c;
+    }
+
+    Armature* ResourceManager::LoadArmature(const std::string& path)
+    {
+        Armature* a = new Armature();
+        a->Load(path);
+
+        AddArmature(path, a);
+
+        idToArmaturePath[a->id] = path;
+        return a;
+    }
+
+    Animation* ResourceManager::LoadAnimation(const std::string& path)
+    {
+        Animation* a = new Animation();
+        a->Load(path);
+
+        AddAnimation(path, a);
+
+        idToAnimationPath[a->id] = path;
+        return a;
     }
 
     Shader* ResourceManager::LoadShader(UUID id)
@@ -335,6 +411,30 @@ namespace Seidon
         AddCubemap(path, c);
 
         return c;
+    }
+
+    Armature* ResourceManager::LoadArmature(UUID id)
+    {
+        std::string& path = idToArmaturePath[id];
+
+        Armature* a = new Armature();
+        a->Load(path);
+
+        AddArmature(path, a);
+
+        return a;
+    }
+
+    Animation* ResourceManager::LoadAnimation(UUID id)
+    {
+        std::string& path = idToAnimationPath[id];
+
+        Animation* a = new Animation();
+        a->Load(path);
+
+        AddAnimation(path, a);
+
+        return a;
     }
 
     Texture* ResourceManager::ImportTexture(const std::string& path, bool gammaCorrection, UUID id)
@@ -502,6 +602,20 @@ namespace Seidon
         return LoadCubemap(name);
     }
 
+    Armature* ResourceManager::GetOrLoadArmature(const std::string& name)
+    {
+        if (nameToArmatureId.count(name) > 0) return armatures[nameToArmatureId[name]];
+
+        return LoadArmature(name);
+    }
+
+    Animation* ResourceManager::GetOrLoadAnimation(const std::string& name)
+    {
+        if (nameToAnimationId.count(name) > 0) return animations[nameToAnimationId[name]];
+
+        return LoadAnimation(name);
+    }
+
     Texture* ResourceManager::GetOrLoadTexture(UUID id)
     {
         if (textures.count(id) > 0) return textures[id];
@@ -535,6 +649,20 @@ namespace Seidon
         if (cubemaps.count(id) > 0) return cubemaps[id];
 
         return LoadCubemap(id);
+    }
+
+    Armature* ResourceManager::GetOrLoadArmature(UUID id)
+    {
+        if (armatures.count(id) > 0) return armatures[id];
+
+        return LoadArmature(id);
+    }
+
+    Animation* ResourceManager::GetOrLoadAnimation(UUID id)
+    {
+        if (animations.count(id) > 0) return animations[id];
+
+        return LoadAnimation(id);
     }
 
 

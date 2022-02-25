@@ -91,6 +91,18 @@ namespace Seidon
 					out << YAML::Key << "Value" << YAML::Value << c->GetId();
 					break;
 				}
+				case Types::ANIMATION:
+				{
+					Animation* a = *(Animation**)(obj + member.offset);
+					out << YAML::Key << "Value" << YAML::Value << a->id;
+					break;
+				}
+				case Types::ARMATURE:
+				{
+					Armature* a = *(Armature**)(obj + member.offset);
+					out << YAML::Key << "Value" << YAML::Value << a->id;
+					break;
+				}
 				case Types::UNKNOWN:
 				{
 					unsigned char* data = obj + member.offset;
@@ -180,6 +192,14 @@ namespace Seidon
 
 				case Types::CUBEMAP:
 					*(HdrCubemap**)member = Application::Get()->GetResourceManager()->GetOrLoadCubemap(memberNode["Value"].as<uint64_t>());
+					break;
+
+				case Types::ARMATURE:
+					*(Armature**)member = Application::Get()->GetResourceManager()->GetOrLoadArmature(memberNode["Value"].as<uint64_t>());
+					break;
+
+				case Types::ANIMATION:
+					*(Animation**)member = Application::Get()->GetResourceManager()->GetOrLoadAnimation(memberNode["Value"].as<uint64_t>());
 					break;
 
 				case Types::UNKNOWN:

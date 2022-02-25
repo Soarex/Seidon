@@ -197,17 +197,6 @@ namespace Seidon
 		std::filesystem::path path = std::string(texture->path);
 		ImGui::Text(path.filename().string().c_str());
 
-		if (ImGui::BeginPopupContextItem("test"))
-		{
-			if (ImGui::MenuItem("Save Texture"))
-				(texture)->Save("Test.texture");
-
-			if (ImGui::MenuItem("Load Texture"))
-				(texture)->LoadAsync("Test.texture");
-
-			ImGui::EndPopup();
-		}
-
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
@@ -234,17 +223,6 @@ namespace Seidon
 
 		std::filesystem::path path = std::string((*cubemap)->GetPath());
 		ImGui::Text(path.filename().string().c_str());
-
-		if (ImGui::BeginPopupContextItem("test"))
-		{
-			if (ImGui::MenuItem("Save Cubemap"))
-				(*cubemap)->Save("Test.cubemap");
-
-			if (ImGui::MenuItem("Load Texture"))
-				(*cubemap)->Load("Test.cubemap");
-
-			ImGui::EndPopup();
-		}
 		
 		ImGui::Columns(1);
 		ImGui::PopID();
@@ -352,6 +330,17 @@ namespace Seidon
 
 		ImGui::Text((*armature)->name.c_str());
 
+		if (ImGui::BeginPopupContextItem("test"))
+		{
+			if (ImGui::MenuItem("Save Armature"))
+				(*armature)->Save("Test.armature");
+
+			if (ImGui::MenuItem("Load Armature"))
+				(*armature)->Load("Test.armature");
+
+			ImGui::EndPopup();
+		}
+
 		ImGui::Columns(1);
 		ImGui::PopID();
 	}
@@ -378,6 +367,17 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		ImGui::Text((*animation)->name.c_str());
+
+		if (ImGui::BeginPopupContextItem("test"))
+		{
+			if (ImGui::MenuItem("Save Animation"))
+				(*animation)->Save("Test.animation");
+
+			if (ImGui::MenuItem("Load Animation"))
+				(*animation)->Load("Test.animation");
+
+			ImGui::EndPopup();
+		}
 
 		ImGui::Columns(1);
 		ImGui::PopID();
