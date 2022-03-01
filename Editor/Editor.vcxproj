@@ -81,7 +81,7 @@
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
     <IncludePath>$(SolutionDir)Seidon\src;$(SolutionDir)Vendor\Include;$(SolutionDir)Seidon\src\Vendor;$(SolutionDir)Editor\src;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\Bin\Debug-x64\Seidon;$(SolutionDir)\Vendor\Libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\Bin\Debug-x64\Seidon;$(SolutionDir)Vendor\Libs\Debug;$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -127,6 +127,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

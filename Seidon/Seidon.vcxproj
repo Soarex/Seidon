@@ -79,14 +79,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(ProjectDir)src\Vendor\Bullet3D;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(SolutionDir)Vendor\Include\Physx;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Vendor\Libs\Debug;$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(ProjectDir)src\Vendor\Bullet3D;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(SolutionDir)Vendor\Include\Physx;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
@@ -131,6 +131,7 @@
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>true</SupportJustMyCode>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -138,7 +139,7 @@
       <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp.lib;Physx/Physx_static_64.lib;Physx/PhysxCharacterKinematic_static_64.lib;Physx/PhysxCooking_static_64.lib;Physx/PhysxCommon_static_64.lib;Physx/PhysxExtensions_static_64.lib;Physx/PhysxFoundation_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Lib>
     <ProjectReference>
@@ -163,7 +164,7 @@
       <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;Physx/Physx_static_64.lib;Physx/PhysxCharacterKinematic_static_64.lib;Physx/PhysxCooking_static_64.lib;Physx/PhysxCommon_static_64.lib;Physx/PhysxExtensions_static_64.lib;Physx/PhysxFoundation_static_64.lib;Physx/PhysxPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>

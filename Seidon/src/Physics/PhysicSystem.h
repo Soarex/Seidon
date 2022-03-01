@@ -12,9 +12,9 @@ namespace Seidon
 	public:
 		PhysicSystem() = default;
 
-		void Init() {}
-		void Update(float deltaTime) {}
-		void Destroy() {}
+		void Init();
+		void Update(float deltaTime);
+		void Destroy();
 
 	private:
 		void SetupRigidbodies() {}
