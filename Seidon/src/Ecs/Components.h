@@ -199,6 +199,8 @@ namespace Seidon
 	{
 		glm::vec3 halfExtents = { 0.5f, 0.5f, 0.5f };
 
+		void* runtimeShape = nullptr;
+
 		CubeColliderComponent() = default;
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 	};
@@ -207,6 +209,9 @@ namespace Seidon
 	struct RigidbodyComponent
 	{
 		float mass = 0;
+		bool dynamic = false;
+
+		void* runtimeBody = nullptr;
 
 		RigidbodyComponent() = default;
 		RigidbodyComponent(const RigidbodyComponent&) = default;

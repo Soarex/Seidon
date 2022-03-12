@@ -23,11 +23,13 @@ namespace Seidon
 		inputManager = new InputManager();
 		resourceManager = new ResourceManager();
 		workManager = new WorkManager();
+		physicsApi = new PhysicsApi();
 
 		window->Init("Seidon Game");
 		inputManager->Init(window);
 		resourceManager->Init();
 		workManager->Init();
+		physicsApi->Init();
 
 		RegisterSystem<RenderSystem>();
 
@@ -80,7 +82,8 @@ namespace Seidon
 			.AddMember("Half Extents", &CubeColliderComponent::halfExtents);
 
 		RegisterComponent<RigidbodyComponent>()
-			.AddMember("Mass", &RigidbodyComponent::mass);
+			.AddMember("Mass", &RigidbodyComponent::mass)
+			.AddMember("Dynamic", &RigidbodyComponent::dynamic);
 
 		Init();
 	}
@@ -101,6 +104,7 @@ namespace Seidon
 	{
 
 		Destroy();
+		physicsApi->Destroy();
 		resourceManager->Destroy();
 		workManager->Destroy();
 		window->Destroy();

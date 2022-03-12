@@ -228,6 +228,9 @@
     <ClCompile Include="src\Graphics\Armature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\PhysicsApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Shader.h">
@@ -765,6 +768,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Animation\AnimationSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

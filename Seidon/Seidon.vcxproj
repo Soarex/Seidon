@@ -139,7 +139,7 @@
       <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp.lib;Physx/Physx_static_64.lib;Physx/PhysxCharacterKinematic_static_64.lib;Physx/PhysxCooking_static_64.lib;Physx/PhysxCommon_static_64.lib;Physx/PhysxExtensions_static_64.lib;Physx/PhysxFoundation_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp.lib;Physx/Physx_static_64.lib;Physx/PhysxCharacterKinematic_static_64.lib;Physx/PhysXCooking_static_64.lib;Physx/PhysxCommon_static_64.lib;Physx/PhysxExtensions_static_64.lib;Physx/PhysxFoundation_static_64.lib;Physx/PhysXPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Lib>
     <ProjectReference>
@@ -187,6 +187,7 @@
     <ClCompile Include="src\Graphics\HdrCubemap.cpp" />
     <ClCompile Include="src\Graphics\Material.cpp" />
     <ClCompile Include="src\Graphics\Mesh.cpp" />
+    <ClCompile Include="src\Physics\PhysicsApi.cpp" />
     <ClCompile Include="src\Physics\PhysicSystem.cpp" />
     <ClCompile Include="src\Ecs\System.cpp" />
     <ClCompile Include="src\Utils\MatrixDecompose.cpp" />
@@ -266,6 +267,7 @@
     <ClInclude Include="src\Graphics\HdrCubemap.h" />
     <ClInclude Include="src\Graphics\Vertex.h" />
     <ClInclude Include="src\Physics\Physics.h" />
+    <ClInclude Include="src\Physics\PhysicsApi.h" />
     <ClInclude Include="src\Physics\PhysicSystem.h" />
     <ClInclude Include="src\Reflection\Reflection.h" />
     <ClInclude Include="src\Utils\MatrixDecompose.h" />

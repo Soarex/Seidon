@@ -12,6 +12,8 @@
 #include "Ecs/Scene.h"
 #include "Ecs/Entity.h"
 
+#include "../Physics/PhysicsApi.h"
+
 #include <entt/entt.hpp>
 #include <unordered_map>
 
@@ -34,6 +36,7 @@ namespace Seidon
 		InputManager* inputManager;
 		ResourceManager* resourceManager;
 		WorkManager* workManager;
+		PhysicsApi* physicsApi;
 	public:
 		Application();
 		virtual ~Application();
@@ -52,6 +55,7 @@ namespace Seidon
 		inline ResourceManager* GetResourceManager() { return resourceManager; }
 		inline WorkManager* GetWorkManager() { return workManager; }
 		inline SceneManager* GetSceneManager() { return sceneManager; }
+		inline PhysicsApi* GetPhysicsApi() { return physicsApi; }
 
 		static inline Application* Get() { return instance; }
 
