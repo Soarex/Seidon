@@ -66,7 +66,7 @@ namespace Seidon
 		
 		std::vector<AnimationChannel> channels;
 	public:
-		Animation() = default;
+		Animation(UUID id = UUID());
 
 		void Save(const std::string& path);
 		void SaveAsync(const std::string& path);

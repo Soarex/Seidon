@@ -19,6 +19,7 @@ namespace Seidon
 		Texture* metallic;
 		Texture* ao;
 
+		Material(UUID id = UUID());
 	public:
 		void Save(const std::string& path);
 		void SaveAsync(const std::string& path);

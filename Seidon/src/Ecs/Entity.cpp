@@ -52,6 +52,12 @@ namespace Seidon
 					out << YAML::Key << "Value" << YAML::Value << *data;
 					break;
 				}
+				case Types::BOOL:
+				{
+					bool* data = (bool*)(obj + member.offset);
+					out << YAML::Key << "Value" << YAML::Value << *data;
+					break;
+				}
 				case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
 				{
 					glm::vec3* data = (glm::vec3*)(obj + member.offset);
@@ -170,6 +176,10 @@ namespace Seidon
 
 				case Types::FLOAT:
 					*(float*)member = memberNode["Value"].as<float>();
+					break;
+
+				case Types::BOOL:
+					*(bool*)member = memberNode["Value"].as<bool>();
 					break;
 
 				case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:

@@ -191,8 +191,9 @@
     <ClCompile Include="src\Physics\PhysicSystem.cpp" />
     <ClCompile Include="src\Ecs\System.cpp" />
     <ClCompile Include="src\Utils\MatrixDecompose.cpp" />
-    <ClCompile Include="src\Utils\ModelImporter.cpp" />
+    <ClCompile Include="src\Utils\AssetImporter.cpp" />
     <ClCompile Include="src\Utils\FlyingCameraControlSystem.cpp" />
+    <ClCompile Include="src\Utils\StringUtils.cpp" />
     <ClCompile Include="src\Vendor\Glad\glad.c" />
     <ClCompile Include="src\Graphics\RenderBuffer.cpp" />
     <ClCompile Include="src\Graphics\RenderSystem.cpp" />
@@ -271,10 +272,11 @@
     <ClInclude Include="src\Physics\PhysicSystem.h" />
     <ClInclude Include="src\Reflection\Reflection.h" />
     <ClInclude Include="src\Utils\MatrixDecompose.h" />
-    <ClInclude Include="src\Utils\ModelImporter.h" />
+    <ClInclude Include="src\Utils\AssetImporter.h" />
     <ClInclude Include="src\Seidon.h" />
     <ClInclude Include="src\Utils\BlockingQueue.h" />
     <ClInclude Include="src\Utils\FlyingCameraControlSystem.h" />
+    <ClInclude Include="src\Utils\StringUtils.h" />
     <ClInclude Include="src\Utils\utils.h" />
     <ClInclude Include="src\Graphics\Framebuffer.h" />
     <ClInclude Include="src\Core\InputManager.h" />

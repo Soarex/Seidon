@@ -32,6 +32,7 @@ namespace Seidon
 
 		static constexpr unsigned int maxMipLevels = 5;
 	public:
+		HdrCubemap(UUID id, unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
 		HdrCubemap(unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
 		~HdrCubemap();
 
@@ -72,5 +73,6 @@ namespace Seidon
 		void DrawCaptureQuad();
 
 		friend class ResourceManager;
+		friend class AssetImporter;
 	};
 }

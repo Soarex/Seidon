@@ -5,6 +5,12 @@
 
 namespace Seidon
 {
+    Armature::Armature(UUID id)
+        : id(id)
+    {
+
+    }
+
 	void Armature::Save(const std::string& path)
 	{
         std::ofstream out(path, std::ios::out | std::ios::binary);

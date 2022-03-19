@@ -5,6 +5,12 @@
 
 namespace Seidon
 {
+    Animation::Animation(UUID id)
+        : id(id)
+    {
+
+    }
+
     void Animation::Save(const std::string& path)
     {
         std::ofstream out(path, std::ios::out | std::ios::binary);

@@ -42,7 +42,7 @@ namespace Seidon
         std::string name;
         std::vector<SubMesh*> subMeshes;
 
-        Mesh() = default;
+        Mesh(UUID id = UUID());
         Mesh(const std::string& name) : name(name) {};
         ~Mesh();
 

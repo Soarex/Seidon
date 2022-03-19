@@ -1,6 +1,7 @@
 #include "ResourceManager.h"
 
 #include <unordered_set>
+#include <yaml-cpp/yaml.h>
 
 namespace Seidon
 {
@@ -13,32 +14,32 @@ namespace Seidon
         unsigned char black[] = { 0, 0, 0};
         unsigned char blue[] = { 128, 128, 255};
 
-        Texture* t = new Texture();
+        Texture* t = new Texture(1);
         t->Create(1, 1, white);
         t->path = "albedo_default";
         AddTexture("albedo_default", t);
 
-        t = new Texture();
+        t = new Texture(2);
         t->Create(1, 1, blue);
         t->path = "normal_default";
         AddTexture("normal_default", t);
 
-        t = new Texture();
+        t = new Texture(3);
         t->Create(1, 1, black);
         t->path = "metallic_default";
         AddTexture("metallic_default", t);
 
-        t = new Texture();
+        t = new Texture(4);
         t->Create(1, 1, grey);
         t->path = "roughness_default";
         AddTexture("roughness_default", t);
 
-        t = new Texture();
+        t = new Texture(5);
         t->Create(1, 1, white);
         t->path = "ao_default";
         AddTexture("ao_default", t);
 
-        Material* m = new Material();
+        Material* m = new Material(6);
         m->name = "default_material";
         m->tint = glm::vec3(1.0f);
         m->albedo = GetTexture("albedo_default");
@@ -51,19 +52,19 @@ namespace Seidon
         Texture t1;
         t1.Create(1, 1, black);
         t1.path = "default_cubemap";
-        HdrCubemap* c = new HdrCubemap();
+        HdrCubemap* c = new HdrCubemap(UUID(7));
         c->CreateFromEquirectangularMap(&t1);
         AddCubemap("default_cubemap", c);
 
-        Mesh* mesh = new Mesh();
+        Mesh* mesh = new Mesh(8);
         mesh->name = "Empty Mesh";
         AddMesh("empty_mesh", mesh);
 
-        Armature* armature = new Armature();
+        Armature* armature = new Armature(9);
         armature->name = "Default Armature";
         AddArmature("default_armature", armature);
 
-        Animation* animation = new Animation();
+        Animation* animation = new Animation(10);
         animation->name = "Default Animation";
         animation->duration = 0;
         animation->ticksPerSecond = 24;
@@ -115,56 +116,9 @@ namespace Seidon
         idToAnimationPath.clear();
     }
 
-    void ResourceManager::SaveText(YAML::Emitter& out)
+    void ResourceManager::SaveText(const std::string& path)
     {
-        idToTexturePath.clear();
-        for (auto& [id, texture] : textures)
-        {
-            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdtex";
-            texture->Save(path);
-            idToTexturePath[id] = path;
-        }
-
-        idToMeshPath.clear();
-        for (auto& [id, mesh] : meshes)
-        {
-            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdmesh";
-            mesh->Save(path);
-            idToMeshPath[id] = path;
-        }
-
-        idToMaterialPath.clear();
-        for (auto& [id, material] : materials)
-        {
-            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdmat";
-            material->Save(path);
-            idToMaterialPath[id] = path;
-        }
-
-        idToCubemapPath.clear();
-        for (auto& [id, cubemap] : cubemaps)
-        {
-            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdhdr";
-            cubemap->Save(path);
-            idToCubemapPath[id] = path;
-        }
-
-        idToArmaturePath.clear();
-        for (auto& [id, armature] : armatures)
-        {
-            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdarm";
-            armature->Save(path);
-            idToArmaturePath[id] = path;
-        }
-
-        idToAnimationPath.clear();
-        for (auto& [id, animation] : animations)
-        {
-            std::string path = "Assets/Imported/" + std::to_string(id) + ".sdanim";
-            animation->Save(path);
-            idToAnimationPath[id] = path;
-        }
-
+        YAML::Emitter out;
         out << YAML::BeginMap;
         out << YAML::Key << "Resources";
 
@@ -242,14 +196,28 @@ namespace Seidon
 
         out << YAML::EndMap;
         out << YAML::EndMap;
+
+        std::ofstream outStream(path);
+        outStream << out.c_str();
     }
 
-    void ResourceManager::LoadText(YAML::Node& node)
+    void ResourceManager::LoadText(const std::string& path)
     {
-        Destroy();
-        Init();
+        //Destroy();
+        //Init();
+        YAML::Node data;
 
-        YAML::Node resources = node["Resources"];
+        try
+        {
+            data = YAML::LoadFile(path);
+        }
+        catch (YAML::ParserException e)
+        {
+            std::cout << e.msg << std::endl;
+            return;
+        }
+
+        YAML::Node resources = data["Resources"];
 
         for (YAML::Node texture : resources["Textures"])
             idToTexturePath[texture["Id"].as<uint64_t>()] = texture["Path"].as<std::string>();
@@ -315,7 +283,6 @@ namespace Seidon
 
         AddTexture(path, t);
 
-        idToTexturePath[t->GetId()] = path;
         return t;
     }
 
@@ -437,134 +404,39 @@ namespace Seidon
         return a;
     }
 
-    Texture* ResourceManager::ImportTexture(const std::string& path, bool gammaCorrection, UUID id)
+    void ResourceManager::RegisterShader(Shader* shader, const std::string& path)
     {
-        Texture* t = new Texture();
-        t->id = id;
-        t->ImportAsync(path, gammaCorrection);
-
-        AddTexture(path, t);
-
-        idToTexturePath[t->GetId()] = path;
-        return t;
+        idToShaderPath[shader->id] = path;
     }
 
-    HdrCubemap* ResourceManager::ImportCubemap(const std::string& path, UUID id)
+    void ResourceManager::RegisterMesh(Mesh* mesh, const std::string& path)
     {
-        HdrCubemap* c = new HdrCubemap();
-        c->LoadFromEquirectangularMap(path);
-        c->id = id;
-
-        AddCubemap(path, c);
-
-        idToCubemapPath[c->GetId()] = path;
-        return c;
+        idToMeshPath[mesh->id] = path;
     }
 
-    Texture* ResourceManager::GetOrImportTexture(const std::string& path, bool gammaCorrection, UUID id)
+    void ResourceManager::RegisterMaterial(Material* material, const std::string& path)
     {
-        if (nameToTextureId.count(path) > 0) return GetTexture(path);
-
-        return ImportTexture(path, gammaCorrection, id);
+        idToMaterialPath[material->id] = path;
     }
 
-    HdrCubemap* ResourceManager::GetOrImportCubemap(const std::string& path, UUID id)
+    void ResourceManager::RegisterTexture(Texture* texture, const std::string& path)
     {
-        if (nameToCubemapId.count(path) > 0) return GetCubemap(path);
-        
-        return ImportCubemap(path, id);
+        idToTexturePath[texture->id] = path;
     }
 
-    Mesh* ResourceManager::CreateMesh(const MeshImportData& importData, UUID id)
+    void ResourceManager::RegisterCubemap(HdrCubemap* cubemap, const std::string& path)
     {
-        Mesh* mesh = new Mesh();
-        mesh->name = importData.name;
-        mesh->id = id;
-
-        for (auto& m : importData.subMeshes)
-        {
-            SubMesh* subMesh = new SubMesh();
-            subMesh->Create(m.vertices, m.indices, m.name);
-      
-            mesh->subMeshes.push_back(subMesh);
-        }
-
-        AddMesh(importData.name, mesh);
-        
-        return mesh;
+        idToCubemapPath[cubemap->id] = path;
     }
 
-    Material* ResourceManager::CreateMaterial(const MaterialImportData& importData, UUID id)
+    void ResourceManager::RegisterArmature(Armature* armature, const std::string& path)
     {
-        if (nameToMaterialId.count(importData.name) > 0) return GetMaterial(importData.name);
-
-        Material* material = new Material();
-        material->id = id;
-        material->name = importData.name;
-        material->tint = importData.tint;
-        material->albedo = GetOrImportTexture(importData.albedoMapPath == "" ? "albedo_default" : importData.albedoMapPath, true);
-        material->normal = GetOrImportTexture(importData.normalMapPath == "" ? "normal_default" : importData.normalMapPath);
-        material->roughness = GetOrImportTexture(importData.roughnessMapPath == "" ? "roughness_default" : importData.roughnessMapPath);
-        material->metallic = GetOrImportTexture(importData.metallicMapPath == "" ? "metallic_default" : importData.metallicMapPath);
-        material->ao = GetOrImportTexture(importData.aoMapPath == "" ? "ao_default" : importData.aoMapPath);
-
-        AddMaterial(importData.name, material);
-        return material;
+        idToArmaturePath[armature->id] = path;
     }
 
-    const ModelFileInfo& ResourceManager::ImportModelFile(const std::string& path)
+    void ResourceManager::RegisterAnimation(Animation* animation, const std::string& path)
     {
-        ModelImporter importer;
-        return CreateFromImportData(importer.Import(path));
-    }
-
-    ModelFileInfo ResourceManager::CreateFromImportData(const ModelImportData& importData)
-    {
-        ModelFileInfo res;
-        res.filePath = importData.filepath;
-
-        std::vector<Material*> modelMaterials;
-        for (auto materialImportData : importData.materials)
-        {
-            Material* m = CreateMaterial(materialImportData);
-            idToMaterialPath[m->id] = importData.filepath;
-            modelMaterials.push_back(m);
-        }
-        
-        int i = 0;
-        for (auto& meshImportData : importData.meshes)
-        {
-            Mesh* mesh = CreateMesh(meshImportData);
-            mesh->filepath = importData.filepath;
-            idToMeshPath[mesh->id] = importData.filepath;
-
-            std::vector<Material*> materials;
-            for (int j = 0; j < meshImportData.subMeshes.size(); j++)
-                materials.push_back(modelMaterials[meshImportData.subMeshes[j].materialId]);
-
-            res.content.push_back({ mesh, materials });
-        }
-
-        for (auto& animation : importData.animations)
-            AddAnimation(animation.name, new Animation(animation));
-
-        for (auto& armature : importData.armatures)
-            AddArmature(armature.name, new Armature(armature));
-
-        for (auto& meshImportData : importData.meshes)
-        {
-            Mesh* mesh = CreateMesh(meshImportData);
-            mesh->filepath = importData.filepath;
-            idToMeshPath[mesh->id] = importData.filepath;
-
-            std::vector<Material*> materials;
-            for (int j = 0; j < meshImportData.subMeshes.size(); j++)
-                materials.push_back(modelMaterials[meshImportData.subMeshes[j].materialId]);
-
-            res.content.push_back({ mesh, materials });
-        }
-
-        return res;
+        idToAnimationPath[animation->id] = path;
     }
 
     Texture* ResourceManager::GetOrLoadTexture(const std::string& name)
@@ -734,5 +606,54 @@ namespace Seidon
             res.push_back(animation);
 
         return res;
+    }
+
+    void ResourceManager::AddTexture(const std::string& name, Texture* texture)
+    { 
+        textures[texture->GetId()] = texture; 
+        nameToTextureId[name] = texture->GetId(); 
+        idToTexturePath[texture->GetId()] = texture->path; 
+    }
+
+    void ResourceManager::AddMesh(const std::string& name, Mesh* mesh)
+    { 
+        meshes[mesh->id] = mesh; 
+        nameToMeshId[name] = mesh->id; 
+        idToMeshPath[mesh->id] = name;
+    }
+
+    void ResourceManager::AddShader(const std::string& name, Shader* shader) 
+    { 
+        shaders[shader->GetId()] = shader; 
+        nameToShaderId[name] = shader->GetId(); 
+        idToShaderPath[shader->GetId()] = name;
+    }
+
+    void ResourceManager::AddMaterial(const std::string& name, Material* material)
+    { 
+        materials[material->id] = material; 
+        nameToMaterialId[name] = material->id; 
+        idToMaterialPath[material->id] = name;
+    }
+
+    void ResourceManager::AddCubemap(const std::string& name, HdrCubemap* cubemap)
+    { 
+        cubemaps[cubemap->GetId()] = cubemap; 
+        nameToCubemapId[name] = cubemap->GetId(); 
+        idToCubemapPath[cubemap->GetId()] = name;
+    }
+
+    void ResourceManager::AddAnimation(const std::string& name, Animation* animation)
+    { 
+        animations[animation->id] = animation; 
+        nameToAnimationId[name] = animation->id; 
+        idToAnimationPath[animation->id] = name;
+    }
+
+    void ResourceManager::AddArmature(const std::string& name, Armature* armature)
+    { 
+        armatures[armature->id] = armature; 
+        nameToArmatureId[name] = armature->id; 
+        idToArmaturePath[armature->id] = name;
     }
 }

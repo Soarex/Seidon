@@ -15,6 +15,9 @@ namespace Seidon
         window->SetIcon(data, width, height);
         delete data;
 
+        if (std::filesystem::exists("ResourceRegistry.sdreg"))
+            resourceManager->LoadText("ResourceRegistry.sdreg");
+
         editorResourceManager.Init();
 
         RegisterSystem<EditorCameraControlSystem>()
@@ -29,7 +32,7 @@ namespace Seidon
 
         hierarchyPanel.Init();           
         inspectorPanel.Init();           
-        assetBrowserPanel.Init();
+        //assetBrowserPanel.Init();
         fileBrowserPanel.Init();
         
 		window->SetName("Seidon Editor");
@@ -267,7 +270,7 @@ namespace Seidon
         inspectorPanel.Draw();
        
         fileBrowserPanel.Draw();
-        assetBrowserPanel.Draw();
+        //assetBrowserPanel.Draw();
         
         hierarchyPanel.Draw();
 
@@ -281,6 +284,7 @@ namespace Seidon
 
 	void Editor::Destroy()
 	{
+        resourceManager->SaveText("ResourceRegistry.sdreg");
         editorSystems.Destroy();
         runtimeSystems.Destroy();
         e.Destroy();

@@ -187,7 +187,6 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		ImGui::Checkbox("##bool", &value);
-		//ImGui::DragFloat("##X", &value, 0.1f, 0.0f, 0.0f, "%.2f");
 
 		ImGui::Columns(1);
 
@@ -206,8 +205,13 @@ namespace Seidon
 		ImGui::Image((ImTextureID)texture->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE"))
-				texture = *(Texture**)payload->Data;
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_TEXTURE"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+				
+				texture = resourceManager.GetOrLoadTexture(path);
+			}
 
 			ImGui::EndDragDropTarget();
 		}
@@ -229,12 +233,17 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetTexture("Resources/FileIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_CUBEMAP"))
-				*cubemap = *(HdrCubemap**)payload->Data;
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_CUBEMAP"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				*cubemap = resourceManager.GetOrLoadCubemap(path);
+			}
 
 			ImGui::EndDragDropTarget();
 		}
@@ -256,12 +265,17 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetTexture("Resources/ModelIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/ModelIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MESH"))
-				*mesh = *(Mesh**)payload->Data;
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_MESH"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				*mesh = resourceManager.GetOrLoadMesh(path);
+			}
 
 			ImGui::EndDragDropTarget();
 		}
@@ -286,15 +300,20 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetTexture("Resources/MaterialIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/MaterialIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		
 		if (ImGui::IsItemClicked())
 			clicked = true;
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MATERIAL"))
-				*material = *(Material**)payload->Data;
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_MATERIAL"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				*material = resourceManager.GetOrLoadMaterial(path);
+			}
 
 			ImGui::EndDragDropTarget();
 		}
@@ -335,12 +354,17 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/ArmatureIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/ArmatureIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ARMATURE"))
-				*armature = *(Armature**)payload->Data;
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_ARMATURE"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				*armature = resourceManager.GetOrLoadArmature(path);
+			}
 
 			ImGui::EndDragDropTarget();
 		}
@@ -348,17 +372,6 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		ImGui::Text((*armature)->name.c_str());
-
-		if (ImGui::BeginPopupContextItem("test"))
-		{
-			if (ImGui::MenuItem("Save Armature"))
-				(*armature)->Save("Test.armature");
-
-			if (ImGui::MenuItem("Load Armature"))
-				(*armature)->Load("Test.armature");
-
-			ImGui::EndPopup();
-		}
 
 		ImGui::Columns(1);
 		ImGui::PopID();
@@ -373,12 +386,17 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/AnimationIcon.png")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/AnimationIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ANIMATION"))
-				*animation = *(Animation**)payload->Data;
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_ANIMATION"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				*animation = resourceManager.GetOrLoadAnimation(path);
+			}
 
 			ImGui::EndDragDropTarget();
 		}
@@ -386,17 +404,6 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		ImGui::Text((*animation)->name.c_str());
-
-		if (ImGui::BeginPopupContextItem("test"))
-		{
-			if (ImGui::MenuItem("Save Animation"))
-				(*animation)->Save("Test.animation");
-
-			if (ImGui::MenuItem("Load Animation"))
-				(*animation)->Load("Test.animation");
-
-			ImGui::EndPopup();
-		}
 
 		ImGui::Columns(1);
 		ImGui::PopID();

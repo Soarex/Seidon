@@ -8,13 +8,13 @@ namespace Seidon
 
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 
-		backIcon = resourceManager.GetOrImportTexture("Resources/BackIcon.png");
-		fileIcon = resourceManager.GetOrImportTexture("Resources/FileIcon.png");
-		folderIcon = resourceManager.GetOrImportTexture("Resources/FolderIcon.png");
-		modelIcon = resourceManager.GetOrImportTexture("Resources/ModelIcon.png");
-		materialIcon = resourceManager.GetOrImportTexture("Resources/MaterialIcon.png");
-		animationIcon = resourceManager.GetOrImportTexture("Resources/AnimationIcon.png");
-		armatureIcon = resourceManager.GetOrImportTexture("Resources/ArmatureIcon.png");
+		//backIcon = resourceManager.GetOrImportTexture("Resources/BackIcon.png");
+		//fileIcon = resourceManager.GetOrImportTexture("Resources/FileIcon.png");
+		//folderIcon = resourceManager.GetOrImportTexture("Resources/FolderIcon.png");
+		//modelIcon = resourceManager.GetOrImportTexture("Resources/ModelIcon.png");
+		//materialIcon = resourceManager.GetOrImportTexture("Resources/MaterialIcon.png");
+		//animationIcon = resourceManager.GetOrImportTexture("Resources/AnimationIcon.png");
+		//armatureIcon = resourceManager.GetOrImportTexture("Resources/ArmatureIcon.png");
 	}
 
 	void AssetBrowserPanel::Draw()

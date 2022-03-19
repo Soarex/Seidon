@@ -90,6 +90,12 @@ namespace Seidon
         return VAO; 
     };
 
+    Mesh::Mesh(UUID id)
+        : id(id)
+    {
+
+    }
+
     Mesh::~Mesh()
     {
         for (SubMesh* m : subMeshes)

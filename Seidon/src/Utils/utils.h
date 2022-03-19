@@ -2,5 +2,6 @@
 
 #include "BlockingQueue.h"
 #include "MatrixDecompose.h"
-#include "ModelImporter.h"
+#include "AssetImporter.h"
 #include "FlyingCameraControlSystem.h"
+#include "StringUtils.h"

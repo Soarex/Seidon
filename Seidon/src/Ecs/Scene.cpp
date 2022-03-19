@@ -66,6 +66,12 @@ namespace Seidon
 					out << YAML::Key << "Value" << YAML::Value << *data;
 					break;
 				}
+				case Types::BOOL:
+				{
+					bool* data = (bool*)(obj + member.offset);
+					out << YAML::Key << "Value" << YAML::Value << *data;
+					break;
+				}
 				case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
 				{
 					glm::vec3* data = (glm::vec3*)(obj + member.offset);
@@ -175,6 +181,10 @@ namespace Seidon
 					*(float*)member = memberNode["Value"].as<float>();
 					break;
 
+				case Types::BOOL:
+					*(bool*)member = memberNode["Value"].as<bool>();
+					break;
+
 				case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
 					*(glm::vec3*)member = memberNode["Value"].as<glm::vec3>();
 					break;
@@ -219,10 +229,6 @@ namespace Seidon
 		out << YAML::Key << "Id" << YAML::Value << id;
 		out << YAML::Key << "Name" << YAML::Value << name;
 
-		out << YAML::Key << "ResourceManager";
-		
-		Application::Get()->GetResourceManager()->SaveText(out);
-
 		out << YAML::Key << "Entities" << YAML::BeginSeq;
 
 		registry.each([&](auto entityID)
@@ -261,9 +267,6 @@ namespace Seidon
 
 		id = data["Id"].as<uint64_t>();
 		name = data["Name"].as<std::string>();
-
-		YAML::Node res = data["ResourceManager"];
-		Application::Get()->GetResourceManager()->LoadText(res);
 
 		for (YAML::Node entityNode : data["Entities"])
 			CreateEntity().LoadText(entityNode);

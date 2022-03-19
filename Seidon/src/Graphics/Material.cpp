@@ -3,6 +3,12 @@
 
 namespace Seidon
 {
+	Material::Material(UUID id)
+		: id(id)
+	{
+
+	}
+
 	void Material::Save(const std::string& path)
 	{
 		std::ofstream out(path, std::ios::out | std::ios::binary);

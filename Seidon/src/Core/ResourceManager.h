@@ -7,21 +7,11 @@
 #include "Graphics/Armature.h"
 #include "Graphics/HdrCubemap.h"
 
-#include "Utils/ModelImporter.h"
-
-#include <yaml-cpp/yaml.h>
-
 #include <unordered_map>
 #include <utility>
 
 namespace Seidon
 {
-	struct ModelFileInfo
-	{
-		std::string filePath;
-		std::vector<std::pair<Mesh*, std::vector<Material*>>> content;
-	};
-
 	class ResourceManager
 	{
 	private:
@@ -52,8 +42,8 @@ namespace Seidon
 		void Init();
 		void Destroy();
 
-		void SaveText(YAML::Emitter& out);
-		void LoadText(YAML::Node& node);
+		void SaveText(const std::string& path);
+		void LoadText(const std::string& path);
 		
 		Shader* LoadShader(const std::string& path, UUID id = UUID());
 		Mesh* LoadMesh(const std::string& path);
@@ -63,24 +53,21 @@ namespace Seidon
 		Armature* LoadArmature(const std::string& path);
 		Animation* LoadAnimation(const std::string& path);
 
-		Shader* LoadShader(UUID id);
-		Mesh* LoadMesh(UUID id);
-		Material* LoadMaterial(UUID id);
-		Texture* LoadTexture(UUID id);
+		Shader*		LoadShader(UUID id);
+		Mesh*		LoadMesh(UUID id);
+		Material*	LoadMaterial(UUID id);
+		Texture*	LoadTexture(UUID id);
 		HdrCubemap* LoadCubemap(UUID id);
-		Armature* LoadArmature(UUID id);
-		Animation* LoadAnimation(UUID id);
+		Armature*	LoadArmature(UUID id);
+		Animation*	LoadAnimation(UUID id);
 
-		Texture* ImportTexture(const std::string& path, bool gammaCorrection = false, UUID id = UUID());
-		HdrCubemap* ImportCubemap(const std::string& path, UUID id = UUID());
-		const ModelFileInfo& ImportModelFile(const std::string& path);
-
-		Texture* GetOrImportTexture(const std::string& path, bool gammaCorrection = false, UUID id = UUID());
-		HdrCubemap* GetOrImportCubemap(const std::string& path, UUID id = UUID());
-
-		Mesh* CreateMesh(const MeshImportData& importData, UUID id = UUID());
-		Material* CreateMaterial(const MaterialImportData& importData, UUID id = UUID());
-		ModelFileInfo CreateFromImportData(const ModelImportData& importData);
+		void RegisterShader(Shader* shader, const std::string& path);
+		void RegisterMesh(Mesh* mesh, const std::string& path);
+		void RegisterMaterial(Material* material, const std::string& path);
+		void RegisterTexture(Texture* texture, const std::string& path);
+		void RegisterCubemap(HdrCubemap* cubemap, const std::string& path);
+		void RegisterArmature(Armature* armature, const std::string& path);
+		void RegisterAnimation(Animation* animation, const std::string& path);
 
 		inline Texture*		GetTexture(const std::string& name)		{ return textures[nameToTextureId.at(name)];	}
 		inline Mesh*		GetMesh(const std::string& name)		{ return meshes[nameToMeshId.at(name)];			}
@@ -122,13 +109,13 @@ namespace Seidon
 		std::vector<Armature*>		GetArmatures();
 		std::vector<Animation*>		GetAnimations();
 
-		inline void AddTexture(const std::string& name, Texture* texture) { textures[texture->GetId()] = texture; nameToTextureId[name] = texture->GetId(); }
-		inline void AddMesh(const std::string& name, Mesh* mesh) { meshes[mesh->id] = mesh; nameToMeshId[name] = mesh->id; }
-		inline void AddShader(const std::string& name, Shader* shader) { shaders[shader->GetId()] = shader; nameToShaderId[name] = shader->GetId(); }
-		inline void AddMaterial(const std::string& name, Material* material) { materials[material->id] = material; nameToMaterialId[name] = material->id; }
-		inline void AddCubemap(const std::string& name, HdrCubemap* cubemap) { cubemaps[cubemap->GetId()] = cubemap; nameToCubemapId[name] = cubemap->GetId(); }
-		inline void AddAnimation(const std::string& name, Animation* animation) { animations[animation->id] = animation; nameToAnimationId[name] = animation->id; }
-		inline void AddArmature(const std::string& name, Armature* armature) { armatures[armature->id] = armature; nameToArmatureId[name] = armature->id; }
+		void AddTexture(const std::string& name, Texture* texture);
+		void AddMesh(const std::string& name, Mesh* mesh);
+		void AddShader(const std::string& name, Shader* shader);
+		void AddMaterial(const std::string& name, Material* material);
+		void AddCubemap(const std::string& name, HdrCubemap* cubemap);
+		void AddAnimation(const std::string& name, Animation* animation);
+		void AddArmature(const std::string& name, Armature* armature);
 
 		inline bool IsTextureLoaded(const std::string& name) { return nameToTextureId.count(name) > 0; }
 		inline bool IsCubemapLoaded(const std::string& name) { return nameToCubemapId.count(name) > 0; }

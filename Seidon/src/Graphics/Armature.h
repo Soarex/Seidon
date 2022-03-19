@@ -22,6 +22,8 @@ namespace Seidon
 		std::string name;
 		std::vector<BoneData> bones;
 
+		Armature(UUID id = UUID());
+
 		void Save(const std::string& path);
 		void SaveAsync(const std::string& path);
 		void Load(const std::string& path);

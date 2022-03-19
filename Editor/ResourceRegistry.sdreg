@@ -1,0 +1,89 @@
+Resources:
+  Textures:
+    - Id: 1
+      Path: albedo_default
+    - Id: 2
+      Path: normal_default
+    - Id: 3
+      Path: metallic_default
+    - Id: 4
+      Path: roughness_default
+    - Id: 2573390614477144331
+      Path: Assets\Grass002_1K_Roughness.sdtex
+    - Id: 5
+      Path: ao_default
+    - Id: 7849789310015661537
+      Path: Assets\Grass002_1K_Color.sdtex
+    - Id: 5249371018099580795
+      Path: Assets\Grass002_1K_Normal.sdtex
+    - Id: 9416093291490348373
+      Path: Assets\Metal007_1K_Color.sdtex
+    - Id: 1769585393776942814
+      Path: Assets\Metal007_1K_Roughness.sdtex
+    - Id: 3753491190454964783
+      Path: Assets\Metal007_1K_Normal.sdtex
+    - Id: 10101390271441467781
+      Path: Assets\Metal007_1K_Metalness.sdtex
+  Meshes:
+    - Id: 14596551666537556783
+      Path: Assets\Floor.sdmesh
+    - Id: 8276115492989967174
+      Path: Assets\Cube.003.sdmesh
+    - Id: 8
+      Path: empty_mesh
+    - Id: 8329328333672704882
+      Path: empty_mesh
+    - Id: 18090839453669292969
+      Path: empty_mesh
+    - Id: 11899216318523687193
+      Path: Assets\Cube.001.sdmesh
+    - Id: 10095714736080052051
+      Path: Assets\Cube.002.sdmesh
+    - Id: 18389683874904548196
+      Path: Assets\Cube.004.sdmesh
+    - Id: 6119214949792568685
+      Path: Assets\Cube.005.sdmesh
+  Materials:
+    - Id: 6
+      Path: default_material
+    - Id: 134487193122271961
+      Path: default_material
+    - Id: 16431669758261099253
+      Path: default_material
+    - Id: 2645702445857732399
+      Path: Assets\Material.002.sdmat
+    - Id: 17756114425541340084
+      Path: Assets\Material.sdmat
+    - Id: 11216013093043742469
+      Path: Assets\Material.003.sdmat
+    - Id: 11626837465922277809
+      Path: Assets\Material.001.sdmat
+  Cubemaps:
+    - Id: 16548923322223649946
+      Path: default_cubemap
+    - Id: 5839868702304734649
+      Path: default_cubemap
+    - Id: 7
+      Path: default_cubemap
+    - Id: 9116417721752348555
+      Path: default_cubemap
+    - Id: 9514009380872661572
+      Path: default_cubemap
+    - Id: 775678886849274566
+      Path: Assets\Cubemap.sdhdr
+  Armatures:
+    - Id: 9
+      Path: default_armature
+    - Id: 8722811235447257988
+      Path: default_armature
+    - Id: 6425222781124821975
+      Path: default_armature
+  Animations:
+    - Id: 10
+      Path: default_animation
+    - Id: 13387572348173302860
+      Path: default_animation
+    - Id: 5131299923002091104
+      Path: default_animation
+  Shaders:
+    []

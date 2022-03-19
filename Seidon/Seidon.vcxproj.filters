@@ -87,7 +87,7 @@
     <ClCompile Include="src\Graphics\HdrCubemap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Utils\ModelImporter.cpp">
+    <ClCompile Include="src\Utils\AssetImporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Vendor\ImGuizmo\ImGuizmo.cpp">
@@ -231,6 +231,9 @@
     <ClCompile Include="src\Physics\PhysicsApi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Utils\StringUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Shader.h">
@@ -332,7 +335,7 @@
     <ClInclude Include="src\Graphics\HdrCubemap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Utils\ModelImporter.h">
+    <ClInclude Include="src\Utils\AssetImporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Graphics\Vertex.h">
@@ -771,6 +774,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\PhysicsApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\StringUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

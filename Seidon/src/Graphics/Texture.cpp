@@ -9,9 +9,10 @@ namespace Seidon
 {
     Texture* Texture::temporaryTexture = nullptr;
     
-    Texture::Texture()
+    Texture::Texture(UUID id)
     {
         path = "";
+        this->id = id;
     }
 
     Texture::~Texture()

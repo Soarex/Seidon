@@ -49,7 +49,7 @@ namespace Seidon
 
         static Texture* temporaryTexture;
     public:
-        Texture();
+        Texture(UUID id = UUID());
         ~Texture();
 
         void Create(int width, int height, unsigned char* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,

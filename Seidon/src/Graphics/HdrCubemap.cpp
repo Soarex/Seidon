@@ -4,6 +4,12 @@
 
 namespace Seidon
 {
+    HdrCubemap::HdrCubemap(UUID id, unsigned int faceSize, unsigned int irradianceMapSize, unsigned int prefilteredMapSize, unsigned int BRDFLookupSize)
+        : id(id), faceSize(faceSize), irradianceMapSize(irradianceMapSize), prefilteredMapSize(prefilteredMapSize), BRDFLookupSize(BRDFLookupSize)
+    {
+
+    }
+
     HdrCubemap::HdrCubemap(unsigned int faceSize, unsigned int irradianceMapSize, unsigned int prefilteredMapSize, unsigned int BRDFLookupSize)
         : faceSize(faceSize), irradianceMapSize(irradianceMapSize), prefilteredMapSize(prefilteredMapSize), BRDFLookupSize(BRDFLookupSize)
     {

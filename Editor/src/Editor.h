@@ -26,7 +26,7 @@ namespace Seidon
         HierarchyPanel hierarchyPanel;
         InspectorPanel inspectorPanel;
         FileBrowserPanel fileBrowserPanel;
-        AssetBrowserPanel assetBrowserPanel;
+        //AssetBrowserPanel assetBrowserPanel;
         SystemsPanel systemsPanel;
         Dockspace dockspace;
         Extension e;
