@@ -28,7 +28,10 @@ namespace Seidon
 		Framebuffer depthFramebuffers[CASCADE_COUNT];
 		Framebuffer renderFramebuffer;
 
+		unsigned int pbos[2];
+
 		Texture hdrMap;
+		Texture entityMap;
 		//Texture bloomMap;
 		
 		Texture shadowMaps[CASCADE_COUNT];
@@ -47,6 +50,7 @@ namespace Seidon
 		bool renderToScreen = true;
 		unsigned int framebufferWidth, framebufferHeight;
 
+		entt::entity mouseSelectedEntity;
 	public:
 		RenderSystem() = default;
 		~RenderSystem() = default;
@@ -57,6 +61,7 @@ namespace Seidon
 		void ResizeFramebuffer(unsigned int width, unsigned int height);
 
 		inline const Texture& GetRenderTarget() { return renderTarget; }
+		inline entt::entity GetMouseSelectedEntity() { return mouseSelectedEntity; }
 		inline void SetRenderToScreen(bool value) { renderToScreen = value; }
 
 	private:
@@ -64,5 +69,7 @@ namespace Seidon
 
 		glm::mat4 CalculateCsmMatrix(CameraComponent& camera, TransformComponent& cameraTransform, 
 			DirectionalLightComponent& light, TransformComponent& lightTransform, float nearPlane, float farPlane);
+
+		void ProcessMouseSelection();
 	};
 }

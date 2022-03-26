@@ -67,6 +67,7 @@ void main()
 #define MAX_CASCADE_COUNT 8
 
 layout(location = 0) out vec4 fragmentColor;
+layout(location = 1) out int entityOutput;
 
 in VS_OUT
 {
@@ -103,6 +104,8 @@ uniform int cascadeCount;
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilterMap;
 uniform sampler2D   BRDFLookupMap;
+
+uniform int entityId;
 
 const float PI = 3.14159265359;
 
@@ -173,6 +176,7 @@ void main()
     vec3 color = ambient + (1 - shadow) * Lo;
     
     fragmentColor = vec4(color, 1.0f);
+    entityOutput = entityId;
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

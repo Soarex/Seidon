@@ -8,6 +8,14 @@ struct PlayerComponent
     glm::vec3 velocity;
 };
 
+struct UIComponent
+{
+    glm::vec3 baseColor;
+    glm::vec3 hoverColor;
+    glm::vec3 clickColor;
+};
+
+
 class CameraSystem : public Seidon::System
 {
 private:
@@ -27,7 +35,7 @@ public:
             auto& cameraTransform = scene->GetRegistry().get<Seidon::TransformComponent>(e);
             auto& playerTransform = players.get<Seidon::TransformComponent>(players.front());
 
-            glm::vec3 input = glm::vec3(-inputManager->GetMouseOffset().y, inputManager->GetMouseOffset().x, 0);
+            glm::vec3 input = glm::vec3(inputManager->GetMouseOffset().y, inputManager->GetMouseOffset().x, 0);
 
             if (inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_Y)) != 0 || inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_X)) != 0)
             {
@@ -120,18 +128,58 @@ public:
     }
 };
 
+class UISystem : public Seidon::System
+{
+private:
+
+public:
+    void Update(float deltaTime) override
+    {
+        auto elements = scene->GetRegistry().group<UIComponent>(entt::get<Seidon::MouseSelectionComponent, Seidon::RenderComponent>);
+
+        for (auto e : elements)
+        {
+            auto& uiComponent = elements.get<UIComponent>(e);
+            auto& selectionComponent = elements.get<Seidon::MouseSelectionComponent>(e);
+            auto& renderComponent = elements.get<Seidon::RenderComponent>(e);
+
+            switch (selectionComponent.status)
+            {
+            case Seidon::SelectionStatus::NONE:
+                renderComponent.materials[0]->tint = uiComponent.baseColor;
+                break;
+
+            case Seidon::SelectionStatus::HOVERED:
+                renderComponent.materials[0]->tint = uiComponent.hoverColor;
+                break;
+
+            case Seidon::SelectionStatus::CLICKED: case Seidon::SelectionStatus::HELD:
+                renderComponent.materials[0]->tint = uiComponent.clickColor;
+                break;
+            }
+        }
+    }
+};
+
 void Init(Seidon::Application& app)
 {
     app.RegisterComponent<PlayerComponent>()
         .AddMember("Speed", &PlayerComponent::speed)
         .AddMember("Jump Height", &PlayerComponent::jumpHeight);
 
+    app.RegisterComponent<UIComponent>()
+        .AddMember("Base Color", &UIComponent::baseColor, Seidon::Types::VECTOR3_COLOR)
+        .AddMember("Hover Color", &UIComponent::hoverColor, Seidon::Types::VECTOR3_COLOR)
+        .AddMember("Click Color", &UIComponent::clickColor, Seidon::Types::VECTOR3_COLOR);
+
     app.RegisterSystem<PlayerSystem>();
     app.RegisterSystem<CameraSystem>();
+    app.RegisterSystem<UISystem>();
 }
 
 void Destroy(Seidon::Application& app)
 {
     app.UnregisterSystem<CameraSystem>();
     app.UnregisterSystem<PlayerSystem>();
+    app.UnregisterSystem<UISystem>();
 }

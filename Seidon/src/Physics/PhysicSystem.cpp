@@ -20,36 +20,6 @@ namespace Seidon
 
 		physxScene = physics->createScene(sceneDesc);
 		defaultMaterial = physics->createMaterial(0.5f, 0.5f, 0.6f);
-
-		entt::basic_group group = scene->GetRegistry().group<CubeColliderComponent, RigidbodyComponent>(entt::get<TransformComponent>);
-
-		for (entt::entity e : group)
-		{
-			auto [collider, rigidbody, transform] = group.get<CubeColliderComponent, RigidbodyComponent, TransformComponent>(e);
-
-			if (!collider.runtimeShape)
-				collider.runtimeShape = physics->createShape(PxBoxGeometry(collider.halfExtents.x, collider.halfExtents.y, collider.halfExtents.z), *defaultMaterial);
-
-			PxTransform t;
-			t.p = PxVec3(transform.position.x, transform.position.y, transform.position.z);
-
-			glm::quat rot = glm::quat(transform.rotation);
-			t.q = PxQuat(rot.x, rot.y, rot.z, rot.w);
-
-			if (rigidbody.dynamic)
-			{
-				auto actor = PxCreateDynamic(*physics, t, *(PxShape*)collider.runtimeShape, rigidbody.mass);
-				actor->userData = (void*)e;
-				physxScene->addActor(*actor);
-			}
-			else
-			{
-				auto actor = PxCreateStatic(*physics, t, *(PxShape*)collider.runtimeShape);
-				actor->userData = (void*)e;
-				physxScene->addActor(*actor);
-			}
-		}
-
 	}
 	 
 	void PhysicSystem::Update(float deltaTime)
@@ -59,6 +29,22 @@ namespace Seidon
 
 		timeSinceLastStep -= stepSize;
 
+		entt::basic_group group = scene->GetRegistry().group<CubeColliderComponent, RigidbodyComponent>(entt::get<TransformComponent>);
+
+		for (entt::entity e : group)
+		{
+			auto [collider, rigidbody, transform] = group.get<CubeColliderComponent, RigidbodyComponent, TransformComponent>(e);
+
+			if (rigidbody.runtimeBody == nullptr) SetupRigidbody(transform, collider, rigidbody);
+
+			PxTransform t;
+			t.p = PxVec3(transform.position.x, transform.position.y, transform.position.z);
+			glm::quat q = glm::quat(transform.rotation);
+			t.q = PxQuat(q.x, q.y, q.z, q.w);
+
+			((PxRigidActor*)rigidbody.runtimeBody)->setGlobalPose(t);
+		}
+		/*
 		PxU32 nbActors = physxScene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
 		for (int i = 0; i < nbActors; i++)
 		{
@@ -75,10 +61,11 @@ namespace Seidon
 
 			actors[i]->setGlobalPose(transform);
 		}
-
+		*/
 		physxScene->simulate(stepSize);
 		physxScene->fetchResults(true);
 
+		/*
 		nbActors = physxScene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
 		for (int i = 0; i < nbActors; i++)
 		{
@@ -92,11 +79,50 @@ namespace Seidon
 			t.position = glm::vec3(transform.p.x, transform.p.y, transform.p.z);
 			t.rotation = glm::eulerAngles(glm::quat(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
 		}
-		
+		*/
+
+		for (entt::entity e : group)
+		{
+			auto [collider, rigidbody, transform] = group.get<CubeColliderComponent, RigidbodyComponent, TransformComponent>(e);
+
+			PxTransform t = ((PxRigidActor*)rigidbody.runtimeBody)->getGlobalPose();
+
+			transform.position = glm::vec3(t.p.x, t.p.y, t.p.z);
+			transform.rotation = glm::eulerAngles(glm::quat(t.q.w, t.q.x, t.q.y, t.q.z));
+		}
 	}
 
 	void PhysicSystem::Destroy()
 	{
 		physxScene->release();
+	}
+
+	void PhysicSystem::SetupRigidbody(TransformComponent& transform, CubeColliderComponent& collider, RigidbodyComponent& rigidbody)
+	{
+		PxPhysics* physics = api->GetPhysics();
+
+		if (!collider.runtimeShape)
+			collider.runtimeShape = physics->createShape(PxBoxGeometry(collider.halfExtents.x, collider.halfExtents.y, collider.halfExtents.z), *defaultMaterial);
+
+		PxTransform t;
+		t.p = PxVec3(transform.position.x, transform.position.y, transform.position.z);
+
+		glm::quat rot = glm::quat(transform.rotation);
+		t.q = PxQuat(rot.x, rot.y, rot.z, rot.w);
+
+		if (rigidbody.dynamic)
+		{
+			auto actor = PxCreateDynamic(*physics, t, *(PxShape*)collider.runtimeShape, rigidbody.mass);
+			//actor->userData = (void*)e;
+			physxScene->addActor(*actor);
+			rigidbody.runtimeBody = actor;
+		}
+		else
+		{
+			auto actor = PxCreateStatic(*physics, t, *(PxShape*)collider.runtimeShape);
+			//actor->userData = (void*)e;
+			physxScene->addActor(*actor);
+			rigidbody.runtimeBody = actor;
+		}
 	}
 }

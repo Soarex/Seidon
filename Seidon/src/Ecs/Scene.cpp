@@ -331,6 +331,7 @@ namespace Seidon
 		Entity e(registry.create(), &registry);
 		e.AddComponent<TransformComponent>();
 		e.AddComponent<IDComponent>();
+		e.AddComponent<MouseSelectionComponent>();
 
 		if (name == "")
 			e.AddComponent<NameComponent>("Entity #" + std::to_string((int)e.ID));

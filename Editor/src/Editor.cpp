@@ -53,6 +53,8 @@ namespace Seidon
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Resources/Roboto-Regular.ttf", 18);
         e.Init();
+
+        inputManager->ListenToCursor(false);
 	}
 
 	void Editor::Update()
@@ -184,6 +186,13 @@ namespace Seidon
         glm::vec2 viewportBounds[2];
         viewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
         viewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+        auto [mouseX, mouseY] = ImGui::GetMousePos();
+        mouseX -= viewportBounds[0].x;
+        mouseY -= viewportBounds[0].y;
+        mouseY = viewportBounds[1].y - viewportBounds[0].y - mouseY;
+
+        inputManager->SetMousePosition(glm::vec2(mouseX, mouseY));
         
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
         
@@ -196,6 +205,15 @@ namespace Seidon
                 renderSystem.ResizeFramebuffer(viewportPanelSize.x, viewportPanelSize.y);
 
             ImGui::Image((ImTextureID)renderSystem.GetRenderTarget().GetRenderId(), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+       
+            entt::entity e = renderSystem.GetMouseSelectedEntity();
+
+            if (sceneManager->GetActiveScene()->GetRegistry().valid(e))
+            {
+                auto& selection = sceneManager->GetActiveScene()->GetRegistry().get<MouseSelectionComponent>(e);
+
+                if (selection.status == SelectionStatus::CLICKED && !ImGuizmo::IsUsing()) selectedEntity = Entity(e, &sceneManager->GetActiveScene()->GetRegistry());
+            }
         }
         else
         {
@@ -265,19 +283,18 @@ namespace Seidon
         }
         ImGui::End();
 
+        hierarchyPanel.Draw();
         systemsPanel.Draw();
         inspectorPanel.SetSelectedEntity(selectedEntity);
         inspectorPanel.Draw();
        
-        fileBrowserPanel.Draw();
         //assetBrowserPanel.Draw();
-        
-        hierarchyPanel.Draw();
 
         ImGui::Begin("Stats"); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
 
+        fileBrowserPanel.Draw();
         
         dockspace.End();
 	}

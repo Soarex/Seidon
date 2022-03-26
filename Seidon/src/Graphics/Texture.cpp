@@ -56,6 +56,34 @@ namespace Seidon
         initialized = true;
     }
 
+    void Texture::Create(int width, int height, int* rgbData, TextureFormat sourceFormat, TextureFormat internalFormat,
+        ClampingMode clampingMode, const glm::vec3& borderColor)
+    {
+        SD_ASSERT(!initialized, "Texture already initialized");
+
+        this->width = width;
+        this->height = height;
+        this->format = sourceFormat;
+
+        GL_CHECK(glGenTextures(1, &renderId));
+        GL_CHECK(glActiveTexture(GL_TEXTURE0));
+        GL_CHECK(glBindTexture(GL_TEXTURE_2D, renderId));
+
+        GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, (GLenum)internalFormat, width, height, 0, (GLenum)sourceFormat, GL_INT, rgbData));
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_2D));
+
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLenum)clampingMode));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLenum)clampingMode));
+
+        float color[] = { borderColor.x, borderColor.y, borderColor.z, 1.0f };
+        GL_CHECK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color));
+
+        initialized = true;
+    }
+
     void Texture::Create(int width, int height, float* rgbData, TextureFormat sourceFormat, TextureFormat internalFormat,
         ClampingMode clampingMode, const glm::vec3& borderColor)
     {

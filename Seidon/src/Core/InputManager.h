@@ -42,7 +42,7 @@ namespace Seidon
 
 		GLFWgamepadstate gamepadState;
 
-		bool blockInput;
+		bool blockInput, listenToCursor;
 	public:
 		void Init(Window* window);
 		void Update();
@@ -67,6 +67,9 @@ namespace Seidon
 		const glm::vec2& GetMouseWheelPosition();
 		const glm::vec2& GetMouseWheelOffset();
 
+		void SetMousePosition(const glm::vec2& position);
+
 		void BlockInput(bool value) { blockInput = value; };
+		void ListenToCursor(bool value) { listenToCursor = value; };
 	};
 }

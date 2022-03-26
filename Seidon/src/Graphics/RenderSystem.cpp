@@ -1,5 +1,6 @@
 #include "RenderSystem.h"
 #include "../Debug/Debug.h"
+#include "../Debug/Timer.h"
 
 #include "Ecs/Scene.h"
 
@@ -16,10 +17,12 @@ namespace Seidon
 		captureCube.Init();
 
 		hdrMap.Create(window->GetWidth(), window->GetHeight(), (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::FLOAT16_ALPHA);
+		entityMap.Create(window->GetWidth(), window->GetHeight(), (int*)NULL, TextureFormat::RED_INTEGER, TextureFormat::INT32);
 		hdrDepthStencilBuffer.Create(window->GetWidth(), window->GetHeight(), RenderBufferType::DEPTH_STENCIL);
 
 		hdrFramebuffer.Create();
 		hdrFramebuffer.SetColorTexture(hdrMap);
+		hdrFramebuffer.SetColorTexture(entityMap, 1);
 		hdrFramebuffer.SetDepthStencilRenderBuffer(hdrDepthStencilBuffer);
 
 		int shadowSamplers[CASCADE_COUNT];
@@ -84,6 +87,16 @@ namespace Seidon
 			});
 
 		renderFramebuffer.Unbind();
+
+		GL_CHECK(glGenBuffers(2, pbos));
+
+		GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, pbos[0]));
+		GL_CHECK(glBufferData(GL_PIXEL_PACK_BUFFER, sizeof(int), 0, GL_STREAM_READ));
+
+		GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, pbos[1]));
+		GL_CHECK(glBufferData(GL_PIXEL_PACK_BUFFER, sizeof(int), 0, GL_STREAM_READ));
+
+		GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, 0));
 	}
 
 	void RenderSystem::Update(float deltaTime)
@@ -199,9 +212,15 @@ namespace Seidon
 		hdrFramebuffer.Bind();
 
 		GL_CHECK(glViewport(0, 0, framebufferWidth, framebufferHeight));
-		GL_CHECK(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+		GL_CHECK(glClearColor(0, 0, 0, 1.0f));
 		GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 		GL_CHECK(glCullFace(GL_BACK));
+		
+		int clear = -1;
+		GL_CHECK(glClearTexImage(entityMap.GetRenderId(), 0, GL_RED_INTEGER, GL_INT, &clear));
+
+		unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		GL_CHECK(glDrawBuffers(2, attachments));
 
 		shader.Use();
 		shader.SetVec3("directionalLight.direction", lightTransform.GetForwardDirection());
@@ -236,6 +255,8 @@ namespace Seidon
 			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
 			shader.SetMat3("normalMatrix", normalMatrix);
 
+			shader.SetInt("entityId", (int)e);
+
 			int i = 0;
 			for (SubMesh* subMesh : r.mesh->subMeshes)
 			{
@@ -268,6 +289,8 @@ namespace Seidon
 			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
 			shader.SetMat3("normalMatrix", normalMatrix);
 
+			shader.SetInt("entityId", (int)e);
+
 			if (scene->GetRegistry().all_of<AnimationComponent>(e))
 			{
 				AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
@@ -295,6 +318,8 @@ namespace Seidon
 				i++;
 			}
 		}
+
+		ProcessMouseSelection();
 
 		GL_CHECK(glDepthFunc(GL_LEQUAL));
 		cubemapShader.Use();
@@ -347,11 +372,15 @@ namespace Seidon
 
 		hdrMap.Destroy();
 		hdrMap.Create(width, height, (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::FLOAT16_ALPHA);
+
+		entityMap.Destroy();
+		entityMap.Create(width, height, (int*)NULL, TextureFormat::RED_INTEGER, TextureFormat::INT32);
 		
 		hdrDepthStencilBuffer.Destroy();
 		hdrDepthStencilBuffer.Create(width, height, RenderBufferType::DEPTH_STENCIL);
 
 		hdrFramebuffer.SetColorTexture(hdrMap);
+		hdrFramebuffer.SetColorTexture(entityMap, 1);
 		hdrFramebuffer.SetDepthStencilRenderBuffer(hdrDepthStencilBuffer);
 
 		renderTarget.Destroy();
@@ -438,5 +467,57 @@ namespace Seidon
 		
 		const glm::mat4 lightProjection = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
 		return lightProjection * lightView;
+	}
+
+	void RenderSystem::ProcessMouseSelection()
+	{
+		static entt::entity previousEntity = entt::null;
+		static int index = 0;
+
+		if (inputManager->GetMousePosition().x < framebufferWidth &&
+			inputManager->GetMousePosition().x > 0 &&
+			inputManager->GetMousePosition().y < framebufferHeight &&
+			inputManager->GetMousePosition().y > 0)
+		{
+			index = (index + 1) % 2;
+			int nextIndex = (index + 1) % 2;
+
+			GL_CHECK(glReadBuffer(GL_COLOR_ATTACHMENT1));
+			GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, pbos[index]));
+
+			GL_CHECK(glReadPixels(inputManager->GetMousePosition().x, inputManager->GetMousePosition().y, 1, 1, GL_RED_INTEGER, GL_INT, 0));
+
+			GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, pbos[nextIndex]));
+			int* buffer = (int*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+
+			if (!buffer)
+			{
+				std::cerr << "Error reading pbo" << std::endl;
+				return;
+			}
+
+			mouseSelectedEntity = (entt::entity)*buffer;
+
+			GL_CHECK(glUnmapBuffer(GL_PIXEL_PACK_BUFFER));
+			GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, 0));
+
+			if (scene->GetRegistry().valid(mouseSelectedEntity))
+			{
+				MouseSelectionComponent& m = scene->GetRegistry().get<MouseSelectionComponent>(mouseSelectedEntity);
+
+				if (inputManager->GetMouseButtonPressed(MouseButton::LEFT)) m.status = SelectionStatus::CLICKED;
+				else if (inputManager->GetMouseButtonDown(MouseButton::LEFT)) m.status = SelectionStatus::HELD;
+				else m.status = SelectionStatus::HOVERED;
+
+			}
+
+			if (previousEntity != mouseSelectedEntity && scene->GetRegistry().valid(previousEntity))
+			{
+				MouseSelectionComponent& m = scene->GetRegistry().get<MouseSelectionComponent>(previousEntity);
+				m.status = SelectionStatus::NONE;
+			}
+
+			previousEntity = mouseSelectedEntity;
+		}
 	}
 }

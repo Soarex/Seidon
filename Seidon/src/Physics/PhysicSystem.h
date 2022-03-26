@@ -33,7 +33,7 @@ namespace Seidon
 		void Destroy();
 
 	private:
-		void SetupRigidbodies() {}
+		void SetupRigidbody(TransformComponent& transform, CubeColliderComponent& collider, RigidbodyComponent& rigidbody);
 	};
 
 }

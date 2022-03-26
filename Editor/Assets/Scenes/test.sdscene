@@ -1,4 +1,4 @@
-Id: 15201848196557104724
+Id: 5605900199784838076
 Name: Scene
 Entities:
   - Components:
@@ -6,122 +6,7 @@ Entities:
         Members:
           - Name: ID
             Type: 5
-            Value: 11980592125510829670
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 4
-            Value: Camera
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 7
-            Value: [27.5941963, 21.3487396, 7.7358346]
-          - Name: Rotation
-            Type: 9
-            Value: [-0.453785598, 1.41371667, 0]
-          - Name: Scale
-            Type: 7
-            Value: [1, 1, 1]
-      - Name: struct Seidon::CameraComponent
-        Members:
-          - Name: Perspective
-            Type: 3
-          - Name: Fov
-            Type: 2
-            Value: 45
-          - Name: Aspect Ratio
-            Type: 2
-            Value: 1.77777779
-          - Name: Near Plane
-            Type: 2
-            Value: 0.100000001
-          - Name: Far Plane
-            Type: 2
-            Value: 100
-          - Name: Exposure
-            Type: 2
-            Value: 1
-  - Components:
-      - Name: struct Seidon::IDComponent
-        Members:
-          - Name: ID
-            Type: 5
-            Value: 13449430887095994737
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 4
-            Value: Lights
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 7
-            Value: [0, 1.01189888, 0]
-          - Name: Rotation
-            Type: 9
-            Value: [0.754939318, 0.340197355, 0.180737674]
-          - Name: Scale
-            Type: 7
-            Value: [0.999998808, 0.999998629, 0.999998212]
-      - Name: struct Seidon::CubemapComponent
-        Members:
-          - Name: Cubemap
-            Type: 16
-            Value: 775678886849274566
-      - Name: struct Seidon::DirectionalLightComponent
-        Members:
-          - Name: Color
-            Type: 8
-            Value: [0.847058833, 0.980392158, 1]
-          - Name: Intensity
-            Type: 2
-            Value: 3
-  - Components:
-      - Name: struct Seidon::IDComponent
-        Members:
-          - Name: ID
-            Type: 5
-            Value: 8118688723487840412
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 4
-            Value: Cube
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 7
-            Value: [0, 1.47289014, 0]
-          - Name: Rotation
-            Type: 9
-            Value: [0, 0, 0]
-          - Name: Scale
-            Type: 7
-            Value: [1, 1, 1]
-      - Name: struct Seidon::RenderComponent
-        Members:
-          - Name: Mesh
-            Type: 17
-            Value: 6119214949792568685
-          - Name: Materials
-            Type: 12
-            Value:
-              - Id: 11626837465922277809
-      - Name: struct PlayerComponent
-        Members:
-          - Name: Speed
-            Type: 2
-            Value: 10
-          - Name: Jump Height
-            Type: 2
-            Value: 2
-  - Components:
-      - Name: struct Seidon::IDComponent
-        Members:
-          - Name: ID
-            Type: 5
-            Value: 4248149557766395463
+            Value: 9539596011369764738
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
@@ -147,34 +32,122 @@ Entities:
             Type: 12
             Value:
               - Id: 17756114425541340084
-      - Name: struct Seidon::CubeColliderComponent
-        Members:
-          - Name: Half Extents
-            Type: 7
-            Value: [20, 1, 20]
-      - Name: struct Seidon::RigidbodyComponent
-        Members:
-          - Name: Mass
-            Type: 2
-            Value: 1
-          - Name: Dynamic
-            Type: 3
   - Components:
       - Name: struct Seidon::IDComponent
         Members:
           - Name: ID
             Type: 5
-            Value: 4910381675660391493
+            Value: 7589653783397772408
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
             Type: 4
-            Value: Floating Cube
+            Value: Cube
       - Name: struct Seidon::TransformComponent
         Members:
           - Name: Position
             Type: 7
-            Value: [0, 9.17821503, 7.56304359]
+            Value: [0, 2.29471064, 0]
+          - Name: Rotation
+            Type: 9
+            Value: [0, 0, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 17
+            Value: 6119214949792568685
+          - Name: Materials
+            Type: 12
+            Value:
+              - Id: 11626837465922277809
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 8884531970667512288
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Skybox
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [0, 0, 0]
+          - Name: Rotation
+            Type: 9
+            Value: [0, 0, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::CubemapComponent
+        Members:
+          - Name: Cubemap
+            Type: 16
+            Value: 7902032144864508971
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 15928882643268083849
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Camera
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [3.13547063, 6.23285103, -13.2047596]
+          - Name: Rotation
+            Type: 9
+            Value: [-0.00872664619, 3.15031934, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::CameraComponent
+        Members:
+          - Name: Perspective
+            Type: 3
+            Value: true
+          - Name: Fov
+            Type: 2
+            Value: 45
+          - Name: Aspect Ratio
+            Type: 2
+            Value: 1.77777779
+          - Name: Near Plane
+            Type: 2
+            Value: 0.100000001
+          - Name: Far Plane
+            Type: 2
+            Value: 100
+          - Name: Exposure
+            Type: 2
+            Value: 1
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 4701709841198666051
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Button 1
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [1.87907147, 4.86042309, 0]
           - Name: Rotation
             Type: 9
             Value: [0, 0, 0]
@@ -190,34 +163,33 @@ Entities:
             Type: 12
             Value:
               - Id: 2645702445857732399
-      - Name: struct Seidon::CubeColliderComponent
+      - Name: struct UIComponent
         Members:
-          - Name: Half Extents
-            Type: 7
-            Value: [1, 1, 1]
-      - Name: struct Seidon::RigidbodyComponent
-        Members:
-          - Name: Mass
-            Type: 2
-            Value: 1
-          - Name: Dynamic
-            Type: 3
+          - Name: Base Color
+            Type: 8
+            Value: [0.666666687, 0, 0]
+          - Name: Hover Color
+            Type: 8
+            Value: [1, 0, 0]
+          - Name: Click Color
+            Type: 8
+            Value: [0.984313726, 0.498039216, 0.00392156886]
   - Components:
       - Name: struct Seidon::IDComponent
         Members:
           - Name: ID
             Type: 5
-            Value: 10118366472157782628
+            Value: 3293316578067526610
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
             Type: 4
-            Value: Rigidbody
+            Value: Button 2
       - Name: struct Seidon::TransformComponent
         Members:
           - Name: Position
             Type: 7
-            Value: [0, 13.295125, 6.24591827]
+            Value: [4.35497856, 4.77619076, 0]
           - Name: Rotation
             Type: 9
             Value: [0, 0, 0]
@@ -233,25 +205,16 @@ Entities:
             Type: 12
             Value:
               - Id: 11216013093043742469
-      - Name: struct Seidon::CubeColliderComponent
+      - Name: struct UIComponent
         Members:
-          - Name: Half Extents
-            Type: 7
-            Value: [1, 1, 1]
-      - Name: struct Seidon::RigidbodyComponent
-        Members:
-          - Name: Mass
-            Type: 2
-            Value: 1
-          - Name: Dynamic
-            Type: 3
+          - Name: Base Color
+            Type: 8
+            Value: [0, 0.270588249, 0.70588237]
+          - Name: Hover Color
+            Type: 8
+            Value: [0, 0.419607848, 1]
+          - Name: Click Color
+            Type: 8
+            Value: [0, 0.941176474, 1]
 Systems:
-  - Name: class Seidon::RenderSystem
-    Members:
-      []
-  - Name: class Seidon::PhysicSystem
-    Members:
-      []
-  - Name: class PlayerSystem
-    Members:
-      []
+  []

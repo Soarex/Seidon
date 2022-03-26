@@ -14,6 +14,7 @@ namespace Seidon
     enum class TextureFormat
     {
         RED = GL_RED,
+        RED_INTEGER = GL_RED_INTEGER,
         RED_GREEN = GL_RG,
         RGB = GL_RGB,
         RGBA = GL_RGBA,
@@ -24,6 +25,7 @@ namespace Seidon
         FLOAT16_ALPHA = GL_RGBA16F,
         FLOAT16_RED_GREEN = GL_RG16F,
         FLOAT32 = GL_RGBA32F,
+        INT32 = GL_R32I,
     };
 
     enum class ClampingMode
@@ -53,6 +55,9 @@ namespace Seidon
         ~Texture();
 
         void Create(int width, int height, unsigned char* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
+            ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f));
+
+        void Create(int width, int height, int* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
             ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f));
 
         void Create(int width, int height, float* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,

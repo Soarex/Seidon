@@ -4,6 +4,8 @@ namespace Seidon
 {
 	void InputManager::Init(Window* window)
 	{
+		listenToCursor = true;
+
 		for (int i = 0; i < KEY_STATE_COUNT; i++)
 			keyStates[i] = KeyState::RELEASED;
 
@@ -24,6 +26,8 @@ namespace Seidon
 
 		window->AddCursorCallback([&](float posX, float posY)
 			{
+				if (!listenToCursor) return;
+
 				mouseOffset.x = posX - mousePosition.x;
 				mouseOffset.y = mousePosition.y - posY;
 
@@ -161,6 +165,17 @@ namespace Seidon
 		if (blockInput) return { 0, 0 };
 
 		return mouseWheelOffset;
+	}
+
+	void InputManager::SetMousePosition(const glm::vec2& position)
+	{
+		mouseOffset.x = position.x - mousePosition.x;
+		mouseOffset.y = mousePosition.y - position.y;
+
+		mousePosition.x = position.x;
+		mousePosition.y = position.y;
+
+		cursorReceivedThisFrame = true;
 	}
 
 	void InputManager::Update()

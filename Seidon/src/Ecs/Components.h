@@ -26,6 +26,22 @@ namespace Seidon
 			: ID(id) {}
 	};
 
+	enum class SelectionStatus
+	{
+		NONE = 0,
+		HOVERED,
+		CLICKED,
+		HELD
+	};
+
+	struct MouseSelectionComponent
+	{
+		SelectionStatus status = SelectionStatus::NONE;
+
+		MouseSelectionComponent() = default;
+		MouseSelectionComponent(const MouseSelectionComponent&) = default;
+	};
+
 	struct NameComponent
 	{
 		std::string name;
@@ -208,7 +224,7 @@ namespace Seidon
 
 	struct RigidbodyComponent
 	{
-		float mass = 0;
+		float mass = 1;
 		bool dynamic = false;
 
 		void* runtimeBody = nullptr;

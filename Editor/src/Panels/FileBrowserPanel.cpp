@@ -30,7 +30,7 @@ namespace Seidon
 			return;
 		}
 
-		if (ImGui::BeginPopupContextWindow("FileBrowserPopup", 1, false))
+		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
 			if (ImGui::MenuItem("Refresh"))
 				UpdateEntries();

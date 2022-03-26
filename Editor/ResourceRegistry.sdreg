@@ -22,13 +22,29 @@ Resources:
       Path: Assets\Metal007_1K_Roughness.sdtex
     - Id: 3753491190454964783
       Path: Assets\Metal007_1K_Normal.sdtex
+    - Id: 7618584234636705281
+      Path: ""
     - Id: 10101390271441467781
       Path: Assets\Metal007_1K_Metalness.sdtex
+    - Id: 7667569586773024381
+      Path: ""
+    - Id: 12578975417453941657
+      Path: ""
+    - Id: 8142497574080251434
+      Path: ""
+    - Id: 10036643259331322190
+      Path: ""
+    - Id: 4287572199734281408
+      Path: ""
+    - Id: 1430668909036621576
+      Path: ""
+    - Id: 4244880564097679848
+      Path: ""
   Meshes:
-    - Id: 14596551666537556783
-      Path: Assets\Floor.sdmesh
     - Id: 8276115492989967174
       Path: Assets\Cube.003.sdmesh
+    - Id: 14596551666537556783
+      Path: Assets\Floor.sdmesh
     - Id: 8
       Path: empty_mesh
     - Id: 8329328333672704882
@@ -46,12 +62,12 @@ Resources:
   Materials:
     - Id: 6
       Path: default_material
-    - Id: 134487193122271961
-      Path: default_material
-    - Id: 16431669758261099253
-      Path: default_material
     - Id: 2645702445857732399
       Path: Assets\Material.002.sdmat
+    - Id: 16431669758261099253
+      Path: default_material
+    - Id: 134487193122271961
+      Path: default_material
     - Id: 17756114425541340084
       Path: Assets\Material.sdmat
     - Id: 11216013093043742469
@@ -59,18 +75,22 @@ Resources:
     - Id: 11626837465922277809
       Path: Assets\Material.001.sdmat
   Cubemaps:
-    - Id: 16548923322223649946
-      Path: default_cubemap
     - Id: 5839868702304734649
+      Path: default_cubemap
+    - Id: 16548923322223649946
       Path: default_cubemap
     - Id: 7
       Path: default_cubemap
     - Id: 9116417721752348555
       Path: default_cubemap
+    - Id: 7902032144864508971
+      Path: Assets\CasualDay4K.sdhdr
     - Id: 9514009380872661572
       Path: default_cubemap
     - Id: 775678886849274566
       Path: Assets\Cubemap.sdhdr
+    - Id: 2178080796222043266
+      Path: Assets\GHDRI_STCL_003_10k.sdhdr
   Armatures:
     - Id: 9
       Path: default_armature
