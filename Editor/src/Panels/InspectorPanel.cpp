@@ -69,13 +69,18 @@ namespace Seidon
 
         ImGuiStyle& style = ImGui::GetStyle();
 
-        float size = ImGui::CalcTextSize("Add Component").x + style.FramePadding.x * 2.0f;
+        float size = ImGui::CalcTextSize("Add Component").x  + style.FramePadding.x * 2.0f + ImGui::CalcTextSize("Save as prefab").x + style.FramePadding.x * 2.0f;
         
         float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 
         if (ImGui::Button("Add Component"))
             ImGui::OpenPopup("AddComponent");
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Save as prefab"))
+            ImGui::OpenPopup("Save as prefab");
 
         if (ImGui::BeginPopup("AddComponent"))
         {
@@ -86,6 +91,37 @@ namespace Seidon
                 if (!hasComponent && ImGui::MenuItem(metaType.name.c_str() + 7))
                     metaType.Add(selectedEntity);
             }
+
+            ImGui::EndPopup();
+        }
+
+        if (ImGui::BeginPopupModal("Save as prefab", 0, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("Name: ");
+            ImGui::SameLine();
+
+            static char buffer[512];
+            ImGui::InputText("##NewName", buffer, 512);
+
+            ImGuiStyle& style = ImGui::GetStyle();
+            float size = ImGui::CalcTextSize("Save").x  + style.FramePadding.x * 2.0f + ImGui::CalcTextSize("Close").x + style.FramePadding.x * 2.0f;
+
+            float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+            if (ImGui::Button("Save"))
+            {
+                Prefab p;
+                p.MakeFromEntity(selectedEntity);
+
+                p.Save("Assets\\" + std::string(buffer) + ".sdpref");
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Close"))
+                ImGui::CloseCurrentPopup();
 
             ImGui::EndPopup();
         }

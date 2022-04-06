@@ -26,10 +26,12 @@ namespace Seidon
 		void Load(std::ifstream& fileIn);
 		void LoadText(YAML::Node& entityNode);
 
+		Entity Duplicate();
+
 		template <typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			return registry->emplace<T>(ID, std::forward<Args>(args)...);
+			return registry->emplace_or_replace<T>(ID, std::forward<Args>(args)...);
 		}
 
 		template <typename T>

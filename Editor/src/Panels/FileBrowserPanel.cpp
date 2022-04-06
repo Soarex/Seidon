@@ -16,7 +16,9 @@ namespace Seidon
 		modelIcon = resourceManager.LoadTexture("Resources/ModelIcon.sdtex");
 		materialIcon = resourceManager.LoadTexture("Resources/MaterialIcon.sdtex");
 		animationIcon = resourceManager.LoadTexture("Resources/AnimationIcon.sdtex");
-		armatureIcon = resourceManager.LoadTexture("Resources/ArmatureIcon.sdtex");
+		armatureIcon = resourceManager.LoadTexture("Resources/ArmatureIcon.sdtex"); 
+		prefabIcon = resourceManager.LoadTexture("Resources/PrefabIcon.sdtex");
+
 
 		currentDirectory = assetsPath;
 		UpdateEntries();
@@ -24,6 +26,8 @@ namespace Seidon
 
 	void FileBrowserPanel::Draw()
 	{
+		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+
 		if (!ImGui::Begin("File Browser"))
 		{
 			ImGui::End();
@@ -32,6 +36,27 @@ namespace Seidon
 
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
+			if (ImGui::MenuItem("Create New Material"))
+			{
+				Material m;
+				if (std::filesystem::exists(currentDirectory.string() + "\\New Material.sdmat"))
+				{
+					int i = 1;
+					while (std::filesystem::exists(currentDirectory.string() + "\\" + "New Material (" + std::to_string(i) + ").sdmat"))
+						i++;
+
+					m.name = "New Material (" + std::to_string(i) + ")";
+				}
+				else
+					m.name = "New Material";
+
+				m.Save(currentDirectory.string() + "\\" + m.name + ".sdmat");
+
+				resourceManager.RegisterMaterial(&m, currentDirectory.string() + "\\" + m.name + ".sdmat");
+
+				UpdateEntries();
+			}
+
 			if (ImGui::MenuItem("Refresh"))
 				UpdateEntries();
 
@@ -54,6 +79,23 @@ namespace Seidon
 			{
 				currentDirectory = currentDirectory.parent_path();
 				UpdateEntries();
+			}
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_MATERIAL"))
+				{
+					std::filesystem::path currentPath = (const char*)payload->Data;
+					std::filesystem::path newPath = currentDirectory.parent_path() / currentPath.filename();
+
+					std::filesystem::rename(currentPath, newPath);
+
+					ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+
+					UpdateEntries();
+				}
+
+				ImGui::EndDragDropTarget();
 			}
 
 			ImGui::PopStyleColor();
@@ -113,6 +155,22 @@ namespace Seidon
 				UpdateEntries();
 			}
 
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_MATERIAL"))
+				{
+					std::filesystem::path currentPath = (const char*)payload->Data;
+					std::filesystem::path newPath = currentDirectory / directory.name / currentPath.filename();
+
+					std::filesystem::rename(currentPath, newPath);
+
+					ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+					UpdateEntries();
+				}
+
+				ImGui::EndDragDropTarget();
+			}
+
 			ImGui::TextWrapped(directory.name.c_str());
 			ImGui::NextColumn();
 
@@ -159,6 +217,9 @@ namespace Seidon
 			else if (file.extension == ".sdscene")
 				DrawSceneFile(file);
 
+			else if (file.extension == ".sdpref")
+				DrawPrefabFile(file);
+			
 			else
 				DrawGenericFile(file);
 
@@ -315,13 +376,55 @@ namespace Seidon
 	{
 		ImGui::ImageButton((ImTextureID)materialIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			ImGui::OpenPopup("Rename");
+
 		if (ImGui::BeginDragDropSource())
 		{
 			const std::string& itemPath = file.path;
 			ImGui::SetDragDropPayload("FILE_BROWSER_MATERIAL", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
+		/*
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::Selectable("Rename ###Test"))
+			{
+				ImGui::OpenPopup("RenameP");
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+		*/
+		if (ImGui::BeginPopupModal("Rename", 0, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Name: ");
+			ImGui::SameLine();
 
+			static char buffer[512];
+			ImGui::InputText("##NewName", buffer, 512);
+			
+			ImGuiStyle& style = ImGui::GetStyle();
+			float size = ImGui::CalcTextSize("Rename").x + style.FramePadding.x * 2.0f + ImGui::CalcTextSize("Close").x + style.FramePadding.x * 2.0f;
+
+			float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+			if (ImGui::Button("Rename"))
+			{
+				std::filesystem::rename(file.path, currentDirectory / (std::string(buffer) + ".sdmat"));
+				UpdateEntries();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Close"))
+				ImGui::CloseCurrentPopup();
+			
+			ImGui::EndPopup();
+		}
+		
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
@@ -392,6 +495,56 @@ namespace Seidon
 			const std::string& itemPath = file.path;
 			ImGui::SetDragDropPayload("FILE_BROWSER_SCENE", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
+		}
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		ImGui::TextWrapped(file.name.c_str());
+		ImGui::NextColumn();
+	}
+
+	void FileBrowserPanel::DrawPrefabFile(FileEntry& file)
+	{
+		ImGui::ImageButton((ImTextureID)prefabIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			ImGui::OpenPopup("Rename");
+
+		if (ImGui::BeginDragDropSource())
+		{
+			const std::string& itemPath = file.path;
+			ImGui::SetDragDropPayload("FILE_BROWSER_PREFAB", itemPath.c_str(), itemPath.length() + 1);
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginPopupModal("Rename", 0, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Name: ");
+			ImGui::SameLine();
+
+			static char buffer[512];
+			ImGui::InputText("##NewName", buffer, 512);
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			float size = ImGui::CalcTextSize("Rename").x + style.FramePadding.x * 2.0f + ImGui::CalcTextSize("Close").x + style.FramePadding.x * 2.0f;
+
+			float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+			if (ImGui::Button("Rename"))
+			{
+				std::filesystem::rename(file.path, currentDirectory / (std::string(buffer) + ".sdpref"));
+				UpdateEntries();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Close"))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
 		}
 
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();

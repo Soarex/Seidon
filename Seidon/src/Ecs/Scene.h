@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/UUID.h"
+#include "Prefab.h"
 #include "System.h"
 
 #include <unordered_map>
@@ -42,6 +43,7 @@ namespace Seidon
 		void CopySystems(Scene* other);
 
 		Entity CreateEntity(const std::string& name = std::string(), const UUID& id = UUID());
+		Entity CreateEntityFromPrefab(Prefab& prefab, const std::string& name = std::string(), const UUID& id = UUID());
 		void DestroyEntity(const Entity& entity);
 
 		inline void SetName(const std::string& name) { this->name = name; }

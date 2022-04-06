@@ -35,6 +35,29 @@ namespace Seidon
 					callback(entity);
 			}
 
+			if (ImGui::MenuItem("Create Mesh Entity"))
+			{
+				Entity entity = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				entity.AddComponent<RenderComponent>();
+
+				selectedEntity = entity;
+
+				for (auto& callback : onEntitySelectionCallbacks)
+					callback(entity);
+			}
+
+			if (ImGui::MenuItem("Create Animated Mesh Entity"))
+			{
+				Entity entity = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				entity.AddComponent<SkinnedRenderComponent>();
+				entity.AddComponent<AnimationComponent>();
+
+				selectedEntity = entity;
+
+				for (auto& callback : onEntitySelectionCallbacks)
+					callback(entity);
+			}
+
 			ImGui::EndPopup();
 		}
 
@@ -45,12 +68,13 @@ namespace Seidon
 	void HierarchyPanel::DrawEntityNode(Entity& entity)
 	{
 		std::string& name = entity.GetComponent<NameComponent>().name;
+		UUID id = entity.GetComponent<IDComponent>().ID;
 
 		ImGuiTreeNodeFlags flags = ((selectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		if (ImGui::TreeNodeEx((void*)entity.ID, flags, name.c_str()))
+		if (ImGui::TreeNodeEx((void*)(long long)id, flags, name.c_str()))
 			ImGui::TreePop();
 
 		if (ImGui::IsItemClicked())

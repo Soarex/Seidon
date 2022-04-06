@@ -63,11 +63,11 @@ namespace Seidon
 		std::string name;
 		std::vector<MemberData> members;
 
-		void* (*Add)(Entity& entity);
-		void (*Remove)(Entity& entity);
-		void* (*Get)(Entity& entity);
-		bool  (*Has)(Entity& entity);
-		void  (*Copy)(entt::registry& src, entt::registry& dst, const std::unordered_map<UUID, entt::entity>& enttMap);
+		void* (*Add)(Entity entity);
+		void (*Remove)(Entity entity);
+		void* (*Get)(Entity entity);
+		bool  (*Has)(Entity entity);
+		void  (*Copy)(Entity src, Entity dst);
 
 		template<typename T, typename U> 
 		ComponentMetaType& AddMember(const std::string& name, U T::* member)

@@ -314,8 +314,18 @@ namespace Seidon
 		}
 
 		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
-		for (auto& metaType : components)
-			metaType.Copy(srcRegistry, dstRegistry, enttMap);
+		srcRegistry.each([&](auto entityId) 
+			{
+				for (auto& metaType : components)
+					if (metaType.Has(Entity(entityId, &srcRegistry )))
+					{
+						UUID uuid = srcRegistry.get<IDComponent>(entityId).ID;
+						entt::entity dstEnttID = enttMap.at(uuid);
+
+						metaType.Copy(Entity(entityId, &srcRegistry), Entity(dstEnttID, &dstRegistry));
+					}
+			});
+
 	}
 
 	void Scene::CopySystems(Scene* other)
@@ -330,13 +340,31 @@ namespace Seidon
 	{
 		Entity e(registry.create(), &registry);
 		e.AddComponent<TransformComponent>();
-		e.AddComponent<IDComponent>();
+		e.AddComponent<IDComponent>(id);
 		e.AddComponent<MouseSelectionComponent>();
 
 		if (name == "")
 			e.AddComponent<NameComponent>("Entity #" + std::to_string((int)e.ID));
 		else
 			e.AddComponent<NameComponent>(name);
+
+		return e;
+	}
+
+	Entity Scene::CreateEntityFromPrefab(Prefab& prefab, const std::string& name, const UUID& id)
+	{
+		Entity e(registry.create(), &registry);
+
+		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
+		for (auto& metaType : components)
+			if (metaType.Has(prefab.referenceEntity))
+				metaType.Copy(prefab.referenceEntity, e);
+
+		e.AddComponent<IDComponent>(id);
+		e.AddComponent<MouseSelectionComponent>();
+
+		if (name != "")
+			e.GetComponent<NameComponent>().name = name;
 
 		return e;
 	}

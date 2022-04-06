@@ -219,4 +219,18 @@ namespace Seidon
 		}
 	}
 
+	Entity Entity::Duplicate()
+	{
+		Entity e(registry->create(), registry);
+
+		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
+		for (auto& metaType : components)
+			if (metaType.Has(*this))
+				metaType.Copy(*this, e);
+
+		e.AddComponent<IDComponent>();
+
+		return e;
+	}
+
 }

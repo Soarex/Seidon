@@ -241,6 +241,16 @@ namespace Seidon
                 selectedEntity = { entt::null, nullptr };
             }
 
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_PREFAB"))
+            {
+                std::string path = (const char*)payload->Data;
+
+                Prefab p;
+                p.Load(path);
+                
+                scene->CreateEntityFromPrefab(p);
+            }
+
             ImGui::EndDragDropTarget();
         }
 
@@ -283,10 +293,10 @@ namespace Seidon
         }
         ImGui::End();
 
-        hierarchyPanel.Draw();
         systemsPanel.Draw();
         inspectorPanel.SetSelectedEntity(selectedEntity);
         inspectorPanel.Draw();
+        hierarchyPanel.Draw();
        
         //assetBrowserPanel.Draw();
 

@@ -6,7 +6,16 @@ namespace Seidon
 	Material::Material(UUID id)
 		: id(id)
 	{
+		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
 
+		name = "";
+		tint = glm::vec3(1);
+
+		albedo = resourceManager.GetTexture("albedo_default");
+		normal = resourceManager.GetTexture("normal_default");
+		roughness = resourceManager.GetTexture("roughness_default");
+		metallic = resourceManager.GetTexture("metallic_default");
+		ao = resourceManager.GetTexture("ao_default");
 	}
 
 	void Material::Save(const std::string& path)

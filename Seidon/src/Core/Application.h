@@ -61,41 +61,34 @@ namespace Seidon
 
 	private:
 		template<typename Type>
-		static Type& GetComponent(Entity& entity)
+		static Type& GetComponent(Entity entity)
 		{
 			return entity.GetComponent<Type>();
 		}
 
 		template<typename Type>
-		static Type& AddComponent(Entity& entity)
+		static Type& AddComponent(Entity entity)
 		{
 			return entity.AddComponent<Type>();
 		}
 
 		template<typename Type>
-		static void RemoveComponent(Entity& entity)
+		static void RemoveComponent(Entity entity)
 		{
 			return entity.RemoveComponent<Type>();
 		}
 
 		template<typename Type>
-		static bool HasComponent(Entity& entity)
+		static bool HasComponent(Entity entity)
 		{
 			return entity.HasComponent<Type>();
 		}
 
 		template<typename Type>
-		static void CopyComponent(entt::registry& src, entt::registry& dst, const std::unordered_map<UUID, entt::entity>& enttMap)
+		static void CopyComponent(Entity src, Entity dst)
 		{
-			auto view = src.view<Type>();
-			for (auto e : view)
-			{
-				UUID uuid = src.get<IDComponent>(e).ID;
-				entt::entity dstEnttID = enttMap.at(uuid);
-
-				Type& component = src.get<Type>(e);
-				dst.emplace_or_replace<Type>(dstEnttID, component);
-			}
+			auto& component = src.GetComponent<Type>();
+			dst.AddComponent<Type>(component);
 		}
 
 		template<typename Type>
@@ -134,8 +127,8 @@ namespace Seidon
 		{
 			ComponentMetaType t;
 			t.name = typeid(Type).name();
-			t.Get = (void* (*)(Entity&)) &Application::GetComponent<Type>;
-			t.Add = (void* (*)(Entity&)) &Application::AddComponent<Type>;
+			t.Get = (void* (*)(Entity)) &Application::GetComponent<Type>;
+			t.Add = (void* (*)(Entity)) &Application::AddComponent<Type>;
 			t.Remove = &Application::RemoveComponent<Type>;
 			t.Has = &Application::HasComponent<Type>;
 			t.Copy = &Application::CopyComponent<Type>;

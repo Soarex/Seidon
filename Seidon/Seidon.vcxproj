@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -177,6 +177,7 @@
     <ClCompile Include="src\Core\UUID.cpp" />
     <ClCompile Include="src\Debug\Debug.cpp" />
     <ClCompile Include="src\Ecs\Components.cpp" />
+    <ClCompile Include="src\Ecs\Prefab.cpp" />
     <ClCompile Include="src\Ecs\Scene.cpp" />
     <ClCompile Include="src\Ecs\SceneManager.cpp" />
     <ClCompile Include="src\Extensions\Extension.cpp" />
@@ -255,6 +256,7 @@
     <ClInclude Include="src\Ecs\Components.h" />
     <ClInclude Include="src\Core\Core.h" />
     <ClInclude Include="src\Ecs\Ecs.h" />
+    <ClInclude Include="src\Ecs\Prefab.h" />
     <ClInclude Include="src\Ecs\Scene.h" />
     <ClInclude Include="src\Ecs\SceneManager.h" />
     <ClInclude Include="src\Ecs\System.h" />

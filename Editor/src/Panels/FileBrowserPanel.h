@@ -31,6 +31,7 @@ namespace Seidon
 		Texture* materialIcon;
 		Texture* animationIcon;
 		Texture* armatureIcon;
+		Texture* prefabIcon;
 		Texture* backIcon;
 
 		std::vector<DirectoryEntry> currentDirectories;
@@ -62,6 +63,7 @@ namespace Seidon
 		void DrawAnimationFile(FileEntry& file);
 		void DrawCubemapFile(FileEntry& file);
 		void DrawSceneFile(FileEntry& file);
+		void DrawPrefabFile(FileEntry& file);
 		void DrawGenericFile(FileEntry& file);
 	};
 }
