@@ -15,7 +15,8 @@ GLenum glCheckError(const char* file, int line);
 		abort(); \
 	}
 
-#define GL_CHECK(x) x; if(glCheckError(__FILE__, __LINE__) != GL_NO_ERROR) abort();
+//#define GL_CHECK(x) x; if(glCheckError(__FILE__, __LINE__) != GL_NO_ERROR) abort();
+#define GL_CHECK(x) x;
 
 #else
 

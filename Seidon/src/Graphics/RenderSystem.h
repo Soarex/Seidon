@@ -5,6 +5,7 @@
 #include "Core/Window.h"
 #include "Ecs/System.h"
 #include "Ecs/Entity.h"
+#include "Renderer.h"
 #include "Shader.h"
 #include "Framebuffer.h"
 #include "CaptureCube.h"
@@ -14,12 +15,14 @@ namespace Seidon
 	class RenderSystem : public System
 	{
 	private:
-		constexpr static int SHADOW_MAP_SIZE = 1024;
+		constexpr static int SHADOW_MAP_SIZE = 2048;
 		constexpr static int CASCADE_COUNT = 4;
 
 		std::list<std::function<void(int, int)>>::iterator windowResizeCallbackPosition;
 
-		Shader shader;
+		Renderer renderer;
+
+		Shader* shader;
 		Shader depthShader;
 		Shader cubemapShader;
 		Shader quadShader;

@@ -87,7 +87,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)Vendor\Include;$(ProjectDir)src\Vendor;$(ProjectDir)src;$(SolutionDir)Vendor\Include\Physx;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)Vendor\Libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Vendor\Libs;$(SolutionDir)Vendor\Libs\Release;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)Bin\$(Configuration)-$(Platform)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(Configuration)-$(Platform)\$(ProjectName)\</IntDir>
   </PropertyGroup>
@@ -164,7 +164,7 @@
       <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp-vc142-mt.lib;Physx/Physx_static_64.lib;Physx/PhysxCharacterKinematic_static_64.lib;Physx/PhysxCooking_static_64.lib;Physx/PhysxCommon_static_64.lib;Physx/PhysxExtensions_static_64.lib;Physx/PhysxFoundation_static_64.lib;Physx/PhysxPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;opengl32.lib;assimp.lib;Physx/Physx_static_64.lib;Physx/PhysxCharacterKinematic_static_64.lib;Physx/PhysxCooking_static_64.lib;Physx/PhysxCommon_static_64.lib;Physx/PhysxExtensions_static_64.lib;Physx/PhysxFoundation_static_64.lib;Physx/PhysxPvdSDK_static_64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -188,6 +188,7 @@
     <ClCompile Include="src\Graphics\HdrCubemap.cpp" />
     <ClCompile Include="src\Graphics\Material.cpp" />
     <ClCompile Include="src\Graphics\Mesh.cpp" />
+    <ClCompile Include="src\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Physics\PhysicsApi.cpp" />
     <ClCompile Include="src\Physics\PhysicSystem.cpp" />
     <ClCompile Include="src\Ecs\System.cpp" />
@@ -207,6 +208,7 @@
     <ClCompile Include="src\Vendor\Imgui\imgui_draw.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_impl_glfw.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="src\Vendor\Imgui\imgui_stdlib.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_tables.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\Vendor\StbImage\stb_image.cpp" />
@@ -268,6 +270,7 @@
     <ClInclude Include="src\Graphics\CaptureCube.h" />
     <ClInclude Include="src\Graphics\Graphics.h" />
     <ClInclude Include="src\Graphics\HdrCubemap.h" />
+    <ClInclude Include="src\Graphics\Renderer.h" />
     <ClInclude Include="src\Graphics\Vertex.h" />
     <ClInclude Include="src\Physics\Physics.h" />
     <ClInclude Include="src\Physics\PhysicsApi.h" />
@@ -363,6 +366,7 @@
     <ClInclude Include="src\Vendor\Imgui\imgui_impl_opengl3.h" />
     <ClInclude Include="src\Vendor\Imgui\imgui_impl_opengl3_loader.h" />
     <ClInclude Include="src\Vendor\Imgui\imgui_internal.h" />
+    <ClInclude Include="src\Vendor\Imgui\imgui_stdlib.h" />
     <ClInclude Include="src\Vendor\Imgui\imstb_rectpack.h" />
     <ClInclude Include="src\Vendor\Imgui\imstb_textedit.h" />
     <ClInclude Include="src\Vendor\Imgui\imstb_truetype.h" />

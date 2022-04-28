@@ -64,6 +64,7 @@ namespace Seidon
 		void DrawCubemapFile(FileEntry& file);
 		void DrawSceneFile(FileEntry& file);
 		void DrawPrefabFile(FileEntry& file);
+		void DrawShaderFile(FileEntry& file);
 		void DrawGenericFile(FileEntry& file);
 	};
 }

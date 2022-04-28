@@ -8,7 +8,7 @@
 
 namespace Seidon
 {
-
+	static double time = 0;
 	void RenderSystem::Init()
 	{
 		framebufferWidth = window->GetWidth();
@@ -22,13 +22,13 @@ namespace Seidon
 
 		hdrFramebuffer.Create();
 		hdrFramebuffer.SetColorTexture(hdrMap);
-		hdrFramebuffer.SetColorTexture(entityMap, 1);
+		//hdrFramebuffer.SetColorTexture(entityMap, 1);
 		hdrFramebuffer.SetDepthStencilRenderBuffer(hdrDepthStencilBuffer);
 
 		int shadowSamplers[CASCADE_COUNT];
 		for (int i = 0; i < CASCADE_COUNT; i++)
 		{
-			shadowMaps[i].Create(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, (unsigned char*)NULL, TextureFormat::DEPTH, TextureFormat::DEPTH, ClampingMode::BORDER);
+			shadowMaps[i].Create(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, (unsigned char*)NULL, TextureFormat::DEPTH, TextureFormat::DEPTH, ClampingMode::BORDER, glm::vec3(1), false);
 			depthFramebuffers[i].Create();
 			depthFramebuffers[i].SetDepthTexture(shadowMaps[i]);
 			depthFramebuffers[i].DisableColorBuffer();
@@ -41,18 +41,14 @@ namespace Seidon
 		renderFramebuffer.SetColorTexture(renderTarget);
 		renderFramebuffer.SetDepthStencilRenderBuffer(renderDepthStencilBuffer);
 
-		shader.LoadFromFile("Shaders/PBR.shader");
-		shader.Use();
-		shader.SetInt("albedoMap", 0);
-		shader.SetInt("roughnessMap", 1);
-		shader.SetInt("normalMap", 2);
-		shader.SetInt("metallicMap", 3);
-		shader.SetInt("aoMap", 4);
-		shader.SetInt("irradianceMap", 5);
-		shader.SetInt("prefilterMap", 6);
-		shader.SetInt("BRDFLookupMap", 7);
+		shader = resourceManager->GetShader("default_shader");
+		shader->Use();
 
-		shader.SetInts("shadowMaps", shadowSamplers, CASCADE_COUNT);
+		shader->SetInt("iblData.irradianceMap", 5);
+		shader->SetInt("iblData.prefilterMap", 6);
+		shader->SetInt("iblData.BRDFLookupMap", 7);
+
+		shader->SetInts("shadowMappingData.shadowMaps", shadowSamplers, CASCADE_COUNT);
 
 		depthShader.LoadFromFile("Shaders/ShadowPass.shader");
 		quadShader.LoadFromFile("Shaders/Simple.shader");
@@ -75,7 +71,8 @@ namespace Seidon
 		fullscreenQuad->Create(quadVertices, indices, "");
 
 		GL_CHECK(glEnable(GL_DEPTH_TEST));
-		GL_CHECK(glEnable(GL_BLEND));
+		//GL_CHECK(glEnable(GL_BLEND));
+		glDisable(GL_DITHER);
 		GL_CHECK(glEnable(GL_CULL_FACE));
 		GL_CHECK(glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS));
 
@@ -97,6 +94,8 @@ namespace Seidon
 		GL_CHECK(glBufferData(GL_PIXEL_PACK_BUFFER, sizeof(int), 0, GL_STREAM_READ));
 
 		GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, 0));
+
+		renderer.Init();
 	}
 
 	void RenderSystem::Update(float deltaTime)
@@ -167,20 +166,27 @@ namespace Seidon
 			depthShader.Use();
 			depthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
 
+			renderer.Begin();
+			
+			static std::vector<Material*> ms;
+			static Material m;
+			m.shader = &depthShader;
+
 			for (entt::entity e : renderGroup)
 			{
 				RenderComponent r = renderGroup.get<RenderComponent>(e);
 				TransformComponent t = renderGroup.get<TransformComponent>(e);
 				glm::mat4 modelMatrix = t.GetTransformMatrix();
-				depthShader.SetMat4("modelMatrix", modelMatrix);
 
-				for (SubMesh* subMesh : r.mesh->subMeshes)
-				{
-					GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
-					GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
-				}
+				while (r.mesh->subMeshes.size() > ms.size())
+					ms.push_back(&m);
+
+				renderer.SubmitMesh(r.mesh, ms, modelMatrix);
 			}
 
+			renderer.Render();
+
+			/*
 			for (entt::entity e : skinnedRenderGroup)
 			{
 				SkinnedRenderComponent r = skinnedRenderGroup.get<SkinnedRenderComponent>(e);
@@ -202,11 +208,14 @@ namespace Seidon
 					GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
 				}
 			}
-
+			*/
 			depthFramebuffers[i].Unbind();
 		}
 
+		renderer.End();
+
 		GL_CHECK(glDisable(GL_DEPTH_CLAMP));
+
 		//Hdr Pass
 		GL_CHECK(glEnable(GL_CULL_FACE));
 		hdrFramebuffer.Bind();
@@ -216,20 +225,27 @@ namespace Seidon
 		GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 		GL_CHECK(glCullFace(GL_BACK));
 		
-		int clear = -1;
-		GL_CHECK(glClearTexImage(entityMap.GetRenderId(), 0, GL_RED_INTEGER, GL_INT, &clear));
+		//int clear = -1;
+		//GL_CHECK(glClearTexImage(entityMap.GetRenderId(), 0, GL_RED_INTEGER, GL_INT, &clear));
 
-		unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-		GL_CHECK(glDrawBuffers(2, attachments));
+		//unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		//GL_CHECK(glDrawBuffers(2, attachments));
 
-		shader.Use();
-		shader.SetVec3("directionalLight.direction", lightTransform.GetForwardDirection());
-		shader.SetVec3("directionalLight.color", light.color * light.intensity);
+		shader->Use();
+		shader->SetVec3("directionalLight.direction", lightTransform.GetForwardDirection());
+		shader->SetVec3("directionalLight.color", light.color * light.intensity);
 
-		shader.SetMat4("viewMatrix", camera.GetViewMatrix(cameraTransform));
-		shader.SetMat4("projectionMatrix", camera.GetProjectionMatrix());
+		//shader->SetMat4("camera.viewMatrix", camera.GetViewMatrix(cameraTransform));
+		//shader->SetMat4("camera.projectionMatrix", camera.GetProjectionMatrix());
 
-		shader.SetVec3("cameraPosition", cameraTransform.position);
+		//shader->SetVec3("camera.position", cameraTransform.position);
+
+		renderer.SetCameraPosition(cameraTransform.position);
+		renderer.SetViewMatrix(camera.GetViewMatrix(cameraTransform));
+		renderer.SetProjectionMatrix(camera.GetProjectionMatrix());
+		renderer.SetTime(time);
+		//shader->SetDouble("time", time);
+		time += deltaTime;
 
 		cubemap.cubemap->BindIrradianceMap(5);
 		cubemap.cubemap->BindPrefilteredMap(6);
@@ -237,12 +253,14 @@ namespace Seidon
 
 		for (int i = 0; i < CASCADE_COUNT; i++)
 		{
-			shader.SetMat4("lightSpaceMatrices[" + std::to_string(i) + "]", lightSpaceMatrices[i]);
-			shader.SetFloat("cascadeFarPlaneDistances[" + std::to_string(i) + "]", farPlanes[i]);
-			shader.SetInt("cascadeCount", CASCADE_COUNT);
+			shader->SetMat4("lightSpaceMatrices[" + std::to_string(i) + "]", lightSpaceMatrices[i]);
+			shader->SetFloat("shadowMappingData.cascadeFarPlaneDistances[" + std::to_string(i) + "]", farPlanes[i]);
+			shader->SetInt("shadowMappingData.cascadeCount", CASCADE_COUNT);
 			shadowMaps[i].Bind(8 + i);
 		}
+		//shader->SetInt("entityId", (int)e);
 
+		renderer.Begin();
 		for (entt::entity e : renderGroup)
 		{
 			RenderComponent& r = renderGroup.get<RenderComponent>(e);
@@ -250,33 +268,16 @@ namespace Seidon
 
 			glm::mat4 modelMatrix = t.GetTransformMatrix();
 
-			shader.SetMat4("modelMatrix", modelMatrix);
+			while (r.mesh->subMeshes.size() > r.materials.size())
+				r.materials.push_back(resourceManager->GetMaterial("default_material"));
 
-			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
-			shader.SetMat3("normalMatrix", normalMatrix);
 
-			shader.SetInt("entityId", (int)e);
-
-			int i = 0;
-			for (SubMesh* subMesh : r.mesh->subMeshes)
-			{
-				if (r.materials.size() <= i) r.materials.push_back(resourceManager->GetMaterial("default_material"));
-
-				shader.SetVec3("tint", r.materials[i]->tint);
-				r.materials[i]->albedo->Bind(0);
-				r.materials[i]->roughness->Bind(1);
-				r.materials[i]->normal->Bind(2);
-				r.materials[i]->metallic->Bind(3);
-				r.materials[i]->ao->Bind(4);
-
-				GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
-				
-				GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
-
-				i++;
-			}
+			renderer.SubmitMesh(r.mesh, r.materials, modelMatrix);
 		}
 
+		renderer.Render();
+		renderer.End();
+		/*
 		for (entt::entity e : skinnedRenderGroup)
 		{
 			SkinnedRenderComponent& r = skinnedRenderGroup.get<SkinnedRenderComponent>(e);
@@ -284,19 +285,19 @@ namespace Seidon
 
 			glm::mat4 modelMatrix = t.GetTransformMatrix();
 
-			shader.SetMat4("modelMatrix", modelMatrix);
+			shader->SetMat4("modelMatrix", modelMatrix);
 
 			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
-			shader.SetMat3("normalMatrix", normalMatrix);
+			shader->SetMat3("normalMatrix", normalMatrix);
 
-			shader.SetInt("entityId", (int)e);
+			shader->SetInt("entityId", (int)e);
 
 			if (scene->GetRegistry().all_of<AnimationComponent>(e))
 			{
 				AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
 					
 				for (int i = 0; i < a.runtimeBoneMatrices.size(); i++)
-					shader.SetMat4("boneMatrices[" + std::to_string(i) + "]", a.runtimeBoneMatrices[i]);
+					shader->SetMat4("boneMatrices[" + std::to_string(i) + "]", a.runtimeBoneMatrices[i]);
 			}
 
 			int i = 0;
@@ -304,7 +305,7 @@ namespace Seidon
 			{
 				if (r.materials.size() <= i) r.materials.push_back(resourceManager->GetMaterial("default_material"));
 
-				shader.SetVec3("tint", r.materials[i]->tint);
+				shader->SetVec3("tint", r.materials[i]->tint);
 				r.materials[i]->albedo->Bind(0);
 				r.materials[i]->roughness->Bind(1);
 				r.materials[i]->normal->Bind(2);
@@ -318,8 +319,8 @@ namespace Seidon
 				i++;
 			}
 		}
-
-		ProcessMouseSelection();
+		*/
+		//ProcessMouseSelection();
 
 		GL_CHECK(glDepthFunc(GL_LEQUAL));
 		cubemapShader.Use();
@@ -488,7 +489,7 @@ namespace Seidon
 			GL_CHECK(glReadPixels(inputManager->GetMousePosition().x, inputManager->GetMousePosition().y, 1, 1, GL_RED_INTEGER, GL_INT, 0));
 
 			GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, pbos[nextIndex]));
-			int* buffer = (int*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+			int* buffer = (int*)GL_CHECK(glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
 
 			if (!buffer)
 			{

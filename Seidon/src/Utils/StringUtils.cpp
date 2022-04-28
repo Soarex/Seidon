@@ -5,11 +5,50 @@ namespace Seidon
 	std::string ChangeSuffix(const std::string& source, const std::string& newSuffix)
 	{
 		int i;
-		for (i = source.size(); i > 0; i--)
+		for (i = source.size() - 1; i > 0; i--)
 			if (source[i] == '.') break;
 
 		if (i == 0) return source;
 
 		return source.substr(0, i).append(newSuffix);
+	}
+
+	std::string RemoveLeadingSpaces(const std::string& source)
+	{
+		int i;
+		for (i = 0; i < source.size(); i++)
+			if (source[i] != ' ') break;
+
+		if (i == source.size()) return source;
+
+		return source.substr(i, source.size());
+	}
+
+	std::string RemoveEndingSpaces(const std::string& source)
+	{
+		int i;
+		for (i = source.size() - 1; i > 0; i--)
+			if (source[i] != ' ') break;
+
+		if (i == 0) return source;
+
+		return source.substr(0, i);
+	}
+
+	std::string RemoveLeadingAndEndingSpaces(const std::string& source)
+	{
+		int begin;
+		for (begin = 0; begin < source.size(); begin++)
+			if (source[begin] != ' ' && source[begin] != '\t') break;
+
+		if (begin == source.size()) begin = 0;
+
+		int end;
+		for (end = source.size() - 1; end > 0; end--)
+			if (source[end] != ' ' && source[end] != '\t') break;
+
+		if (end == 0) end = source.size() - 1;
+
+		return source.substr(begin, end - begin + 1);
 	}
 }

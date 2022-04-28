@@ -2,6 +2,8 @@
 
 #include "../Editor.h"
 
+#include <Imgui/imgui_stdlib.h>
+
 namespace Seidon
 {
 	void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
@@ -193,7 +195,25 @@ namespace Seidon
 		ImGui::PopID();
 	}
 
-	void DrawTextureControl(const std::string& label, Texture*& texture, float size)
+	void DrawStringControl(const std::string& label, std::string& value, float columnWidth)
+	{
+		ImGui::PushID(label.c_str());
+
+		ImGui::PushItemWidth(-1);
+		ImGui::Columns(2);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		ImGui::InputText("##string", &value);
+
+		ImGui::Columns(1);
+
+		ImGui::PopItemWidth();
+		ImGui::PopID();
+	}
+
+	void DrawTextureControl(const std::string& label, Texture** texture, float size)
 	{
 		ImGui::PushID(label.c_str());
 
@@ -201,7 +221,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)texture->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)(*texture)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_TEXTURE"))
@@ -209,14 +229,14 @@ namespace Seidon
 				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
 				std::string path = (const char*)payload->Data;
 				
-				texture = resourceManager.GetOrLoadTexture(path);
+				*texture = resourceManager.GetOrLoadTexture(path);
 			}
 
 			ImGui::EndDragDropTarget();
 		}
 		ImGui::NextColumn();
 
-		std::filesystem::path path = std::string(texture->path);
+		std::filesystem::path path = std::string((*texture)->path);
 		ImGui::Text(path.filename().string().c_str());
 
 		ImGui::Columns(1);
@@ -330,18 +350,47 @@ namespace Seidon
 
 	void DrawMaterialEditor(const std::string& label, Material* material, bool* open)
 	{
+		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
 		if (ImGui::Begin(label.c_str(), open))
 		{
-			DrawColorControl("Tint", material->tint);
+			DrawStringControl("Name", material->name);
+			
+			if (DrawShaderControl("Shader", &material->shader))
+			{
+				memset(material->data, 0, 500);
 
-			DrawTextureControl("Albedo", material->albedo);
-			DrawTextureControl("Normal", material->normal);
-			DrawTextureControl("Roughness", material->roughness);
-			DrawTextureControl("Metallic", material->metallic);
-			DrawTextureControl("Ambient Occlusion", material->ao);
-		}
+				for (MemberData& m : material->shader->GetBufferLayout()->members)
+					switch (m.type)
+					{
+					case Types::VECTOR3_COLOR: 
+						*(glm::vec3*)(material->data + m.offset) = glm::vec3(1);
+						break;
+
+					case Types::TEXTURE:
+						*(Texture**)(material->data + m.offset) = resourceManager.GetTexture("albedo_default");
+						break;
+					}
+			}
+
+			DrawReflectedMembers(material->data, material->shader->GetBufferLayout()->members);
+
+			//DrawColorControl("Tint", material->tint);
+			//DrawTextureControl("Albedo", material->albedo);
+			//DrawTextureControl("Normal", material->normal);
+			//DrawTextureControl("Roughness", material->roughness);
+			//DrawTextureControl("Metallic", material->metallic);
+			//DrawTextureControl("Ambient Occlusion", material->ao);
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			float size = ImGui::CalcTextSize("Save").x + style.FramePadding.x * 2.0f;
+
+			float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+			if (ImGui::Button("Save"))
+				material->Save(Application::Get()->GetResourceManager()->GetMaterialPath(material->id));
 		
-		ImGui::End();
+			}
+			ImGui::End();
 	}
 
 	void DrawArmatureControl(const std::string& label, Armature** armature, float size)
@@ -408,6 +457,43 @@ namespace Seidon
 		ImGui::PopID();
 	}
 
+	bool DrawShaderControl(const std::string& label, Shader** shader, float size)
+	{
+		bool modified = false;
+
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		ImGui::PushID(label.c_str());
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_SHADER"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				*shader = resourceManager.GetOrLoadShader(path);
+				modified = true;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::NextColumn();
+
+		ImGui::Text((*shader)->GetPath().c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+
+		return modified;
+	}
+
 	void DrawReflectedMember(void* object, MemberData& member)
 	{
 		char* obj = (char*) object;
@@ -416,6 +502,9 @@ namespace Seidon
 
 		if (member.type == Types::BOOL)
 			DrawBoolControl(member.name.c_str(), *(bool*)(obj + member.offset));
+
+		if (member.type == Types::STRING)
+			DrawStringControl(member.name.c_str(), *(std::string*)(obj + member.offset));
 
 		if (member.type == Types::VECTOR3)
 			DrawVec3Control(member.name.c_str(), *(glm::vec3*)(obj + member.offset), 0.0f);
@@ -432,7 +521,7 @@ namespace Seidon
 
 		if (member.type == Types::TEXTURE)
 		{
-			Texture* t = *(Texture**)(obj + member.offset);
+			Texture** t = (Texture**)(obj + member.offset);
 			DrawTextureControl(member.name.c_str(), t);
 		}
 

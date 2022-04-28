@@ -16,6 +16,8 @@ namespace Seidon
 			window->EnableMouseCursor(false);
 			window->EnableFullscreen(true);
 
+			resourceManager->LoadText("Assets/ResourceRegistry.sdreg");
+
 			e.Bind(L"Assets/scripts.dll");
 			e.Init();
 

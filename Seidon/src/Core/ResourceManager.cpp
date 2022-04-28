@@ -3,6 +3,9 @@
 #include <unordered_set>
 #include <yaml-cpp/yaml.h>
 
+#include <iostream>
+#include <fstream>
+
 namespace Seidon
 {
     void ResourceManager::Init()
@@ -39,14 +42,12 @@ namespace Seidon
         t->path = "ao_default";
         AddTexture("ao_default", t);
 
+        Shader* s = new Shader(11);
+        s->LoadFromFile("Shaders/PBR.shader");
+        AddShader("default_shader", s);
+
         Material* m = new Material(6);
         m->name = "default_material";
-        m->tint = glm::vec3(1.0f);
-        m->albedo = GetTexture("albedo_default");
-        m->normal = GetTexture("normal_default");
-        m->metallic = GetTexture("metallic_default");
-        m->roughness = GetTexture("roughness_default");
-        m->ao = GetTexture("ao_default");
         AddMaterial("default_material", m);
 
         Texture t1;
@@ -246,7 +247,7 @@ namespace Seidon
     {   
         Shader* s = new Shader();
         s->id = id;
-        s->LoadFromFileAsync(path);
+        s->LoadFromFile(path);
 
         AddShader(path, s);
 
@@ -325,7 +326,7 @@ namespace Seidon
 
         Shader* s = new Shader();
         s->id = id;
-        s->LoadFromFileAsync(path);
+        s->LoadFromFile(path);
 
         AddShader(path, s);
 

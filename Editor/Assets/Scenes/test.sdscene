@@ -1,4 +1,4 @@
-Id: 5605900199784838076
+Id: 9108895592404750260
 Name: Scene
 Entities:
   - Components:
@@ -6,12 +6,12 @@ Entities:
         Members:
           - Name: ID
             Type: 5
-            Value: 9539596011369764738
+            Value: 7007314607320033671
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
             Type: 4
-            Value: Floor
+            Value: Lights
       - Name: struct Seidon::TransformComponent
         Members:
           - Name: Position
@@ -19,83 +19,29 @@ Entities:
             Value: [0, 0, 0]
           - Name: Rotation
             Type: 9
-            Value: [0, 0, 0]
+            Value: [0.925239027, 0.727111816, -3.19126542e-07]
           - Name: Scale
             Type: 7
-            Value: [1, 1, 1]
-      - Name: struct Seidon::RenderComponent
-        Members:
-          - Name: Mesh
-            Type: 17
-            Value: 14596551666537556783
-          - Name: Materials
-            Type: 12
-            Value:
-              - Id: 17756114425541340084
-  - Components:
-      - Name: struct Seidon::IDComponent
-        Members:
-          - Name: ID
-            Type: 5
-            Value: 7589653783397772408
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 4
-            Value: Cube
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 7
-            Value: [0, 2.29471064, 0]
-          - Name: Rotation
-            Type: 9
-            Value: [0, 0, 0]
-          - Name: Scale
-            Type: 7
-            Value: [1, 1, 1]
-      - Name: struct Seidon::RenderComponent
-        Members:
-          - Name: Mesh
-            Type: 17
-            Value: 6119214949792568685
-          - Name: Materials
-            Type: 12
-            Value:
-              - Id: 11626837465922277809
-  - Components:
-      - Name: struct Seidon::IDComponent
-        Members:
-          - Name: ID
-            Type: 5
-            Value: 8884531970667512288
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 4
-            Value: Skybox
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 7
-            Value: [0, 0, 0]
-          - Name: Rotation
-            Type: 9
-            Value: [0, 0, 0]
-          - Name: Scale
-            Type: 7
-            Value: [1, 1, 1]
+            Value: [0.999999106, 0.999998629, 0.999998331]
       - Name: struct Seidon::CubemapComponent
         Members:
           - Name: Cubemap
             Type: 16
-            Value: 7902032144864508971
+            Value: 775678886849274566
+      - Name: struct Seidon::DirectionalLightComponent
+        Members:
+          - Name: Color
+            Type: 8
+            Value: [1, 0.90196079, 0.709803939]
+          - Name: Intensity
+            Type: 2
+            Value: 3
   - Components:
       - Name: struct Seidon::IDComponent
         Members:
           - Name: ID
             Type: 5
-            Value: 15928882643268083849
+            Value: 9572192166441480350
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
@@ -105,10 +51,10 @@ Entities:
         Members:
           - Name: Position
             Type: 7
-            Value: [3.13547063, 6.23285103, -13.2047596]
+            Value: [11.7542953, 4.16657543, 18.4732494]
           - Name: Rotation
             Type: 9
-            Value: [-0.00872664619, 3.15031934, 0]
+            Value: [-0.130899698, 0.453785598, 0]
           - Name: Scale
             Type: 7
             Value: [1, 1, 1]
@@ -128,7 +74,7 @@ Entities:
             Value: 0.100000001
           - Name: Far Plane
             Type: 2
-            Value: 100
+            Value: 300
           - Name: Exposure
             Type: 2
             Value: 1
@@ -137,20 +83,20 @@ Entities:
         Members:
           - Name: ID
             Type: 5
-            Value: 4701709841198666051
+            Value: 6681865712722138946
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
             Type: 4
-            Value: Button 1
+            Value: Cube.005
       - Name: struct Seidon::TransformComponent
         Members:
           - Name: Position
             Type: 7
-            Value: [1.87907147, 4.86042309, 0]
+            Value: [-0.246411324, 1.13966942, 1.57569695]
           - Name: Rotation
             Type: 9
-            Value: [0, 0, 0]
+            Value: [0, -0, 0]
           - Name: Scale
             Type: 7
             Value: [1, 1, 1]
@@ -158,38 +104,98 @@ Entities:
         Members:
           - Name: Mesh
             Type: 17
-            Value: 6119214949792568685
+            Value: 14219862061215961085
           - Name: Materials
             Type: 12
             Value:
-              - Id: 2645702445857732399
-      - Name: struct UIComponent
-        Members:
-          - Name: Base Color
-            Type: 8
-            Value: [0.666666687, 0, 0]
-          - Name: Hover Color
-            Type: 8
-            Value: [1, 0, 0]
-          - Name: Click Color
-            Type: 8
-            Value: [0.984313726, 0.498039216, 0.00392156886]
+              - Id: 16516561948315853124
   - Components:
       - Name: struct Seidon::IDComponent
         Members:
           - Name: ID
             Type: 5
-            Value: 3293316578067526610
+            Value: 7202155148231596672
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
             Type: 4
-            Value: Button 2
+            Value: Arst Building.001
       - Name: struct Seidon::TransformComponent
         Members:
           - Name: Position
             Type: 7
-            Value: [4.35497856, 4.77619076, 0]
+            Value: [-2.5831275, 0, -39.8646545]
+          - Name: Rotation
+            Type: 9
+            Value: [0, -0, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 17
+            Value: 1879998215744077
+          - Name: Materials
+            Type: 12
+            Value:
+              - Id: 10699138882246772106
+              - Id: 13158179176357853787
+              - Id: 18284905709465333247
+              - Id: 8621969703364496626
+              - Id: 15491340176353732428
+              - Id: 17368514449657097885
+              - Id: 1385860727849776292
+              - Id: 14182517281473374612
+              - Id: 696215746571628598
+              - Id: 12660943102394648667
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 17560918550378232084
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Floor
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [64.4556198, -0.0113015175, 0.0837186426]
+          - Name: Rotation
+            Type: 9
+            Value: [0, -0, 0]
+          - Name: Scale
+            Type: 7
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 17
+            Value: 12286356635258075753
+          - Name: Materials
+            Type: 12
+            Value:
+              - Id: 11182104189863026027
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 5
+            Value: 11826646148172631854
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 4
+            Value: Cube
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 7
+            Value: [7.04476213, 1.13966942, 1.57569695]
           - Name: Rotation
             Type: 9
             Value: [0, 0, 0]
@@ -200,21 +206,10 @@ Entities:
         Members:
           - Name: Mesh
             Type: 17
-            Value: 6119214949792568685
+            Value: 14219862061215961085
           - Name: Materials
             Type: 12
             Value:
-              - Id: 11216013093043742469
-      - Name: struct UIComponent
-        Members:
-          - Name: Base Color
-            Type: 8
-            Value: [0, 0.270588249, 0.70588237]
-          - Name: Hover Color
-            Type: 8
-            Value: [0, 0.419607848, 1]
-          - Name: Click Color
-            Type: 8
-            Value: [0, 0.941176474, 1]
+              - Id: 17960189851691678015
 Systems:
   []

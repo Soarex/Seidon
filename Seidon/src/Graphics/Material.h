@@ -6,18 +6,16 @@
 
 namespace Seidon
 {
+	typedef unsigned char byte;
+
 	class Material
 	{
 	public:
 		UUID id;
 		std::string name;
-		glm::vec3 tint;
+		Shader* shader;
 
-		Texture* albedo;
-		Texture* roughness;
-		Texture* normal;
-		Texture* metallic;
-		Texture* ao;
+		byte data[500];
 
 		Material(UUID id = UUID());
 	public:

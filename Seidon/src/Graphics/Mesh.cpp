@@ -3,6 +3,7 @@
 #include "../Debug/Debug.h"
 
 #include <iostream>
+#include <fstream>
 
 namespace Seidon
 {

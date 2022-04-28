@@ -3,11 +3,27 @@
 #include "Core/Application.h"
 #include "Core/WorkManager.h"
 
+#include "../Reflection/Reflection.h"
+#include "../Utils/StringUtils.h"
 #include "../Debug/Debug.h"
+
+#include <glad/glad.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp> 
+
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 namespace Seidon
 {
     Shader* Shader::temporaryShader = nullptr;
+
+    Shader::Shader(UUID id)
+        : id(id) 
+    {
+        bufferLayout = new MetaType();
+    }
 
     Shader::Shader(const std::string& vertexShaderCode, const std::string& fragmentShaderCode)
     {
@@ -24,6 +40,78 @@ namespace Seidon
         SD_ASSERT(initialized, "Shader not initialized");
 
         GL_CHECK(glDeleteProgram(renderId));
+    }
+
+    void Shader::ReadLayout(std::ifstream& stream)
+    {
+        char buffer[512];
+        bool endFound = false;
+        int offset = 0;
+
+        while (stream.getline(buffer, 512))
+        {
+            if (buffer[0] == '~')
+            {
+                if (strcmp(buffer, "~END LAYOUT") == 0)
+                {
+                    endFound = true;
+                    break;
+                }
+                continue;
+            }
+
+            char* split = strchr(buffer, ':');
+
+            if (!split)
+            {
+                std::cerr << "Shader buffer layout syntax error: Illformed attribute" << std::endl;
+                return;
+            }
+
+            *split = '\0';
+
+            char* namePtr = buffer;
+            char* typePtr = split + 1;
+
+            std::string typeString = RemoveLeadingAndEndingSpaces(typePtr);
+
+            MemberData member;
+            member.name = RemoveLeadingAndEndingSpaces(namePtr);
+            member.type = MetaType::StringToType(typeString);
+
+            switch (member.type)
+            {
+            case Types::FLOAT:
+                member.size = sizeof(float);
+                member.offset = offset;
+                offset += member.size;
+                break;
+
+            case Types::VECTOR3_COLOR:
+                member.size = sizeof(glm::vec3);
+                member.offset = offset;
+                offset += member.size;
+                break;
+
+            case Types::TEXTURE:
+                member.size = sizeof(uint64_t);
+                member.offset = offset;
+                offset += member.size;
+                break;
+
+            default:
+                std::cerr << "Shader buffer layout syntax error: " << typeString << " is not a type" << std::endl;
+                return;
+            }
+
+            bufferLayout->members.push_back(member);
+        }
+
+        if (!endFound)
+        {
+            std::cerr << "Shader buffer layout syntax error: End not found" << std::endl;
+            return;
+        }
     }
 
     void Shader::LoadFromFile(const std::string& path)
@@ -47,10 +135,13 @@ namespace Seidon
                 return;
             }
 
-            while (shaderFile.getline(buffer, 512)) {
-                if (buffer[0] == '~') {
+            while (shaderFile.getline(buffer, 512)) 
+            {
+                if (buffer[0] == '~') 
+                {
                     if (strcmp(buffer, "~VERTEX SHADER") == 0) currentStream = &vertexStream;
                     if (strcmp(buffer, "~FRAGMENT SHADER") == 0) currentStream = &fragmentStream;
+                    if (strcmp(buffer, "~BEGIN LAYOUT") == 0) ReadLayout(shaderFile);
                     continue;
                 }
 
@@ -190,6 +281,15 @@ namespace Seidon
         GL_CHECK(glDeleteShader(fragmentShader));
 
         initialized = true;
+
+        Use();
+        SetInt("iblData.irradianceMap", 5);
+        SetInt("iblData.prefilterMap", 6);
+        SetInt("iblData.BRDFLookupMap", 7);
+
+        int shadowSamplers[] = { 8, 9, 10, 11 };
+        SetInts("shadowMappingData.shadowMaps", shadowSamplers, 4);
+
     }
 
 
@@ -226,6 +326,13 @@ namespace Seidon
         SD_ASSERT(initialized, "Shader not initialized");
 
         GL_CHECK(glUniform1f(glGetUniformLocation(renderId, name.c_str()), value));
+    }
+
+    void Shader::SetDouble(const std::string& name, double value) const
+    {
+        SD_ASSERT(initialized, "Shader not initialized");
+
+        GL_CHECK(glUniform1d(glGetUniformLocation(renderId, name.c_str()), value));
     }
 
     void Shader::SetMat4(const std::string& name, const glm::mat4& value) const

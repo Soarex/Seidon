@@ -1,21 +1,39 @@
 #include "Material.h"
 #include "../Core/Application.h"
 
+#include <iostream>
+#include <fstream>
+
 namespace Seidon
 {
 	Material::Material(UUID id)
 		: id(id)
 	{
+		memset(data, 0, 500);
 		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
 
 		name = "";
-		tint = glm::vec3(1);
+		shader = resourceManager.GetShader("default_shader");
+		
+		byte* ptr = data;
 
-		albedo = resourceManager.GetTexture("albedo_default");
-		normal = resourceManager.GetTexture("normal_default");
-		roughness = resourceManager.GetTexture("roughness_default");
-		metallic = resourceManager.GetTexture("metallic_default");
-		ao = resourceManager.GetTexture("ao_default");
+		*((glm::vec3*)ptr) = glm::vec3(1);
+		ptr += sizeof(glm::vec3);
+
+		*((Texture**)ptr) = resourceManager.GetTexture("albedo_default");
+		ptr += sizeof(Texture*);
+
+		*((Texture**)ptr) = resourceManager.GetTexture("normal_default");
+		ptr += sizeof(Texture*);
+
+		*((Texture**)ptr) = resourceManager.GetTexture("roughness_default");
+		ptr += sizeof(Texture*);
+
+		*((Texture**)ptr) = resourceManager.GetTexture("metallic_default");
+		ptr += sizeof(Texture*);
+
+		*((Texture**)ptr) = resourceManager.GetTexture("ao_default");
+		ptr += sizeof(Texture*);
 	}
 
 	void Material::Save(const std::string& path)
@@ -29,22 +47,34 @@ namespace Seidon
 
 		out.write(name.c_str(), size * sizeof(char));
 
-		out.write((char*)&tint, sizeof(glm::vec3));
+		UUID shaderId = shader->GetId();
+		out.write((char*)&shaderId, sizeof(UUID));
 
-		UUID textureId = albedo->GetId();
-		out.write((char*)&textureId, sizeof(UUID));
+		MetaType& layout = *shader->GetBufferLayout();
+		int layoutSize = layout.members.size();
+		out.write((char*)&layoutSize, sizeof(int));
+		//out.write((char*)&layout.members[0], layoutSize);
 
-		textureId = roughness->GetId();
-		out.write((char*)&textureId, sizeof(UUID));
 
-		textureId = normal->GetId();
-		out.write((char*)&textureId, sizeof(UUID));
-
-		textureId = metallic->GetId();
-		out.write((char*)&textureId, sizeof(UUID));
-
-		textureId = ao->GetId();
-		out.write((char*)&textureId, sizeof(UUID));
+		for (MemberData& m : layout.members)
+		{
+			switch (m.type)
+			{
+			case Types::TEXTURE:
+			{
+				Texture* t = *(Texture**)&data[m.offset];
+				UUID id = t->GetId();
+				out.write((char*)&id, sizeof(UUID));
+				break;
+			}
+			case Types::VECTOR3_COLOR:
+			{
+				glm::vec3* color = (glm::vec3*)&data[m.offset];
+				out.write((char*)color, sizeof(glm::vec3));
+				break;
+			}
+			}
+		}
 	}
 
 	void Material::SaveAsync(const std::string& path)
@@ -74,36 +104,75 @@ namespace Seidon
 		in.read(buffer, size * sizeof(char));
 		name = buffer;
 
-		in.read((char*)&tint, sizeof(glm::vec3));
-
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
-		UUID textureId;
+		UUID shaderId;
 
-		in.read((char*)&textureId, sizeof(UUID));
-		albedo = resourceManager->GetOrLoadTexture(textureId);
+		in.read((char*)&shaderId, sizeof(UUID));
+		shader = resourceManager->GetOrLoadShader(shaderId);
+		
+		int layoutSize = 0;
+		in.read((char*)&layoutSize, sizeof(int));
 
-		in.read((char*)&textureId, sizeof(UUID));
-		roughness = resourceManager->GetOrLoadTexture(textureId);
+		//MetaType oldLayout;
+		//in.read((char*)oldLayout.members.data(), layoutSize);
 
-		in.read((char*)&textureId, sizeof(UUID));
-		normal = resourceManager->GetOrLoadTexture(textureId);
+		MetaType& newLayout = *shader->GetBufferLayout();
 
-		in.read((char*)&textureId, sizeof(UUID));
-		metallic = resourceManager->GetOrLoadTexture(textureId);
+		if (layoutSize != newLayout.members.size())
+		{
+			ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+			memset(data, 0, 500);
 
-		in.read((char*)&textureId, sizeof(UUID));
-		ao = resourceManager->GetOrLoadTexture(textureId);
+			for (MemberData& m : newLayout.members)
+				switch (m.type)
+				{
+				case Types::VECTOR3_COLOR:
+					*(glm::vec3*)(data + m.offset) = glm::vec3(1);
+					break;
+
+				case Types::TEXTURE:
+					*(Texture**)(data + m.offset) = resourceManager.GetTexture("albedo_default");
+					break;
+				}
+		}
+		else
+		{
+			for (MemberData& m : newLayout.members)
+			{
+				switch (m.type)
+				{
+				case Types::TEXTURE:
+				{
+					UUID id;
+					in.read((char*)&id, sizeof(UUID));
+
+					Texture* t = resourceManager->GetOrLoadTexture(id);
+					*(Texture**)&data[m.offset] = t;
+					break;
+				}
+				case Types::VECTOR3_COLOR:
+				{
+					glm::vec3 color;
+					in.read((char*)&color, sizeof(glm::vec3));
+
+					*(glm::vec3*)&data[m.offset] = color;
+					break;
+				}
+				}
+			}
+		}
 	}
 
 	void Material::LoadAsync(const std::string& path)
 	{
 		ResourceManager* resourceManager = Application::Get()->GetResourceManager();
+		/*
 		albedo = resourceManager->GetTexture("albedo_default");
 		roughness = resourceManager->GetTexture("roughness_default");
 		normal = resourceManager->GetTexture("normal_default");
 		metallic = resourceManager->GetTexture("metallic_default");
 		ao = resourceManager->GetTexture("ao_default");
-
+		*/
 		Application::Get()->GetWorkManager()->Execute([&]()
 			{
 				Load(path);

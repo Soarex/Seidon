@@ -2,6 +2,8 @@
 #include <EntryPoint.h>
 
 #include <glm/glm.hpp>
+#include <iostream>
+#include <fstream>
 
 #include "Utils/Dialogs.h"
 #include "EditorCameraControlSystem.h"
@@ -307,6 +309,7 @@ namespace Seidon
         fileBrowserPanel.Draw();
         
         dockspace.End();
+        GL_CHECK(;);
 	}
 
 	void Editor::Destroy()

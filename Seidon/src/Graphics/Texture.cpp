@@ -5,6 +5,9 @@
 
 #include "../Debug/Debug.h"
 
+#include <iostream>
+#include <fstream>
+
 namespace Seidon
 {
     Texture* Texture::temporaryTexture = nullptr;
@@ -29,7 +32,7 @@ namespace Seidon
     }
 
     void Texture::Create(int width, int height, unsigned char* rgbData, TextureFormat sourceFormat, TextureFormat internalFormat,
-        ClampingMode clampingMode, const glm::vec3& borderColor)
+        ClampingMode clampingMode, const glm::vec3& borderColor, bool anisotropicFiltering)
     {
         SD_ASSERT(!initialized, "Texture already initialized");
 
@@ -44,7 +47,7 @@ namespace Seidon
         GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, (GLenum)internalFormat, width, height, 0, (GLenum)sourceFormat, GL_UNSIGNED_BYTE, rgbData));
         GL_CHECK(glGenerateMipmap(GL_TEXTURE_2D));
 
-        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, anisotropicFiltering ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLenum)clampingMode));
@@ -52,6 +55,8 @@ namespace Seidon
 
         float color[] = { borderColor.x, borderColor.y, borderColor.z, 1.0f };
         GL_CHECK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color));
+
+        renderHandle = GL_CHECK(glGetTextureHandleARB(renderId));
 
         initialized = true;
     }
@@ -70,7 +75,6 @@ namespace Seidon
         GL_CHECK(glBindTexture(GL_TEXTURE_2D, renderId));
 
         GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, (GLenum)internalFormat, width, height, 0, (GLenum)sourceFormat, GL_INT, rgbData));
-        GL_CHECK(glGenerateMipmap(GL_TEXTURE_2D));
 
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
         GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
@@ -80,6 +84,8 @@ namespace Seidon
 
         float color[] = { borderColor.x, borderColor.y, borderColor.z, 1.0f };
         GL_CHECK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color));
+
+        //renderHandle = GL_CHECK(glGetTextureHandleARB(renderId));
 
         initialized = true;
     }
@@ -109,6 +115,7 @@ namespace Seidon
         float color[] = { borderColor.x, borderColor.y, borderColor.z, 1.0f };
         GL_CHECK(glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color));
 
+        //renderHandle = GL_CHECK(glGetTextureHandleARB(renderId));
         initialized = true;
     }
 
@@ -445,5 +452,19 @@ namespace Seidon
                 }
             }
         );
+    }
+   
+    void Texture::MakeResident()
+    {
+        if (!isResident)
+        {
+            GL_CHECK(glMakeTextureHandleResidentARB(renderHandle));
+            isResident = true;
+        }
+    }
+
+    void Texture::MakeNonResident()
+    {
+        GL_CHECK(glMakeTextureHandleNonResidentARB(renderHandle));
     }
 }

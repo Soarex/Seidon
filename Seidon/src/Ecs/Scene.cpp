@@ -3,6 +3,8 @@
 #include "../Core/Application.h"
 
 #include <yaml-cpp/yaml.h>
+#include <iostream>
+#include <fstream>
 
 namespace Seidon
 {

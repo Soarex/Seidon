@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../Ecs/Scene.h"
 #include "../Graphics/Mesh.h"
 #include "../Graphics/HdrCubemap.h"
 #include "../Graphics/Armature.h"
@@ -20,6 +21,8 @@ namespace Seidon
 	{
 	private:
 		Assimp::Importer importer;
+
+		Scene prefabMaker;
 		std::unordered_map<std::string, Material*> importedMaterials;
 		std::unordered_map<std::string, Texture*> importedTextures;
 		std::vector<Armature> importedArmatures;

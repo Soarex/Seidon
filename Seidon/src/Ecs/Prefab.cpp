@@ -1,6 +1,9 @@
 #include "Prefab.h"
 
 #include "../Core/Application.h"
+
+#include <fstream>
+#include <iostream>
 #include <yaml-cpp/yaml.h>
 
 namespace Seidon

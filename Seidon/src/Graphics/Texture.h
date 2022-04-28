@@ -44,10 +44,12 @@ namespace Seidon
 
         UUID id;
         unsigned int renderId;
+        uint64_t renderHandle;
 
         unsigned int width, height;
         TextureFormat format;
         bool gammaCorrected = false;
+        bool isResident = false;
 
         static Texture* temporaryTexture;
     public:
@@ -55,7 +57,7 @@ namespace Seidon
         ~Texture();
 
         void Create(int width, int height, unsigned char* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
-            ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f));
+            ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f), bool anisotropicFiltering = true);
 
         void Create(int width, int height, int* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
             ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f));
@@ -73,11 +75,14 @@ namespace Seidon
         void ImportAsync(const std::string& path, bool gammaCorrection = true);
 
         void Bind(unsigned int slot = 0) const;
+        void MakeResident();
+        void MakeNonResident();
 
         void Destroy();
 
         inline UUID GetId() const { return id; }
         inline unsigned int GetRenderId() const { return renderId; }
+        inline uint64_t GetRenderHandle() const { return renderHandle; }
         inline const std::string& GetPath() { return path; }
 
         friend class ResourceManager;

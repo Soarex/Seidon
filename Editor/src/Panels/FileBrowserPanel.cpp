@@ -219,7 +219,10 @@ namespace Seidon
 
 			else if (file.extension == ".sdpref")
 				DrawPrefabFile(file);
-			
+
+			else if (file.extension == ".sdshader")
+				DrawShaderFile(file);
+
 			else
 				DrawGenericFile(file);
 
@@ -545,6 +548,24 @@ namespace Seidon
 				ImGui::CloseCurrentPopup();
 
 			ImGui::EndPopup();
+		}
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		ImGui::TextWrapped(file.name.c_str());
+		ImGui::NextColumn();
+	}
+
+	void FileBrowserPanel::DrawShaderFile(FileEntry& file)
+	{
+		ImGui::ImageButton((ImTextureID)fileIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+		if (ImGui::BeginDragDropSource())
+		{
+			const std::string& itemPath = file.path;
+			ImGui::SetDragDropPayload("FILE_BROWSER_SHADER", itemPath.c_str(), itemPath.length() + 1);
+			ImGui::EndDragDropSource();
 		}
 
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();

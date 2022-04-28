@@ -35,19 +35,19 @@ public:
             auto& cameraTransform = scene->GetRegistry().get<Seidon::TransformComponent>(e);
             auto& playerTransform = players.get<Seidon::TransformComponent>(players.front());
 
-            glm::vec3 input = glm::vec3(inputManager->GetMouseOffset().y, inputManager->GetMouseOffset().x, 0);
+            glm::vec3 input = glm::vec3(-inputManager->GetMouseOffset().y, -inputManager->GetMouseOffset().x, 0);
 
             if (inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_Y)) != 0 || inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_X)) != 0)
             {
-                input.x = inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_Y)) * 20;
-                input.y = inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_X)) * 20;
+                input.x = -inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_Y)) * 20;
+                input.y = -inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(RIGHT_X)) * 20;
             }
             orbitAngles += rotationSpeed * deltaTime * input;
 
             if (orbitAngles.y < 0) orbitAngles.y += 360;
             if (orbitAngles.y >= 360) orbitAngles.y -= 360;
-            if (orbitAngles.x > 0) orbitAngles.x = 0;
-            if (orbitAngles.x <= -45) orbitAngles.x = -45;
+            if (orbitAngles.x > 45) orbitAngles.x = 45;
+            if (orbitAngles.x <= -80) orbitAngles.x = -80;
 
             glm::vec3 lookDirection = glm::quat(glm::radians(orbitAngles)) * glm::vec3(0, 0, 1);
             cameraTransform.position = playerTransform.position + lookDirection * distance;
@@ -119,7 +119,7 @@ public:
 
     bool IsGrounded(Seidon::TransformComponent& transform)
     {
-        return transform.position.y <= 1.6;
+        return transform.position.y <= 0.51;
     }
 
     void Jump(PlayerComponent& player)
@@ -146,15 +146,15 @@ public:
             switch (selectionComponent.status)
             {
             case Seidon::SelectionStatus::NONE:
-                renderComponent.materials[0]->tint = uiComponent.baseColor;
+                //renderComponent.materials[0]->tint = uiComponent.baseColor;
                 break;
 
             case Seidon::SelectionStatus::HOVERED:
-                renderComponent.materials[0]->tint = uiComponent.hoverColor;
+                //renderComponent.materials[0]->tint = uiComponent.hoverColor;
                 break;
 
             case Seidon::SelectionStatus::CLICKED: case Seidon::SelectionStatus::HELD:
-                renderComponent.materials[0]->tint = uiComponent.clickColor;
+                //renderComponent.materials[0]->tint = uiComponent.clickColor;
                 break;
             }
         }

@@ -1,6 +1,7 @@
 #include "AssetImporter.h"
 
 #include "../Core/Application.h"
+#include "../Ecs/Prefab.h"
 #include "StringUtils.h"
 
 #include <filesystem>
@@ -216,7 +217,7 @@ namespace Seidon
     void AssetImporter::ImportMeshes(aiNode* node, const aiScene* scene, const aiMatrix4x4& transform, const std::string& directory)
     {
         aiMatrix4x4 worldTransform = node->mTransformation * transform;
-        //importData.localTransforms.push_back(glm::make_mat4x4((float*)&(worldTransform.Transpose())));
+        glm::mat4 glmTransform = glm::make_mat4x4((float*)&(worldTransform.Transpose()));
         //importData.parents.push_back(i - 1);
 
         if (node->mNumMeshes > 0)
@@ -224,11 +225,14 @@ namespace Seidon
             Mesh* m = new Mesh();
             m->name = node->mName.C_Str();
 
+            std::vector<Material*> materials;
+            materials.reserve(node->mNumMeshes);
+
+            Armature* armature = nullptr;
             for (int i = 0; i < node->mNumMeshes; i++)
             {
                 aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
                 
-                Armature* armature = nullptr;
                 if (mesh->HasBones())
                 {
                     std::string rootBoneName = mesh->mBones[0]->mName.C_Str();
@@ -240,10 +244,36 @@ namespace Seidon
                 SubMesh* submesh = ProcessSubMesh(mesh, armature);
 
                 m->subMeshes.push_back(submesh);
+
+                aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+                aiString materialName;
+                material->Get(AI_MATKEY_NAME, materialName);
+                
+                materials.push_back(importedMaterials[materialName.C_Str()]);
             }
 
             importedMeshes.push_back(m);
-            //m.Save(directory + "\\" + ".sdmesh");
+            
+            Entity e = prefabMaker.CreateEntity(m->name);
+            e.GetComponent<TransformComponent>().SetFromMatrix(glmTransform);
+
+            if (!armature)
+            {
+                RenderComponent& r = e.AddComponent<RenderComponent>();
+                r.mesh = m;
+                r.materials = materials;
+            }
+            else
+            {
+                SkinnedRenderComponent& r = e.AddComponent<SkinnedRenderComponent>();
+                r.mesh = m;
+                r.materials = materials;
+                r.armature = armature;
+            }
+            
+            Prefab p;
+            p.MakeFromEntity(e);
+            p.Save("Assets\\" + m->name + ".sdpref");
         }
 
         for (unsigned int i = 0; i < node->mNumChildren; i++)
@@ -351,61 +381,91 @@ namespace Seidon
 
     Material* AssetImporter::ImportMaterial(aiMaterial* material, const std::string& directory)
     {
-        if (importedMaterials.count(material->GetName().C_Str()) > 0) return importedMaterials[material->GetName().C_Str()];
+        aiString name;
+        material->Get(AI_MATKEY_NAME, name);
+        if (importedMaterials.count(name.C_Str()) > 0) return importedMaterials[material->GetName().C_Str()];
+
+        ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
 
         Material* m = new Material();
 
-        m->name = std::string(material->GetName().C_Str());
-        m->tint = glm::vec3(1.0f);
+        m->name = std::string(name.C_Str());
+        m->shader = resourceManager.GetShader("default_shader");
 
-        ResourceManager* resourceManager = Application::Get()->GetResourceManager();
-;
+        byte* ptr = m->data;
+
+        aiColor3D tint;
+        material->Get(AI_MATKEY_COLOR_DIFFUSE, tint);
+        *((glm::vec3*)ptr) = glm::vec3(tint.r, tint.g, tint.b);
+        ptr += sizeof(glm::vec3);
+
         aiString str;
         if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {
             material->GetTexture(aiTextureType_DIFFUSE, 0, &str);
 
-            m->albedo = ImportTexture(directory + "\\" + std::string(str.C_Str()), true);
+            *((Texture**)ptr) = ImportTexture(directory + "\\" + std::string(str.C_Str()), true);
+            ptr += sizeof(Texture*);
         }
         else
-            m->albedo = resourceManager->GetTexture("albedo_default");
-
-        if (material->GetTextureCount(aiTextureType_SHININESS) > 0)
         {
-            material->GetTexture(aiTextureType_SHININESS, 0, &str);
-            
-            m->roughness = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            *((Texture**)ptr) = resourceManager.GetTexture("albedo_default");
+            ptr += sizeof(Texture*);
         }
-        else
-            m->roughness = resourceManager->GetTexture("roughness_default");
 
         if (material->GetTextureCount(aiTextureType_NORMALS) > 0)
         {
             material->GetTexture(aiTextureType_NORMALS, 0, &str);
 
-            m->normal = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            *((Texture**)ptr) = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            ptr += sizeof(Texture*);
         }
         else
-            m->normal = resourceManager->GetTexture("normal_default");
+        {
+            *((Texture**)ptr) = resourceManager.GetTexture("normal_default");
+            ptr += sizeof(Texture*);
+        }
+
+        if (material->GetTextureCount(aiTextureType_SHININESS) > 0)
+        {
+            material->GetTexture(aiTextureType_SHININESS, 0, &str);
+            
+            *((Texture**)ptr) = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            ptr += sizeof(Texture*);
+        }
+        else
+        {
+            *((Texture**)ptr) = resourceManager.GetTexture("roughness_default");
+            ptr += sizeof(Texture*);
+        }
+
 
         if (material->GetTextureCount(aiTextureType_SPECULAR) > 0)
         {
             material->GetTexture(aiTextureType_SPECULAR, 0, &str);
             
-            m->metallic = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            *((Texture**)ptr) = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            ptr += sizeof(Texture*);
         }
         else
-            m->metallic  = resourceManager->GetTexture("metallic_default");
+        {
+            *((Texture**)ptr) = resourceManager.GetTexture("metallic_default");
+            ptr += sizeof(Texture*);
+        }
 
         if (material->GetTextureCount(aiTextureType_AMBIENT_OCCLUSION) > 0)
         {
             material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &str);
              
-            m->ao = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            *((Texture**)ptr) = ImportTexture(directory + "\\" + std::string(str.C_Str()));
+            ptr += sizeof(Texture*);
         }
         else
-            m->ao = resourceManager->GetTexture("ao_default");
-       
+        {
+            *((Texture**)ptr) = resourceManager.GetTexture("ao_default");
+            ptr += sizeof(Texture*);
+        }
+
         m->Save(directory + "\\" + m->name + ".sdmat");
 
         Application::Get()->GetResourceManager()->RegisterMaterial(m, directory + "\\" + m->name + ".sdmat");

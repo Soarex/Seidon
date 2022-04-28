@@ -77,13 +77,21 @@ namespace Seidon
 		inline Armature*	GetArmature(const std::string& name)	{ return armatures[nameToArmatureId.at(name)]; }
 		inline Animation*	GetAnimation(const std::string& name)	{ return animations[nameToAnimationId.at(name)]; }
 
-		inline Texture*		GetTexture(UUID id) { return textures[id]; }
-		inline Mesh*		GetMesh(UUID id) { return meshes[id]; }
-		inline Shader*		GetShader(UUID id) { return shaders[id]; }
-		inline Material*	GetMaterial(UUID id) { return materials[id]; }
-		inline HdrCubemap*	GetCubemap(UUID id) { return cubemaps[id]; }
-		inline Armature*	GetArmature(UUID id) { return armatures[id]; }
-		inline Animation*	GetAnimation(UUID id) { return animations[id]; }
+		inline Texture*		GetTexture(UUID id)		{ return textures[id]; }
+		inline Mesh*		GetMesh(UUID id)		{ return meshes[id]; }
+		inline Shader*		GetShader(UUID id)		{ return shaders[id]; }
+		inline Material*	GetMaterial(UUID id)	{ return materials[id]; }
+		inline HdrCubemap*	GetCubemap(UUID id)		{ return cubemaps[id]; }
+		inline Armature*	GetArmature(UUID id)	{ return armatures[id]; }
+		inline Animation*	GetAnimation(UUID id)	{ return animations[id]; }
+
+		inline std::string GetTexturePath(UUID id)		{ return idToTexturePath[id]; }
+		inline std::string GetMeshPath(UUID id)			{ return idToMeshPath[id]; }
+		inline std::string GetShaderPath(UUID id)		{ return idToShaderPath[id]; }
+		inline std::string GetMaterialPath(UUID id)		{ return idToMaterialPath[id]; }
+		inline std::string GetCubemapPath(UUID id)		{ return idToCubemapPath[id]; }
+		inline std::string GetArmaturePath(UUID id)		{ return idToArmaturePath[id]; }
+		inline std::string GetAnimationPath(UUID id)	{ return idToAnimationPath[id]; }
 
 		Texture*	GetOrLoadTexture(const std::string& name);
 		Mesh*		GetOrLoadMesh(const std::string& name);
