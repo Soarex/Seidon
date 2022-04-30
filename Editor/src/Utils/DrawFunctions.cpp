@@ -177,6 +177,25 @@ namespace Seidon
 		ImGui::PopID();
 	}
 
+	void DrawFloatSliderControl(const std::string& label, float& value, float min, float max, float columnWidth)
+	{
+		ImGui::PushID(label.c_str());
+
+		ImGui::PushItemWidth(-1);
+		ImGui::Columns(2);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		//ImGui::SliderFloat("##X", &value, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::SliderFloat("##X", &value, min, max, "%.2f");
+
+		ImGui::Columns(1);
+
+		ImGui::PopItemWidth();
+		ImGui::PopID();
+	}
+
 	void DrawBoolControl(const std::string& label, bool& value, float columnWidth)
 	{
 		ImGui::PushID(label.c_str());
@@ -499,6 +518,9 @@ namespace Seidon
 		char* obj = (char*) object;
 		if (member.type == Types::FLOAT)
 			DrawFloatControl(member.name.c_str(), *(float*)(obj + member.offset));
+
+		if (member.type == Types::FLOAT_NORMALIZED)
+			DrawFloatSliderControl(member.name.c_str(), *(float*)(obj + member.offset));
 
 		if (member.type == Types::BOOL)
 			DrawBoolControl(member.name.c_str(), *(bool*)(obj + member.offset));

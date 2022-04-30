@@ -81,7 +81,7 @@ namespace Seidon
 
             switch (member.type)
             {
-            case Types::FLOAT:
+            case Types::FLOAT: case Types::FLOAT_NORMALIZED:
                 member.size = sizeof(float);
                 member.offset = offset;
                 offset += member.size;

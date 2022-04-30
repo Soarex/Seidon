@@ -7,89 +7,12 @@
 
 namespace Seidon
 {
-    SubMesh::SubMesh()
-    {
-
-    }
-
-    SubMesh::~SubMesh()
-    {
-        Destroy();
-    }
-
     void SubMesh::Create(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::string& name)
     {
-        SD_ASSERT(!initialized, "Submesh already initialized");
-
         this->vertices = vertices;
         this->indices = indices;
         this->name = name;
-
-        SetupMesh();
-
-        initialized = true;
     }
-
-    void SubMesh::Destroy()
-    {
-        SD_ASSERT(initialized, "Submesh not initialized");
-
-        GL_CHECK(glDeleteBuffers(1, &VBO));
-        GL_CHECK(glDeleteBuffers(1, &EBO));
-        GL_CHECK(glDeleteVertexArrays(1, &VAO));
-
-        initialized = false;
-    }
-
-    void SubMesh::SetupMesh()
-    {
-        GL_CHECK(glGenVertexArrays(1, &VAO));
-        GL_CHECK(glGenBuffers(1, &VBO));
-        GL_CHECK(glGenBuffers(1, &EBO));
-
-        GL_CHECK(glBindVertexArray(VAO));
-        GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, VBO));
-
-        GL_CHECK(glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW));
-
-        GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO));
-        GL_CHECK(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
-            &indices[0], GL_STATIC_DRAW));
-
-        // vertex positions
-        GL_CHECK(glEnableVertexAttribArray(0));
-        GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0));
-
-        // vertex normals
-        GL_CHECK(glEnableVertexAttribArray(1));
-        GL_CHECK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
-
-        // vertex tangent
-        GL_CHECK(glEnableVertexAttribArray(2));
-        GL_CHECK(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent)));
-
-        // vertex texture coords
-        GL_CHECK(glEnableVertexAttribArray(3));
-        GL_CHECK(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords)));
-
-        // vertex bone ids
-        GL_CHECK(glEnableVertexAttribArray(4));
-        GL_CHECK(glVertexAttribIPointer(4, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIds)));
-
-        // vertex weights
-        GL_CHECK(glEnableVertexAttribArray(5));
-        GL_CHECK(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights)));
-
-        GL_CHECK(glBindVertexArray(0));
-
-        initialized = true;
-    }
-
-    unsigned int SubMesh::GetVAO() 
-    {
-        SD_ASSERT(initialized, "Submesh not initialized");
-        return VAO; 
-    };
 
     Mesh::Mesh(UUID id)
         : id(id)
@@ -99,8 +22,6 @@ namespace Seidon
 
     Mesh::~Mesh()
     {
-        for (SubMesh* m : subMeshes)
-            delete m;
     }
 
     void Mesh::Save(const std::string& path)
@@ -191,7 +112,6 @@ namespace Seidon
             for (int j = 0; j < size2; j++)
                 in.read((char*)&submesh->indices[j], sizeof(unsigned int));
 
-            submesh->SetupMesh();
             subMeshes[i] = submesh;
         }
     }
@@ -236,12 +156,6 @@ namespace Seidon
                     submesh->indices.resize(size2);
                     for (int j = 0; j < size2; j++)
                         in.read((char*)&submesh->indices[j], sizeof(unsigned int));
-
-                    Application::Get()->GetWorkManager()->ExecuteOnMainThread([=]()
-                        {
-                            submesh->SetupMesh();
-                        }
-                    );
 
                     subMeshes[i] = submesh;
                 }

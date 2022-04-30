@@ -1,12 +1,23 @@
 #pragma once
 #include "Mesh.h"
 #include "Shader.h"
+#include "HdrCubemap.h"
 
 #include <unordered_map>
 
 namespace Seidon
 {
 	typedef unsigned char byte;
+
+	struct RenderStats
+	{
+		uint32_t vertexCount;
+		uint32_t vertexBufferSize;
+		uint32_t indexCount;
+		uint32_t indexBufferSize;
+		uint32_t objectCount;
+		uint32_t batchCount;
+	};
 
 	struct RenderCommand
 	{
@@ -40,15 +51,49 @@ namespace Seidon
 		std::vector<MaterialData> materials;
 	};
 
+	struct WireframeBatchData
+	{
+		uint32_t objectCount = 0;
+		std::vector<RenderCommand> commands;
+		std::vector<glm::mat4> transforms;
+		std::vector<glm::vec4> colors;
+	};
+
+	struct DirectionalLightData
+	{
+		glm::vec3 direction;
+		glm::vec3 color;
+	};
+
+	struct CameraData
+	{
+		glm::vec3 position;
+		glm::mat4 viewMatrix;
+		glm::mat4 projectionMatrix;
+	};
+
+	struct ShadowMappingData
+	{
+		Texture* shadowMaps;
+		float* cascadeFarPlaneDistances;
+		glm::mat4* lightSpaceMatrices;
+	};
+
 	class Renderer
 	{
 	private:
-		static constexpr int VERTEX_COUNT = 10000000;
-		static constexpr int MAX_OBJECTS = 1000;
+		static constexpr int CASCADE_COUNT = 4;
+		size_t maxVertexCount;
+		size_t maxObjects;
 
 		std::unordered_map <UUID, std::vector<CacheEntry>> meshCache;
-
 		std::unordered_map<Shader*, BatchData> batches;
+
+		Shader* wireframeShader;
+		WireframeBatchData wireframeBatch;
+		BatchData spriteObjects;
+
+		RenderStats stats;
 
 		uint32_t vao;
 		uint32_t vertexBuffer;
@@ -77,21 +122,35 @@ namespace Seidon
 		int tripleBufferStage = 0;
 		GLsync locks[3];
 		
-		glm::vec3 cameraPosition;
-		glm::mat4 viewMatrix;
-		glm::mat4 projectionMatrix;
+		HdrCubemap* ibl;
+		DirectionalLightData directionalLight;
+		CameraData camera;
+		ShadowMappingData shadowMaps;
+
 		double time;
 	public:
+		Renderer(size_t maxObjects = 1000, size_t maxVertexCount = 1000000);
+
 		void Init();
 		void Begin();
+
 		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, glm::mat4& transform);
-		void SetCameraPosition(const glm::vec3& cameraPosition);
-		void SetViewMatrix(const glm::mat4& viewMatrix);
-		void SetProjectionMatrix(const glm::mat4& projectionMatrix);
+		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, glm::mat4& transform);
+
+		void SetCamera(const CameraData& camera);
+		void SetShadowMaps(const ShadowMappingData& shadowMaps);
+		void SetDirectionalLight(const DirectionalLightData& directionalLight);
+		void SetIBL(HdrCubemap* cubemap);
 		void SetTime(double time);
+
+		const RenderStats& GetRenderStats() { return stats; }
 
 		void Render();
 		void End();
 		void Destroy();
+
+	private:
+		void DrawMeshes(int& offset, int& materialOffset);
+		void DrawWireframes(int& offset, int& materialOffset);
 	};
 }

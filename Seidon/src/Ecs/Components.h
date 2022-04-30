@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/UUID.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Sprite.h"
 #include "Graphics/Armature.h"
 #include "Graphics/Material.h"
 #include "Graphics/HdrCubemap.h"
@@ -143,6 +144,29 @@ namespace Seidon
 			SetMesh(mesh);
 		}
 
+	};
+
+	struct SpriteRenderComponent
+	{
+		Sprite* sprite;
+
+		SpriteRenderComponent() = default;
+		SpriteRenderComponent(const SpriteRenderComponent&) = default;
+
+		SpriteRenderComponent(Sprite* sprite)
+			: sprite(sprite) {}
+	};
+
+	struct WireframeRenderComponent
+	{
+		Mesh* mesh;
+		glm::vec3 color;
+
+		WireframeRenderComponent();
+		WireframeRenderComponent(const WireframeRenderComponent&) = default;
+
+		WireframeRenderComponent(Mesh* mesh, const glm::vec3& color = glm::vec3(1))
+			: mesh(mesh), color(color) {}
 	};
 
 	struct CubemapComponent

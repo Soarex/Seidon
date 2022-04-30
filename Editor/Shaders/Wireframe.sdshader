@@ -1,0 +1,61 @@
+~VERTEX SHADER
+
+~BEGIN LAYOUT
+Color : VECTOR3_COLOR
+~END LAYOUT
+
+#version 460 core
+
+layout(location = 0) in vec3 vertexPosition;
+
+layout(location = 6) in uint objectId;
+
+out VS_OUT
+{
+    flat uint objectId;
+} vs_out;
+
+layout(std430, binding = 0) buffer transforms
+{
+    mat4 modelMatrices[];
+};
+
+struct CameraData
+{
+    vec3 position;
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
+};
+
+uniform CameraData camera;
+
+void main()
+{
+    mat4 modelMatrix = modelMatrices[objectId];
+
+    vs_out.objectId = objectId;
+
+    gl_Position = camera.projectionMatrix * camera.viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+}
+
+
+~FRAGMENT SHADER
+#version 460 core
+
+layout(location = 0) out vec4 fragmentColor;
+
+in VS_OUT
+{
+    flat uint objectId;
+} fs_in;
+
+
+layout(std430, binding = 1) buffer materialBuffer
+{
+    vec3 colors[];
+};
+
+void main()
+{
+    fragmentColor = vec4(colors[fs_in.objectId], 1.0);
+}

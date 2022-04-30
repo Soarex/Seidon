@@ -14,6 +14,12 @@ namespace Seidon
 		armature = Application::Get()->GetResourceManager()->GetArmature("default_armature");
 	}
 
+	WireframeRenderComponent::WireframeRenderComponent()
+	{
+		mesh = Application::Get()->GetResourceManager()->GetMesh("empty_mesh");
+		color = glm::vec3(1);
+	}
+
 	void RenderComponent::SetMesh(Mesh* mesh)
 	{
 		this->mesh = mesh;

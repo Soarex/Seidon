@@ -304,6 +304,21 @@ namespace Seidon
 
         ImGui::Begin("Stats"); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+        if (sceneManager->GetActiveScene()->HasSystem<RenderSystem>())
+        {
+            RenderSystem& renderSystem = sceneManager->GetActiveScene()->GetSystem<RenderSystem>();
+            const RenderStats& stats = renderSystem.GetRenderStats();
+
+            ImGui::Text("Vertex use: %d / %d", stats.vertexCount, stats.vertexBufferSize);
+            ImGui::Text("Index use: %d / %d", stats.indexCount, stats.indexBufferSize);
+
+            float memoryUsedInMB = (stats.indexCount * sizeof(int) + stats.vertexCount * sizeof(Vertex)) / 1000000.0f;
+            float memoryAllocatedInMB = (stats.indexBufferSize * sizeof(int) + stats.vertexBufferSize * sizeof(Vertex)) / 1000000.0f;
+            ImGui::Text("Memory used: %.2f MB / %.2f MB", memoryUsedInMB, memoryAllocatedInMB);
+            ImGui::Text("Object count: %d in %d batches", stats.objectCount, stats.batchCount);
+        }
+
         ImGui::End();
 
         fileBrowserPanel.Draw();

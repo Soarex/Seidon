@@ -3,6 +3,7 @@
 #include "../Graphics/Texture.h"
 #include "../Graphics/HdrCubemap.h"
 #include "../Graphics/Mesh.h"
+#include "../Graphics/Sprite.h"
 #include "../Graphics/Armature.h"
 #include "../Graphics/Shader.h"
 
@@ -14,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 
 namespace Seidon
@@ -25,6 +27,7 @@ namespace Seidon
 		UNKNOWN = 0,
 		INT,
 		FLOAT,
+		FLOAT_NORMALIZED,
 		BOOL,
 		STRING,
 		ID,
@@ -34,15 +37,17 @@ namespace Seidon
 		VECTOR3_ANGLES,
 		VECTOR4,
 		VECTOR4_COLOR,
-		MATERIAL_VECTOR,
-		MESH_VECTOR,
-		TEXTURE_VECTOR,
-		TEXTURE,
-		CUBEMAP,
 		MESH,
+		MESH_VECTOR,
+		TEXTURE,
+		TEXTURE_VECTOR,
+		MATERIAL,
+		MATERIAL_VECTOR,
+		CUBEMAP,
 		ARMATURE,
 		ANIMATION,
-		SHADER
+		SHADER,
+		SPRITE
 	};
 
 	template<typename T, typename U> 
@@ -136,6 +141,9 @@ namespace Seidon
 			if (typeid(U).hash_code() == typeid(Shader*).hash_code())
 				data.type = Types::SHADER;
 
+			if (typeid(U).hash_code() == typeid(Sprite*).hash_code())
+				data.type = Types::SPRITE;
+
 			members.push_back(data);
 
 			return *this;
@@ -154,6 +162,9 @@ namespace Seidon
 
 			return *this;
 		}
+
+		void Save(std::ofstream& out, byte* data);
+		void Load(std::ifstream& in, byte* data);
 
 		inline bool operator==(const MetaType& other) 
 		{ 
@@ -178,6 +189,9 @@ namespace Seidon
 
 			if (string == "FLOAT")
 				return Types::FLOAT;
+
+			if (string == "FLOAT_NORMALIZED")
+				return Types::FLOAT_NORMALIZED;
 
 			if (string == "BOOL")
 				return Types::BOOL;
@@ -226,6 +240,9 @@ namespace Seidon
 
 			if (string == "SHADER")
 				return Types::SHADER;
+
+			if (string == "SPRITE")
+				return Types::SPRITE;
 		}
 
 		static std::string TypeToString(Types type)
@@ -235,6 +252,9 @@ namespace Seidon
 
 			if (type == Types::FLOAT)
 				return "Float";
+
+			if (type == Types::FLOAT_NORMALIZED)
+				return "Float normalized";
 
 			if (type == Types::BOOL)
 				return "Bool";
@@ -283,6 +303,9 @@ namespace Seidon
 
 			if (type == Types::SHADER)
 				return "Shader";
+
+			if (type == Types::SPRITE)
+				return "Sprite";
 		}
 	};
 

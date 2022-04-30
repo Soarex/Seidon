@@ -69,6 +69,14 @@ namespace Seidon
 		void RegisterArmature(Armature* armature, const std::string& path);
 		void RegisterAnimation(Animation* animation, const std::string& path);
 
+		bool IsShaderRegistered(UUID id) { return idToShaderPath.count(id); }
+		bool IsMeshRegistered(UUID id) { return idToMeshPath.count(id); }
+		bool IsMaterialRegistered(UUID id) { return idToMaterialPath.count(id); }
+		bool IsTextureRegistered(UUID id) { return idToTexturePath.count(id); }
+		bool IsCubemapRegistered(UUID id) { return idToCubemapPath.count(id); }
+		bool IsArmatureRegistered(UUID id) { return idToArmaturePath.count(id); }
+		bool IsAnimationRegistered(UUID id) { return idToAnimationPath.count(id); }
+
 		inline Texture*		GetTexture(const std::string& name)		{ return textures[nameToTextureId.at(name)];	}
 		inline Mesh*		GetMesh(const std::string& name)		{ return meshes[nameToMeshId.at(name)];			}
 		inline Shader*		GetShader(const std::string& name)		{ return shaders[nameToShaderId.at(name)];		}

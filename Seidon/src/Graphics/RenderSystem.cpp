@@ -15,6 +15,7 @@ namespace Seidon
 		framebufferHeight = window->GetHeight();
 
 		captureCube.Init();
+		fullscreenQuad.Init();
 
 		hdrMap.Create(window->GetWidth(), window->GetHeight(), (unsigned char*)NULL, TextureFormat::RGBA, TextureFormat::FLOAT16_ALPHA);
 		entityMap.Create(window->GetWidth(), window->GetHeight(), (int*)NULL, TextureFormat::RED_INTEGER, TextureFormat::INT32);
@@ -54,22 +55,6 @@ namespace Seidon
 		quadShader.LoadFromFile("Shaders/Simple.shader");
 		cubemapShader.LoadFromFile("Shaders/Cubemap.shader");
 
-		std::vector<Vertex> quadVertices =
-		{
-			// positions			// normals			//tangents			 // UVs
-			{{-1.0f,  1.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	 {0.0f, 1.0f} },
-			{{-1.0f, -1.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	 {0.0f, 0.0f} },
-			{{ 1.0f, -1.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	 {1.0f, 0.0f} },
-
-			{{-1.0f,  1.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	 {0.0f, 1.0f} },
-			{{ 1.0f, -1.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	 {1.0f, 0.0f} },
-			{{ 1.0f,  1.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	{0.0f, 0.0f, 0.0f},	 {1.0f, 1.0f} }
-		};
-
-		std::vector<unsigned int> indices = { 0, 1, 2, 3, 4, 5 };
-		fullscreenQuad = new SubMesh();
-		fullscreenQuad->Create(quadVertices, indices, "");
-
 		GL_CHECK(glEnable(GL_DEPTH_TEST));
 		//GL_CHECK(glEnable(GL_BLEND));
 		glDisable(GL_DITHER);
@@ -105,6 +90,7 @@ namespace Seidon
 		entt::basic_view cubemaps   = scene->GetRegistry().view<CubemapComponent>();
 		entt::basic_group renderGroup = scene->GetRegistry().group<RenderComponent>(entt::get<TransformComponent>);
 		entt::basic_group skinnedRenderGroup = scene->GetRegistry().group<SkinnedRenderComponent>(entt::get<TransformComponent>);
+		entt::basic_group wireframeRenderGroup = scene->GetRegistry().group<WireframeRenderComponent>(entt::get<TransformComponent>);
 
 		DirectionalLightComponent light;
 		TransformComponent lightTransform;
@@ -231,33 +217,37 @@ namespace Seidon
 		//unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		//GL_CHECK(glDrawBuffers(2, attachments));
 
-		shader->Use();
-		shader->SetVec3("directionalLight.direction", lightTransform.GetForwardDirection());
-		shader->SetVec3("directionalLight.color", light.color * light.intensity);
+		renderer.SetCamera
+		(
+			{
+				cameraTransform.position,
+				camera.GetViewMatrix(cameraTransform),
+				camera.GetProjectionMatrix()
+			}
+		);
 
-		//shader->SetMat4("camera.viewMatrix", camera.GetViewMatrix(cameraTransform));
-		//shader->SetMat4("camera.projectionMatrix", camera.GetProjectionMatrix());
+		renderer.SetDirectionalLight
+		(
+			{
+				lightTransform.GetForwardDirection(),
+				light.color* light.intensity
+			}
+		);
 
-		//shader->SetVec3("camera.position", cameraTransform.position);
+		renderer.SetShadowMaps
+		(
+			{
+				shadowMaps,
+				farPlanes,
+				lightSpaceMatrices
+			}
+		);
 
-		renderer.SetCameraPosition(cameraTransform.position);
-		renderer.SetViewMatrix(camera.GetViewMatrix(cameraTransform));
-		renderer.SetProjectionMatrix(camera.GetProjectionMatrix());
+		renderer.SetIBL(cubemap.cubemap);
 		renderer.SetTime(time);
-		//shader->SetDouble("time", time);
+
 		time += deltaTime;
 
-		cubemap.cubemap->BindIrradianceMap(5);
-		cubemap.cubemap->BindPrefilteredMap(6);
-		cubemap.cubemap->BindBRDFLookupMap(7);
-
-		for (int i = 0; i < CASCADE_COUNT; i++)
-		{
-			shader->SetMat4("lightSpaceMatrices[" + std::to_string(i) + "]", lightSpaceMatrices[i]);
-			shader->SetFloat("shadowMappingData.cascadeFarPlaneDistances[" + std::to_string(i) + "]", farPlanes[i]);
-			shader->SetInt("shadowMappingData.cascadeCount", CASCADE_COUNT);
-			shadowMaps[i].Bind(8 + i);
-		}
 		//shader->SetInt("entityId", (int)e);
 
 		renderer.Begin();
@@ -275,8 +265,20 @@ namespace Seidon
 			renderer.SubmitMesh(r.mesh, r.materials, modelMatrix);
 		}
 
+		for (entt::entity e : wireframeRenderGroup)
+		{
+			WireframeRenderComponent& r = wireframeRenderGroup.get<WireframeRenderComponent>(e);
+			TransformComponent& t = wireframeRenderGroup.get<TransformComponent>(e);
+
+			glm::mat4 modelMatrix = t.GetTransformMatrix();
+
+			renderer.SubmitMeshWireframe(r.mesh, r.color, modelMatrix);
+		}
+
 		renderer.Render();
 		renderer.End();
+
+		stats = renderer.GetRenderStats();
 		/*
 		for (entt::entity e : skinnedRenderGroup)
 		{
@@ -321,7 +323,7 @@ namespace Seidon
 		}
 		*/
 		//ProcessMouseSelection();
-
+		
 		GL_CHECK(glDepthFunc(GL_LEQUAL));
 		cubemapShader.Use();
 		cubemapShader.SetMat4("viewMatrix", glm::mat4(glm::mat3(camera.GetViewMatrix(cameraTransform))));
@@ -341,16 +343,16 @@ namespace Seidon
 		quadShader.SetFloat("exposure", camera.exposure);
 
 		hdrMap.Bind(0);
+		fullscreenQuad.Draw();
 		
-		GL_CHECK(glBindVertexArray(fullscreenQuad->GetVAO()));
-		GL_CHECK(glDrawElements(GL_TRIANGLES, fullscreenQuad->indices.size(), GL_UNSIGNED_INT, 0));
 		if (!renderToScreen) renderFramebuffer.Unbind();
 	}
 
 	void RenderSystem::Destroy()
 	{
-		delete fullscreenQuad;
 		window->removeWindowSizeCallback(windowResizeCallbackPosition);
+
+		renderer.Destroy();
 	}
 
 	void RenderSystem::ResizeFramebuffer(unsigned int width, unsigned int height)

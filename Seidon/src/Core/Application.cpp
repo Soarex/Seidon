@@ -60,6 +60,13 @@ namespace Seidon
 			.AddMember("Materials", &SkinnedRenderComponent::materials)
 			.AddMember("Armature", &SkinnedRenderComponent::armature);
 
+		RegisterComponent<SpriteRenderComponent>()
+			.AddMember("Sprite", &SpriteRenderComponent::sprite);
+
+		RegisterComponent<WireframeRenderComponent>()
+			.AddMember("Mesh", &WireframeRenderComponent::mesh)
+			.AddMember("Color", &WireframeRenderComponent::color, Types::VECTOR3_COLOR);
+
 		RegisterComponent<CubemapComponent>()
 			.AddMember("Cubemap", &CubemapComponent::cubemap);
 

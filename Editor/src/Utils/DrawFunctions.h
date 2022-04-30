@@ -8,6 +8,7 @@ namespace Seidon
 	void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 	void DrawColorControl(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 	void DrawFloatControl(const std::string& label, float& value, float columnWidth = 100.0f);
+	void DrawFloatSliderControl(const std::string& label, float& value, float min = 0, float max = 1, float columnWidth = 100.0f);
 	void DrawBoolControl(const std::string& label, bool& value, float columnWidth = 100.0f);
 	void DrawStringControl(const std::string& label, std::string& value, float columnWidth = 100.0f);
 	void DrawTextureControl(const std::string& label, Texture** texture, float size = 64);

@@ -9,13 +9,14 @@
 #include "Shader.h"
 #include "Framebuffer.h"
 #include "CaptureCube.h"
+#include "FullscreenQuad.h"
 
 namespace Seidon
 {
 	class RenderSystem : public System
 	{
 	private:
-		constexpr static int SHADOW_MAP_SIZE = 2048;
+		constexpr static int SHADOW_MAP_SIZE = 1024;
 		constexpr static int CASCADE_COUNT = 4;
 
 		std::list<std::function<void(int, int)>>::iterator windowResizeCallbackPosition;
@@ -44,7 +45,7 @@ namespace Seidon
 		RenderBuffer hdrDepthStencilBuffer;
 		RenderBuffer renderDepthStencilBuffer;
 
-		SubMesh* fullscreenQuad;
+		FullscreenQuad fullscreenQuad;
 		CaptureCube captureCube;
 
 		CameraComponent defaultCamera;
@@ -54,6 +55,8 @@ namespace Seidon
 		unsigned int framebufferWidth, framebufferHeight;
 
 		entt::entity mouseSelectedEntity;
+
+		RenderStats stats;
 	public:
 		RenderSystem() = default;
 		~RenderSystem() = default;
@@ -64,6 +67,7 @@ namespace Seidon
 		void ResizeFramebuffer(unsigned int width, unsigned int height);
 
 		inline const Texture& GetRenderTarget() { return renderTarget; }
+		inline const RenderStats& GetRenderStats() { return stats; }
 		inline entt::entity GetMouseSelectedEntity() { return mouseSelectedEntity; }
 		inline void SetRenderToScreen(bool value) { renderToScreen = value; }
 

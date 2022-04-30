@@ -430,11 +430,17 @@ namespace Seidon
         {
             material->GetTexture(aiTextureType_SHININESS, 0, &str);
             
+            //*((float*)ptr) = 1.0f;
+            //ptr += sizeof(float);
+
             *((Texture**)ptr) = ImportTexture(directory + "\\" + std::string(str.C_Str()));
             ptr += sizeof(Texture*);
         }
         else
         {
+           // *((float*)ptr) = 0.0f;
+           // ptr += sizeof(float);
+
             *((Texture**)ptr) = resourceManager.GetTexture("roughness_default");
             ptr += sizeof(Texture*);
         }
@@ -444,11 +450,17 @@ namespace Seidon
         {
             material->GetTexture(aiTextureType_SPECULAR, 0, &str);
             
+            //*((float*)ptr) = 1.0f;
+            //ptr += sizeof(float);
+
             *((Texture**)ptr) = ImportTexture(directory + "\\" + std::string(str.C_Str()));
             ptr += sizeof(Texture*);
         }
         else
         {
+            //*((float*)ptr) = 0.0f;
+            //ptr += sizeof(float);
+
             *((Texture**)ptr) = resourceManager.GetTexture("metallic_default");
             ptr += sizeof(Texture*);
         }

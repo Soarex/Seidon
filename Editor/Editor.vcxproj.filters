@@ -53,6 +53,8 @@
     <None Include="Shaders\Convolution.shader" />
     <None Include="Shaders\PrefilterConvolution.shader" />
     <None Include="Shaders\BRDFConvolution.shader" />
+    <None Include="Shaders\Sprite.sdshader" />
+    <None Include="Shaders\Wireframe.sdshader" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Panels\HierarchyPanel.h">

@@ -26,8 +26,14 @@ namespace Seidon
 		*((Texture**)ptr) = resourceManager.GetTexture("normal_default");
 		ptr += sizeof(Texture*);
 
+		//*((float*)ptr) = 0.0f;
+		//ptr += sizeof(float);
+
 		*((Texture**)ptr) = resourceManager.GetTexture("roughness_default");
 		ptr += sizeof(Texture*);
+
+		//*((float*)ptr) = 0.0f;
+		//ptr += sizeof(float);
 
 		*((Texture**)ptr) = resourceManager.GetTexture("metallic_default");
 		ptr += sizeof(Texture*);
@@ -51,30 +57,7 @@ namespace Seidon
 		out.write((char*)&shaderId, sizeof(UUID));
 
 		MetaType& layout = *shader->GetBufferLayout();
-		int layoutSize = layout.members.size();
-		out.write((char*)&layoutSize, sizeof(int));
-		//out.write((char*)&layout.members[0], layoutSize);
-
-
-		for (MemberData& m : layout.members)
-		{
-			switch (m.type)
-			{
-			case Types::TEXTURE:
-			{
-				Texture* t = *(Texture**)&data[m.offset];
-				UUID id = t->GetId();
-				out.write((char*)&id, sizeof(UUID));
-				break;
-			}
-			case Types::VECTOR3_COLOR:
-			{
-				glm::vec3* color = (glm::vec3*)&data[m.offset];
-				out.write((char*)color, sizeof(glm::vec3));
-				break;
-			}
-			}
-		}
+		layout.Save(out, data);
 	}
 
 	void Material::SaveAsync(const std::string& path)
@@ -109,58 +92,9 @@ namespace Seidon
 
 		in.read((char*)&shaderId, sizeof(UUID));
 		shader = resourceManager->GetOrLoadShader(shaderId);
-		
-		int layoutSize = 0;
-		in.read((char*)&layoutSize, sizeof(int));
 
-		//MetaType oldLayout;
-		//in.read((char*)oldLayout.members.data(), layoutSize);
-
-		MetaType& newLayout = *shader->GetBufferLayout();
-
-		if (layoutSize != newLayout.members.size())
-		{
-			ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
-			memset(data, 0, 500);
-
-			for (MemberData& m : newLayout.members)
-				switch (m.type)
-				{
-				case Types::VECTOR3_COLOR:
-					*(glm::vec3*)(data + m.offset) = glm::vec3(1);
-					break;
-
-				case Types::TEXTURE:
-					*(Texture**)(data + m.offset) = resourceManager.GetTexture("albedo_default");
-					break;
-				}
-		}
-		else
-		{
-			for (MemberData& m : newLayout.members)
-			{
-				switch (m.type)
-				{
-				case Types::TEXTURE:
-				{
-					UUID id;
-					in.read((char*)&id, sizeof(UUID));
-
-					Texture* t = resourceManager->GetOrLoadTexture(id);
-					*(Texture**)&data[m.offset] = t;
-					break;
-				}
-				case Types::VECTOR3_COLOR:
-				{
-					glm::vec3 color;
-					in.read((char*)&color, sizeof(glm::vec3));
-
-					*(glm::vec3*)&data[m.offset] = color;
-					break;
-				}
-				}
-			}
-		}
+		MetaType& layout = *shader->GetBufferLayout();
+		layout.Load(in, data);
 	}
 
 	void Material::LoadAsync(const std::string& path)
