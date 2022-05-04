@@ -275,6 +275,9 @@ namespace Seidon
 			renderer.SubmitMeshWireframe(r.mesh, r.color, modelMatrix);
 		}
 
+		for (RenderFunction& f : mainPassFunctions)
+			f(renderer);
+
 		renderer.Render();
 		renderer.End();
 
@@ -522,5 +525,10 @@ namespace Seidon
 
 			previousEntity = mouseSelectedEntity;
 		}
+	}
+
+	void RenderSystem::AddMainRenderPassFunction(const RenderFunction& function)
+	{
+		mainPassFunctions.push_back(function);
 	}
 }

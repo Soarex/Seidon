@@ -237,6 +237,7 @@ namespace Seidon
 
 	struct CubeColliderComponent
 	{
+		glm::vec3 offset = glm::vec3(0);
 		glm::vec3 halfExtents = { 0.5f, 0.5f, 0.5f };
 
 		void* runtimeShape = nullptr;
@@ -245,15 +246,32 @@ namespace Seidon
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 	};
 
-
+	//class physx::PxRigidActor;
 	struct RigidbodyComponent
 	{
 		float mass = 1;
 		bool dynamic = false;
 
+		bool lockXRotation = false;
+		bool lockYRotation = false;
+		bool lockZRotation = false;
+
 		void* runtimeBody = nullptr;
 
 		RigidbodyComponent() = default;
 		RigidbodyComponent(const RigidbodyComponent&) = default;
+	};
+
+	//class physx::PxController;
+	struct CharacterControllerComponent
+	{
+		float colliderHeight = 1;
+		float colliderRadius = 1;
+
+		void* runtimeController = nullptr;
+		bool isGrounded = false;
+
+		CharacterControllerComponent() = default;
+		CharacterControllerComponent(const CharacterControllerComponent&) = default;
 	};
 }

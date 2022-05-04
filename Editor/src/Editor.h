@@ -31,6 +31,8 @@ namespace Seidon
         Dockspace dockspace;
         Extension e;
 
+        RenderFunction drawColliders;
+
         int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
         bool local = false;
 
@@ -39,6 +41,7 @@ namespace Seidon
         void Init() override;
         void Update() override;
         void Destroy() override;
+
 
         void SaveCurrentScene();
         void LoadScene();

@@ -134,8 +134,8 @@ namespace Seidon
 		void Init();
 		void Begin();
 
-		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, glm::mat4& transform);
-		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, glm::mat4& transform);
+		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform);
+		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform);
 
 		void SetCamera(const CameraData& camera);
 		void SetShadowMaps(const ShadowMappingData& shadowMaps);

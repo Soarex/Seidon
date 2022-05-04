@@ -13,6 +13,8 @@
 
 namespace Seidon
 {
+	typedef std::function<void(Renderer&)> RenderFunction;
+
 	class RenderSystem : public System
 	{
 	private:
@@ -20,6 +22,8 @@ namespace Seidon
 		constexpr static int CASCADE_COUNT = 4;
 
 		std::list<std::function<void(int, int)>>::iterator windowResizeCallbackPosition;
+
+		std::vector<RenderFunction> mainPassFunctions;
 
 		Renderer renderer;
 
@@ -67,9 +71,12 @@ namespace Seidon
 		void ResizeFramebuffer(unsigned int width, unsigned int height);
 
 		inline const Texture& GetRenderTarget() { return renderTarget; }
+		inline Framebuffer& GetMainPassFramebuffer() { return hdrFramebuffer; }
 		inline const RenderStats& GetRenderStats() { return stats; }
 		inline entt::entity GetMouseSelectedEntity() { return mouseSelectedEntity; }
 		inline void SetRenderToScreen(bool value) { renderToScreen = value; }
+
+		void AddMainRenderPassFunction(const RenderFunction& function);
 
 	private:
 		std::vector<glm::vec4> CalculateFrustumCorners(CameraComponent& camera, TransformComponent& cameraTransform, float nearPlane, float farPlane);

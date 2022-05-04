@@ -86,11 +86,19 @@ namespace Seidon
 			.AddMember("Animation", &AnimationComponent::animation);
 
 		RegisterComponent<CubeColliderComponent>()
+			.AddMember("Offset", &CubeColliderComponent::offset)
 			.AddMember("Half Extents", &CubeColliderComponent::halfExtents);
 
 		RegisterComponent<RigidbodyComponent>()
 			.AddMember("Mass", &RigidbodyComponent::mass)
-			.AddMember("Dynamic", &RigidbodyComponent::dynamic);
+			.AddMember("Dynamic", &RigidbodyComponent::dynamic)
+			.AddMember("Lock X Rotation", &RigidbodyComponent::lockXRotation)
+			.AddMember("Lock Y Rotation", &RigidbodyComponent::lockYRotation)
+			.AddMember("Lock Z Rotation", &RigidbodyComponent::lockZRotation);
+
+		RegisterComponent<CharacterControllerComponent>()
+			.AddMember("Collider Height", &CharacterControllerComponent::colliderHeight)
+			.AddMember("Collider Radius", &CharacterControllerComponent::colliderRadius);
 
 		Init();
 	}

@@ -138,7 +138,7 @@ namespace Seidon
 		stats.objectCount = 0;
 	}
 
-	void Renderer::SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, glm::mat4& transform)
+	void Renderer::SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform)
 	{
 		if (meshCache.count(mesh->id) > 0)
 		{
@@ -301,7 +301,7 @@ namespace Seidon
 		meshCache[mesh->id] = cache;
 	}
 
-	void Renderer::SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, glm::mat4& transform)
+	void Renderer::SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform)
 	{
 		if (meshCache.count(mesh->id) > 0)
 		{
@@ -460,19 +460,26 @@ namespace Seidon
 			shader->SetMat4("camera.projectionMatrix", camera.projectionMatrix);
 			shader->SetVec3("camera.position", camera.position);
 
-			for (int i = 0; i < CASCADE_COUNT; i++)
-			{
-				shader->SetMat4("lightSpaceMatrices[" + std::to_string(i) + "]", shadowMaps.lightSpaceMatrices[i]);
-				shader->SetFloat("shadowMappingData.cascadeFarPlaneDistances[" + std::to_string(i) + "]", shadowMaps.cascadeFarPlaneDistances[i]);
-				shader->SetInt("shadowMappingData.cascadeCount", CASCADE_COUNT);
-				shadowMaps.shadowMaps[i].Bind(8 + i);
-			}
+			shader->SetVec3("directionalLight.direction", directionalLight.direction);
+			shader->SetVec3("directionalLight.color", directionalLight.color);
+
+			if(shadowMaps.lightSpaceMatrices)
+				for (int i = 0; i < CASCADE_COUNT; i++)
+				{
+					shader->SetMat4("lightSpaceMatrices[" + std::to_string(i) + "]", shadowMaps.lightSpaceMatrices[i]);
+					shader->SetFloat("shadowMappingData.cascadeFarPlaneDistances[" + std::to_string(i) + "]", shadowMaps.cascadeFarPlaneDistances[i]);
+					shader->SetInt("shadowMappingData.cascadeCount", CASCADE_COUNT);
+					shadowMaps.shadowMaps[i].Bind(8 + i);
+				}
 
 			shader->SetDouble("time", time);
 
-			ibl->BindIrradianceMap(5);
-			ibl->BindPrefilteredMap(6);
-			ibl->BindBRDFLookupMap(7);
+			if (ibl)
+			{
+				ibl->BindIrradianceMap(5);
+				ibl->BindPrefilteredMap(6);
+				ibl->BindBRDFLookupMap(7);
+			}
 
 			memcpy(indirectBufferHead, &batch.commands[0], batch.commands.size() * sizeof(RenderCommand));
 			indirectBufferHead += batch.commands.size();

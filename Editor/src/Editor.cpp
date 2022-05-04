@@ -10,6 +10,7 @@
 
 namespace Seidon
 {
+    Mesh test;
     void Editor::Init()
 	{
         int width, height, channelCount;
@@ -19,6 +20,25 @@ namespace Seidon
 
         if (std::filesystem::exists("ResourceRegistry.sdreg"))
             resourceManager->LoadText("ResourceRegistry.sdreg");
+
+        drawColliders = [&](Renderer& renderer)
+        {
+            auto group = sceneManager->GetActiveScene()->GetRegistry().group<CubeColliderComponent>(entt::get<TransformComponent>);
+
+            for (auto e : group)
+            {
+                TransformComponent& t = group.get<TransformComponent>(e);
+                CubeColliderComponent& c = group.get<CubeColliderComponent>(e);
+
+                TransformComponent t1;
+                t1.position = t.position + c.offset;
+                t1.rotation = t.rotation;
+
+                float bias = 0.005;
+                t1.scale = t.scale * c.halfExtents + glm::vec3(bias);
+                renderer.SubmitMeshWireframe(&test, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+            }
+        };
 
         editorResourceManager.Init();
 
@@ -41,10 +61,13 @@ namespace Seidon
         window->SetSize(1280, 720);
 
         scene = new Scene("Main Scene");
-        scene->AddSystem<RenderSystem>();
+        auto& rs = scene->AddSystem<RenderSystem>();
         scene->AddSystem<EditorCameraControlSystem>();
         scene->Init();
         sceneManager->SetActiveScene(scene);
+
+        test.Load("Assets/Cubes/Cube.005.sdmesh");
+        rs.AddMainRenderPassFunction(drawColliders);
 
         selectedEntity = { entt::null, nullptr };
         hierarchyPanel.AddSelectionCallback([&](Entity& entity)
@@ -104,11 +127,11 @@ namespace Seidon
 
                         Scene tempScene;
                         tempScene.LoadText(filepath);
-
+                        
                         tempScene.CopyEntities(scene);
                         tempScene.CopySystems(&runtimeSystems);
 
-                        scene->AddSystem<RenderSystem>();
+                        scene->AddSystem<RenderSystem>().AddMainRenderPassFunction(drawColliders);
                         scene->AddSystem<EditorCameraControlSystem>();
                         
                         selectedEntity = { entt::null, nullptr };
@@ -237,7 +260,7 @@ namespace Seidon
                 tempScene.CopyEntities(scene);
                 tempScene.CopySystems(&runtimeSystems);
 
-                scene->AddSystem<RenderSystem>();
+                scene->AddSystem<RenderSystem>().AddMainRenderPassFunction(drawColliders);
                 scene->AddSystem<EditorCameraControlSystem>();
 
                 selectedEntity = { entt::null, nullptr };

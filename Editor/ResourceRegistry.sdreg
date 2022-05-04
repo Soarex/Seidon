@@ -14,92 +14,92 @@ Resources:
       Path: roughness_default
     - Id: 13045914795591631243
       Path: Assets\buildings\Bricks054_1K_Normal.sdtex
-    - Id: 10420346539788478179
-      Path: Assets\Cubes\Grass002_1K_Roughness.sdtex
-    - Id: 6180576686336807504
-      Path: Assets\buildings\PavingStones028_1K_Normal.sdtex
-    - Id: 6026833320567015584
-      Path: Assets\Cubes\Grass002_1K_Normal.sdtex
-    - Id: 3979721599236736436
-      Path: Assets\Cubes\Metal007_1K_Roughness.sdtex
     - Id: 5
       Path: ao_default
     - Id: 16101057330794486188
       Path: Assets\Buildings\Grass002_1K_Roughness.sdtex
-    - Id: 12345035713701883411
-      Path: Assets\buildings\Tiles079_1K_Color.sdtex
+    - Id: 3979721599236736436
+      Path: Assets\Cubes\Metal007_1K_Roughness.sdtex
+    - Id: 6026833320567015584
+      Path: Assets\Cubes\Grass002_1K_Normal.sdtex
+    - Id: 6180576686336807504
+      Path: Assets\buildings\PavingStones028_1K_Normal.sdtex
+    - Id: 10420346539788478179
+      Path: Assets\Cubes\Grass002_1K_Roughness.sdtex
     - Id: 2573390614477144331
       Path: Assets\Grass002_1K_Roughness.sdtex
-    - Id: 16129345058805786327
-      Path: Assets\buildings\PavingStones028_1K_Roughness.sdtex
+    - Id: 12345035713701883411
+      Path: Assets\buildings\Tiles079_1K_Color.sdtex
     - Id: 16211324022830883066
       Path: Assets\Buildings\Tiles079_1K_Color.sdtex
     - Id: 7849789310015661537
       Path: Assets\Grass002_1K_Color.sdtex
-    - Id: 5588412882592544328
-      Path: Assets\buildings\Grass002_1K_Normal.sdtex
+    - Id: 16129345058805786327
+      Path: Assets\buildings\PavingStones028_1K_Roughness.sdtex
     - Id: 2116035898856268317
       Path: Assets\Cubes\Metal007_1K_Metalness.sdtex
     - Id: 5249371018099580795
       Path: Assets\Grass002_1K_Normal.sdtex
-    - Id: 4958266852147279805
-      Path: Assets\buildings\RoadCityWorn001_COL_1K.sdtex
+    - Id: 5588412882592544328
+      Path: Assets\buildings\Grass002_1K_Normal.sdtex
     - Id: 9416093291490348373
       Path: Assets\Metal007_1K_Color.sdtex
-    - Id: 5445522056100433556
-      Path: Assets\buildings\Wood013_1K_Roughness.sdtex
+    - Id: 4958266852147279805
+      Path: Assets\buildings\RoadCityWorn001_COL_1K.sdtex
     - Id: 1769585393776942814
       Path: Assets\Metal007_1K_Roughness.sdtex
+    - Id: 5445522056100433556
+      Path: Assets\buildings\Wood013_1K_Roughness.sdtex
     - Id: 9580669742416785136
       Path: Assets\Buildings\Metal038_1K_Metalness.sdtex
     - Id: 3753491190454964783
       Path: Assets\Metal007_1K_Normal.sdtex
+    - Id: 7667569586773024381
+      Path: ""
+    - Id: 10101390271441467781
+      Path: Assets\Metal007_1K_Metalness.sdtex
+    - Id: 7618584234636705281
+      Path: ""
     - Id: 262499560336601569
       Path: Assets\Cubes\Metal007_1K_Normal.sdtex
     - Id: 7876141303515701321
       Path: Assets\buildings\Metal038_1K_Color.sdtex
-    - Id: 7618584234636705281
-      Path: ""
-    - Id: 10101390271441467781
-      Path: Assets\Metal007_1K_Metalness.sdtex
-    - Id: 7667569586773024381
-      Path: ""
+    - Id: 7256144357561102243
+      Path: Assets\Cubes\Grass002_1K_Roughness.sdtex
     - Id: 13200545143541140009
       Path: Assets\Buildings\GroundDirtRocky002_NRM_1K.sdtex
     - Id: 8981532144042160198
       Path: Assets\Cubes\Metal007_1K_Roughness.sdtex
     - Id: 12578975417453941657
       Path: ""
-    - Id: 7256144357561102243
-      Path: Assets\Cubes\Grass002_1K_Roughness.sdtex
     - Id: 8142497574080251434
+      Path: ""
+    - Id: 10036643259331322190
       Path: ""
     - Id: 10617221136256080699
       Path: Assets\buildings\Bricks008_1K_Normal.sdtex
-    - Id: 10036643259331322190
-      Path: ""
-    - Id: 4287572199734281408
-      Path: ""
     - Id: 16291179369544113530
       Path: Assets\Cubes\Grass002_1K_Color.sdtex
-    - Id: 10298347522113286634
-      Path: Assets\buildings\Plaster004_2K_Color.sdtex
+    - Id: 4287572199734281408
+      Path: ""
     - Id: 1430668909036621576
       Path: ""
+    - Id: 10298347522113286634
+      Path: Assets\buildings\Plaster004_2K_Color.sdtex
     - Id: 4244880564097679848
       Path: ""
-    - Id: 1220518554138257734
-      Path: Assets\buildings\Grass002_1K_Color.sdtex
     - Id: 15779221420232221316
       Path: Assets\Cubes\Metal007_1K_Metalness.sdtex
     - Id: 12177955806264059921
       Path: Assets\buildings\Metal038_1K_Roughness.sdtex
+    - Id: 1220518554138257734
+      Path: Assets\buildings\Grass002_1K_Color.sdtex
     - Id: 12852734719693046390
       Path: Assets\buildings\Metal038_1K_Normal.sdtex
-    - Id: 12111393579696798268
-      Path: Assets\buildings\Tiles079_1K_Normal.sdtex
     - Id: 8134812009512684668
       Path: Assets\buildings\PavingStones028_1K_Color.sdtex
+    - Id: 12111393579696798268
+      Path: Assets\buildings\Tiles079_1K_Normal.sdtex
     - Id: 6520927092848379310
       Path: Assets\buildings\PavingStones070_1K_Color.sdtex
     - Id: 11996324643383345795
@@ -108,10 +108,10 @@ Resources:
       Path: Assets\Buildings\Bricks008_1K_Color.sdtex
     - Id: 461066554641900708
       Path: Assets\buildings\PavingStones070_1K_Normal.sdtex
-    - Id: 5424487823338885737
-      Path: Assets\buildings\Plaster004_2K_Normal.sdtex
     - Id: 1903889787466671341
       Path: Assets\buildings\Bricks054_1K_Color.sdtex
+    - Id: 5424487823338885737
+      Path: Assets\buildings\Plaster004_2K_Normal.sdtex
     - Id: 3700780514046934841
       Path: Assets\buildings\Bricks054_1K_Roughness.sdtex
     - Id: 4710934527559441950
@@ -124,10 +124,10 @@ Resources:
       Path: Assets\Buildings\Bricks054_1K_Normal.sdtex
     - Id: 15066573497142375337
       Path: Assets\buildings\Wood013_1K_Normal.sdtex
-    - Id: 13003726991298578597
-      Path: Assets\buildings\Bricks008_1K_Roughness.sdtex
     - Id: 10792216741252865013
       Path: Assets\buildings\Plaster004_2K_Roughness.sdtex
+    - Id: 13003726991298578597
+      Path: Assets\buildings\Bricks008_1K_Roughness.sdtex
     - Id: 15221600175172847139
       Path: Assets\buildings\GroundDirtRocky002_COL_1K.sdtex
     - Id: 6281937956777397563
@@ -142,10 +142,10 @@ Resources:
       Path: Assets\Cubes\Metal007_1K_Color.sdtex
     - Id: 3048829398064858257
       Path: Assets\Cubes\Metal007_1K_Normal.sdtex
-    - Id: 5054253038262681429
-      Path: Assets\Cubes\Grass002_1K_Normal.sdtex
     - Id: 9068214417544261601
       Path: Assets\Buildings\GroundDirtRocky002_NRM_1K.sdtex
+    - Id: 5054253038262681429
+      Path: Assets\Cubes\Grass002_1K_Normal.sdtex
     - Id: 16273766886835475541
       Path: Assets\Cubes\Grass002_1K_Color.sdtex
     - Id: 17251390616270919704
@@ -154,10 +154,10 @@ Resources:
       Path: Assets\Cubes\Metal007_1K_Metalness.sdtex
     - Id: 7682217506065365480
       Path: Assets\Buildings\Metal038_1K_Color.sdtex
-    - Id: 4960470842938760931
-      Path: Assets\Buildings\Plaster004_2K_Color.sdtex
     - Id: 2152502709971122650
       Path: Assets\Buildings\Metal038_1K_Roughness.sdtex
+    - Id: 4960470842938760931
+      Path: Assets\Buildings\Plaster004_2K_Color.sdtex
     - Id: 7763168532455357485
       Path: Assets\Buildings\Metal038_1K_Normal.sdtex
     - Id: 12694047736796127805
@@ -168,10 +168,10 @@ Resources:
       Path: Assets\Buildings\PavingStones028_1K_Normal.sdtex
     - Id: 3584583729518890290
       Path: Assets\Buildings\PavingStones070_1K_Color.sdtex
-    - Id: 7933639496654705659
-      Path: Assets\Buildings\Grass002_1K_Color.sdtex
     - Id: 1951618729710171335
       Path: Assets\Buildings\PavingStones070_1K_Roughness.sdtex
+    - Id: 7933639496654705659
+      Path: Assets\Buildings\Grass002_1K_Color.sdtex
     - Id: 13445835045054344031
       Path: Assets\Buildings\PavingStones070_1K_Normal.sdtex
     - Id: 6383562013569316888
@@ -180,14 +180,14 @@ Resources:
       Path: Assets\Buildings\Bricks054_1K_Roughness.sdtex
     - Id: 12741685195247216855
       Path: Assets\Buildings\Bricks054_1K_Normal.sdtex
-    - Id: 11607765677199403075
-      Path: Assets\Buildings\Bricks008_1K_Color.sdtex
     - Id: 17814521394796690766
       Path: Assets\Buildings\RoadCityWorn001_COL_1K.sdtex
-    - Id: 15566521673396245571
-      Path: Assets\Buildings\Tiles079_1K_Color.sdtex
+    - Id: 11607765677199403075
+      Path: Assets\Buildings\Bricks008_1K_Color.sdtex
     - Id: 7783413753842670284
       Path: Assets\Buildings\RoadCityWorn001_NRM_1K.sdtex
+    - Id: 15566521673396245571
+      Path: Assets\Buildings\Tiles079_1K_Color.sdtex
     - Id: 7557203612750840141
       Path: Assets\Buildings\Wood013_1K_Color.sdtex
     - Id: 16685248491554601181
@@ -196,20 +196,20 @@ Resources:
       Path: Assets\Buildings\Wood013_1K_Normal.sdtex
     - Id: 9452846641171413391
       Path: Assets\Buildings\Plaster004_2K_Roughness.sdtex
-    - Id: 12582609486351156049
-      Path: Assets\Buildings\Metal038_1K_Roughness.sdtex
     - Id: 18107217967746173661
       Path: Assets\Buildings\Plaster004_2K_Normal.sdtex
+    - Id: 12582609486351156049
+      Path: Assets\Buildings\Metal038_1K_Roughness.sdtex
     - Id: 13007685012896864058
       Path: Assets\Buildings\GroundDirtRocky002_COL_1K.sdtex
     - Id: 11201772921518713370
       Path: Assets\Buildings\Grass002_1K_Color.sdtex
     - Id: 8884558861803110017
       Path: Assets\Buildings\Grass002_1K_Roughness.sdtex
-    - Id: 2324357131793342606
-      Path: Assets\Buildings\Wood013_1K_Normal.sdtex
     - Id: 3550704552867060942
       Path: Assets\Buildings\Grass002_1K_Normal.sdtex
+    - Id: 2324357131793342606
+      Path: Assets\Buildings\Wood013_1K_Normal.sdtex
     - Id: 4344684926644764216
       Path: Assets\Buildings\Tiles079_1K_Color.sdtex
     - Id: 9217711660321963701
@@ -230,10 +230,10 @@ Resources:
       Path: Assets\Cubes\Grass002_1K_Roughness.sdtex
     - Id: 12124270175100249510
       Path: Assets\Cubes\Metal007_1K_Color.sdtex
-    - Id: 14572479789098757927
-      Path: Assets\Buildings\Bricks008_1K_Normal.sdtex
     - Id: 8512055284937005348
       Path: Assets\Cubes\Metal007_1K_Normal.sdtex
+    - Id: 14572479789098757927
+      Path: Assets\Buildings\Bricks008_1K_Normal.sdtex
     - Id: 4238737501265257346
       Path: Assets\Cubes\Metal007_1K_Roughness.sdtex
     - Id: 14486471068684259686
@@ -264,18 +264,18 @@ Resources:
       Path: Assets\Buildings\RoadCityWorn001_COL_1K.sdtex
     - Id: 5855063334901366772
       Path: Assets\Buildings\RoadCityWorn001_NRM_1K.sdtex
-    - Id: 529247246637439612
-      Path: Assets\Buildings\PavingStones028_1K_Normal.sdtex
     - Id: 9242561741043358885
       Path: Assets\Buildings\Wood013_1K_Color.sdtex
-    - Id: 17433523664555636795
-      Path: Assets\Buildings\PavingStones028_1K_Roughness.sdtex
+    - Id: 529247246637439612
+      Path: Assets\Buildings\PavingStones028_1K_Normal.sdtex
     - Id: 1757826801862541327
       Path: Assets\Buildings\Wood013_1K_Roughness.sdtex
-    - Id: 9942857356707801540
-      Path: Assets\Buildings\RoadCityWorn001_NRM_1K.sdtex
+    - Id: 17433523664555636795
+      Path: Assets\Buildings\PavingStones028_1K_Roughness.sdtex
     - Id: 1097831405431149280
       Path: Assets\Buildings\Plaster004_2K_Normal.sdtex
+    - Id: 9942857356707801540
+      Path: Assets\Buildings\RoadCityWorn001_NRM_1K.sdtex
     - Id: 5818250473618297995
       Path: Assets\Buildings\Plaster004_2K_Roughness.sdtex
     - Id: 12644775899814229326
@@ -294,10 +294,10 @@ Resources:
       Path: Assets\Buildings\Bricks008_1K_Color.sdtex
     - Id: 14321558415848659442
       Path: Assets\Buildings\Bricks008_1K_Normal.sdtex
-    - Id: 13656413383374195826
-      Path: Assets\Buildings\Grass002_1K_Normal.sdtex
     - Id: 14315601687542969465
       Path: Assets\Buildings\Bricks008_1K_Roughness.sdtex
+    - Id: 13656413383374195826
+      Path: Assets\Buildings\Grass002_1K_Normal.sdtex
     - Id: 1795809383178747886
       Path: Assets\Cubes\Grass002_1K_Color.sdtex
     - Id: 7157684899627825814
@@ -355,70 +355,74 @@ Resources:
     - Id: 10356235958514836649
       Path: Assets\Buildings\Bricks008_1K_Roughness.sdtex
   Meshes:
-    - Id: 8276115492989967174
-      Path: Assets\Cube.003.sdmesh
-    - Id: 14596551666537556783
-      Path: Assets\Floor.sdmesh
     - Id: 8
       Path: empty_mesh
     - Id: 7502499787744889623
       Path: Assets\Buildings\Gate.sdmesh
+    - Id: 14596551666537556783
+      Path: Assets\Floor.sdmesh
+    - Id: 8276115492989967174
+      Path: Assets\Cube.003.sdmesh
     - Id: 8329328333672704882
       Path: empty_mesh
     - Id: 9560339930850446458
       Path: Assets\Buildings\Block Sign.001.sdmesh
+    - Id: 8592016916215456372
+      Path: Assets\Sphere.sdmesh
     - Id: 10713606887341580765
       Path: Assets\Raw\Kachujin.sdmesh
     - Id: 18090839453669292969
       Path: empty_mesh
-    - Id: 11899216318523687193
-      Path: Assets\Cube.001.sdmesh
     - Id: 12389094204162315436
       Path: Assets\Cubes\Cube.001.sdmesh
-    - Id: 12145010200665463252
-      Path: Assets\buildings\Pavement.sdmesh
+    - Id: 11899216318523687193
+      Path: Assets\Cube.001.sdmesh
     - Id: 10095714736080052051
       Path: Assets\Cube.002.sdmesh
-    - Id: 18389683874904548196
-      Path: Assets\Cube.004.sdmesh
+    - Id: 12145010200665463252
+      Path: Assets\buildings\Pavement.sdmesh
     - Id: 857231204386641241
       Path: Assets\buildings\Small Building.sdmesh
     - Id: 4929444534017495611
       Path: Assets\Cubes\Cube.002.sdmesh
+    - Id: 18389683874904548196
+      Path: Assets\Cube.004.sdmesh
     - Id: 6119214949792568685
       Path: Assets\Cube.005.sdmesh
-    - Id: 9932088162922745901
-      Path: Assets\Buildings\Building.003.sdmesh
-    - Id: 9667586707518734181
-      Path: Assets\buildings\Arst Building.001.sdmesh
     - Id: 15298990205668731762
       Path: Assets\Buildings\Station Building.sdmesh
-    - Id: 11220159078534621832
-      Path: Assets\buildings\Building.003.sdmesh
+    - Id: 9667586707518734181
+      Path: Assets\buildings\Arst Building.001.sdmesh
+    - Id: 9932088162922745901
+      Path: Assets\Buildings\Building.003.sdmesh
     - Id: 14089914300369747792
       Path: Assets\buildings\Garden.sdmesh
-    - Id: 17088715768464230605
-      Path: Assets\buildings\Block Sign.sdmesh
+    - Id: 11220159078534621832
+      Path: Assets\buildings\Building.003.sdmesh
     - Id: 4648187918389724428
       Path: Assets\Cubes\Cube.001.sdmesh
-    - Id: 10545503209615218536
-      Path: Assets\buildings\Block Sign.002.sdmesh
+    - Id: 17088715768464230605
+      Path: Assets\buildings\Block Sign.sdmesh
     - Id: 15590797315000492435
       Path: Assets\buildings\Station Building.sdmesh
-    - Id: 2835595162770236013
-      Path: Assets\Cubes\Cube.003.sdmesh
+    - Id: 10545503209615218536
+      Path: Assets\buildings\Block Sign.002.sdmesh
     - Id: 212229771189685564
       Path: Assets\buildings\Block Sign.001.sdmesh
+    - Id: 2835595162770236013
+      Path: Assets\Cubes\Cube.003.sdmesh
     - Id: 10162326682393646296
       Path: Assets\buildings\Gate.sdmesh
     - Id: 11296331609952263638
       Path: Assets\buildings\Floor.sdmesh
     - Id: 8406738523549480962
       Path: Assets\Cubes\Floor.sdmesh
-    - Id: 10814825096144184351
-      Path: Assets\Cubes\Cube.003.sdmesh
     - Id: 14711681267409533309
       Path: Assets\Cubes\Cube.004.sdmesh
+    - Id: 10814825096144184351
+      Path: Assets\Cubes\Cube.003.sdmesh
+    - Id: 12628847647711035008
+      Path: Assets\Cube.sdmesh
     - Id: 14539718122701849983
       Path: Assets\Cubes\Cube.005.sdmesh
     - Id: 6934573344734962455
@@ -427,44 +431,46 @@ Resources:
       Path: Assets\Cubes\Cube.001.sdmesh
     - Id: 15004367778529040019
       Path: Assets\Cubes\Cube.001.sdmesh
-    - Id: 10534006719485067198
-      Path: Assets\Buildings\Block Sign.002.sdmesh
     - Id: 10006940058592314820
       Path: Assets\Cubes\Cube.002.sdmesh
+    - Id: 10534006719485067198
+      Path: Assets\Buildings\Block Sign.002.sdmesh
+    - Id: 3312889161668038048
+      Path: Assets\Cylinder.sdmesh
     - Id: 8795439497832412194
       Path: Assets\Cubes\Cube.004.sdmesh
     - Id: 6986726525722165281
       Path: Assets\Cubes\Cube.005.sdmesh
     - Id: 7354531391835273823
       Path: Assets\Buildings\Pavement.sdmesh
-    - Id: 14450110882798823652
-      Path: Assets\Buildings\Arst Building.001.sdmesh
     - Id: 14148264927904115534
       Path: Assets\Buildings\Block Sign.001.sdmesh
-    - Id: 12195445062879479777
-      Path: Assets\Cubes\Cube.004.sdmesh
+    - Id: 14450110882798823652
+      Path: Assets\Buildings\Arst Building.001.sdmesh
     - Id: 5924063427462170295
       Path: Assets\Buildings\Garden.sdmesh
-    - Id: 8404549244736078985
-      Path: Assets\Buildings\Block Sign.sdmesh
+    - Id: 12195445062879479777
+      Path: Assets\Cubes\Cube.004.sdmesh
     - Id: 3599048077723757023
       Path: Assets\Buildings\Gate.sdmesh
+    - Id: 8404549244736078985
+      Path: Assets\Buildings\Block Sign.sdmesh
     - Id: 11079510167813439125
       Path: Assets\Buildings\Building.003.sdmesh
     - Id: 1349510596382498103
       Path: Assets\Buildings\Block Sign.002.sdmesh
-    - Id: 1879998215744077
-      Path: Assets\Buildings\Arst Building.001.sdmesh
     - Id: 10533575441890175578
       Path: Assets\Buildings\Small Building.sdmesh
+    - Id: 1879998215744077
+      Path: Assets\Buildings\Arst Building.001.sdmesh
     - Id: 1767604334857900897
       Path: Assets\Buildings\Floor.sdmesh
     - Id: 12843107308580946453
       Path: Assets\Cubes\Floor.sdmesh
-    - Id: 17916210442434717977
-      Path: Assets\Buildings\Small Building.sdmesh
     - Id: 15826547380835224125
       Path: Assets\Cubes\Cube.002.sdmesh
+    - Id: 17916210442434717977
+      Path: Assets\Buildings\Small Building.sdmesh
     - Id: 7470332986478726781
       Path: Assets\Cubes\Cube.003.sdmesh
     - Id: 14219862061215961085
@@ -511,119 +517,137 @@ Resources:
       Path: Assets\Buildings\Small Building.sdmesh
     - Id: 4248732533973741185
       Path: Assets\Buildings\Floor.sdmesh
+    - Id: 6620925099659636999
+      Path: Assets\Cube.sdmesh
+    - Id: 4999488255946393334
+      Path: Assets\Sphere.sdmesh
+    - Id: 12540969305796193108
+      Path: Assets\Cube.sdmesh
+    - Id: 12462308057423704469
+      Path: Assets\Sphere.sdmesh
+    - Id: 2857893212855727716
+      Path: Assets\Cylinder.sdmesh
+    - Id: 5522588661633860690
+      Path: Assets\Cylinder.sdmesh
+    - Id: 12479932026770599087
+      Path: Assets\Cube.sdmesh
+    - Id: 2319729243636221295
+      Path: Assets\Sphere.sdmesh
+    - Id: 18363753713118047757
+      Path: Assets\Cylinder.sdmesh
   Materials:
     - Id: 16424687142546159718
       Path: Assets\Cubes\Material.sdmat
     - Id: 6
       Path: default_material
-    - Id: 2645702445857732399
-      Path: Assets\Material.002.sdmat
-    - Id: 3128033442791675033
-      Path: Assets\buildings\Metal.Window.sdmat
     - Id: 134487193122271961
       Path: default_material
-    - Id: 12331224525995472499
-      Path: Assets\Buildings\Metal.sdmat
+    - Id: 3128033442791675033
+      Path: Assets\buildings\Metal.Window.sdmat
     - Id: 10923042207400422987
       Path: Assets\buildings\White Bricks.sdmat
+    - Id: 12331224525995472499
+      Path: Assets\Buildings\Metal.sdmat
     - Id: 16431669758261099253
       Path: default_material
-    - Id: 17756114425541340084
-      Path: Assets\Grass Material.sdmat
+    - Id: 2645702445857732399
+      Path: Assets\Material.002.sdmat
     - Id: 7578271071842498061
       Path: Assets\buildings\Concrete.002.sdmat
+    - Id: 17756114425541340084
+      Path: Assets\Grass Material.sdmat
     - Id: 16414122848680644401
       Path: AssetsNew Material.sdmat
     - Id: 11216013093043742469
       Path: Assets\Material.003.sdmat
     - Id: 11626837465922277809
       Path: Assets\Material.001.sdmat
-    - Id: 5140095459825608782
-      Path: Assets\Orange Material.sdmat
-    - Id: 15729219754369164102
-      Path: AssetsNew Material.sdmat
     - Id: 7090392345853862130
       Path: Assets\Purple Material.sdmat
-    - Id: 11117559627439299960
-      Path: Assets\Cubes\Material.002.sdmat
+    - Id: 15729219754369164102
+      Path: AssetsNew Material.sdmat
+    - Id: 5140095459825608782
+      Path: Assets\Orange Material.sdmat
     - Id: 9634217939399894376
       Path: Assets\New Material.sdmat
+    - Id: 11117559627439299960
+      Path: Assets\Cubes\Material.002.sdmat
     - Id: 11699927821498214422
+      Path: Assets\New Material.sdmat
+    - Id: 5758951330852140588
       Path: Assets\New Material.sdmat
     - Id: 18052875810175210244
       Path: Assets\Buildings\Billboard.sdmat
     - Id: 16098084746981559741
       Path: Assets\buildings\Grass.sdmat
-    - Id: 5758951330852140588
-      Path: Assets\New Material.sdmat
     - Id: 15599069398486574089
       Path: Assets\Buildings\Concrete.001.sdmat
     - Id: 15730075878980237190
       Path: Assets\Black Material.sdmat
-    - Id: 6990987176385064943
-      Path: Assets\Cubes\Material.003.sdmat
     - Id: 8688872323388307172
       Path: Assets\Cubes\Material.001.sdmat
     - Id: 3875365771041833037
       Path: Assets\buildings\Metal.sdmat
+    - Id: 6990987176385064943
+      Path: Assets\Cubes\Material.003.sdmat
     - Id: 11030050889117425519
       Path: Assets\buildings\Billboard.sdmat
     - Id: 15892350727409730555
       Path: Assets\buildings\Big Bricks.sdmat
-    - Id: 17078527855183769757
-      Path: Assets\Cubes\Material.sdmat
-    - Id: 11818242290934565925
-      Path: Assets\buildings\Building Floor.sdmat
-    - Id: 16188241454744347191
-      Path: Assets\buildings\Pavement.sdmat
-    - Id: 12904185283815196645
-      Path: Assets\Buildings\Big Bricks.001.sdmat
     - Id: 7272407871258255273
       Path: Assets\Buildings\Ground.sdmat
-    - Id: 13744955096627076679
-      Path: Assets\buildings\Bricks.sdmat
+    - Id: 12904185283815196645
+      Path: Assets\Buildings\Big Bricks.001.sdmat
+    - Id: 16188241454744347191
+      Path: Assets\buildings\Pavement.sdmat
+    - Id: 11818242290934565925
+      Path: Assets\buildings\Building Floor.sdmat
+    - Id: 17078527855183769757
+      Path: Assets\Cubes\Material.sdmat
     - Id: 4878017492591457933
       Path: Assets\Buildings\Bricks.sdmat
-    - Id: 6798985150013282746
-      Path: Assets\buildings\Big Bricks.001.sdmat
-    - Id: 5364537397244885540
-      Path: Assets\buildings\Glass.sdmat
+    - Id: 13744955096627076679
+      Path: Assets\buildings\Bricks.sdmat
     - Id: 13202711738072303638
       Path: Assets\Buildings\Grass.sdmat
+    - Id: 5364537397244885540
+      Path: Assets\buildings\Glass.sdmat
+    - Id: 6798985150013282746
+      Path: Assets\buildings\Big Bricks.001.sdmat
     - Id: 6277281288910016566
       Path: Assets\buildings\Wood.sdmat
-    - Id: 720049415049675558
-      Path: Assets\buildings\Concrete.sdmat
     - Id: 11477127968829576667
       Path: Assets\Buildings\Pavement.001.sdmat
-    - Id: 13548651775886040408
-      Path: Assets\buildings\Pavement.001.sdmat
+    - Id: 720049415049675558
+      Path: Assets\buildings\Concrete.sdmat
     - Id: 9028940659269410640
       Path: Assets\Buildings\White Bricks.sdmat
+    - Id: 13548651775886040408
+      Path: Assets\buildings\Pavement.001.sdmat
     - Id: 7601213900101875657
       Path: Assets\buildings\Sign.sdmat
+    - Id: 1886637492084002184
+      Path: Assets\Cubes\Material.002.sdmat
     - Id: 3403653852595128110
       Path: Assets\buildings\Concrete.001.sdmat
     - Id: 2270164413532528149
       Path: Assets\buildings\Ground.sdmat
-    - Id: 1886637492084002184
-      Path: Assets\Cubes\Material.002.sdmat
     - Id: 13222445322030213672
       Path: Assets\buildings\Plaster.002.sdmat
     - Id: 14518467787226330251
       Path: Assets\buildings\Floor.sdmat
+    - Id: 15915473851927636369
+      Path: Assets\Buildings\Billboard.sdmat
     - Id: 1877908811384054411
       Path: Assets\Buildings\Wood.sdmat
     - Id: 16081609629778289774
       Path: Assets\Yellow Material.sdmat
-    - Id: 15915473851927636369
-      Path: Assets\Buildings\Billboard.sdmat
-    - Id: 2914692108367464462
-      Path: Assets\Green Material.sdmat
     - Id: 12685476920794405393
       Path: Assets\Buildings\Big Bricks.001.sdmat
     - Id: 10994990034272012110
       Path: Assets\Buildings\Concrete.sdmat
+    - Id: 2914692108367464462
+      Path: Assets\Green Material.sdmat
     - Id: 10076451858643782936
       Path: Assets\Material.001.sdmat
     - Id: 4165063960118570508
@@ -692,10 +716,10 @@ Resources:
       Path: Assets\Buildings\Sign.sdmat
     - Id: 12096763164660518551
       Path: Assets\Buildings\Ground.sdmat
-    - Id: 11182104189863026027
-      Path: Assets\Buildings\Floor.sdmat
     - Id: 14821926668741941741
       Path: Assets\Buildings\Grass.sdmat
+    - Id: 11182104189863026027
+      Path: Assets\Buildings\Floor.sdmat
     - Id: 9446607463879536827
       Path: Assets\Buildings\Pavement.004.sdmat
     - Id: 180871638101624655
@@ -712,10 +736,10 @@ Resources:
       Path: Assets\Cubes\Material.002.sdmat
     - Id: 14071027921058582211
       Path: Assets\Cubes\Material.003.sdmat
-    - Id: 1907792617292379300
-      Path: Assets\Buildings\Glass.sdmat
     - Id: 16905598184999973402
       Path: Assets\Cubes\Material.001.sdmat
+    - Id: 1907792617292379300
+      Path: Assets\Buildings\Glass.sdmat
     - Id: 15680329209320490936
       Path: Assets\New Material.sdmat
     - Id: 9277254496765121388
@@ -752,32 +776,50 @@ Resources:
       Path: Assets\Buildings\Concrete.001.sdmat
     - Id: 10931836586915569222
       Path: Assets\Buildings\Floor.sdmat
+    - Id: 13382500442225443926
+      Path: Assets\New Material (1).sdmat
+    - Id: 2947806343476165350
+      Path: Assets\Material.sdmat
+    - Id: 9735562124246012459
+      Path: Assets\DefaultMaterial.sdmat
+    - Id: 7261660339829386412
+      Path: Assets\Material.sdmat
+    - Id: 142543460072183856
+      Path: Assets\DefaultMaterial.sdmat
+    - Id: 501261153870118438
+      Path: Assets\Material.sdmat
+    - Id: 9412937531678472703
+      Path: Assets\DefaultMaterial.sdmat
+    - Id: 18357528463117599542
+      Path: Assets\Material.sdmat
+    - Id: 8311268143048460901
+      Path: Assets\DefaultMaterial.sdmat
   Cubemaps:
-    - Id: 5839868702304734649
-      Path: default_cubemap
     - Id: 16548923322223649946
+      Path: default_cubemap
+    - Id: 5839868702304734649
       Path: default_cubemap
     - Id: 7
       Path: default_cubemap
     - Id: 9116417721752348555
       Path: default_cubemap
-    - Id: 7902032144864508971
-      Path: Assets\CasualDay4K.sdhdr
     - Id: 9514009380872661572
       Path: default_cubemap
-    - Id: 775678886849274566
-      Path: Assets\Cubemap.sdhdr
+    - Id: 7902032144864508971
+      Path: Assets\CasualDay4K.sdhdr
     - Id: 2178080796222043266
       Path: Assets\GHDRI_STCL_003_10k.sdhdr
+    - Id: 775678886849274566
+      Path: Assets\Cubemap.sdhdr
   Armatures:
     - Id: 9
       Path: default_armature
     - Id: 8722811235447257988
       Path: default_armature
-    - Id: 14943084828613058243
-      Path: Assets\Raw\Armatura Franco.sdarm
     - Id: 6425222781124821975
       Path: default_armature
+    - Id: 14943084828613058243
+      Path: Assets\Raw\Armatura Franco.sdarm
     - Id: 10420663788111415834
       Path: Assets\Raw\Hips.sdarm
   Animations:
@@ -785,13 +827,13 @@ Resources:
       Path: default_animation
     - Id: 13387572348173302860
       Path: default_animation
-    - Id: 8354268390516217900
-      Path: Assets\Raw\mixamo.com.sdanim
     - Id: 5131299923002091104
       Path: default_animation
-    - Id: 9962308250369382255
-      Path: ""
+    - Id: 8354268390516217900
+      Path: Assets\Raw\mixamo.com.sdanim
     - Id: 6920003954580739017
+      Path: ""
+    - Id: 9962308250369382255
       Path: ""
     - Id: 3886183339869941471
       Path: ""
@@ -812,19 +854,19 @@ Resources:
       Path: Assets\Test.sdshader
     - Id: 14613942329079438890
       Path: Assets\Test.sdshader
-    - Id: 2944574098005152027
-      Path: Assets\Test.sdshader
     - Id: 5800120264543414851
       Path: Assets\PBR.sdshader
+    - Id: 2944574098005152027
+      Path: Assets\Test.sdshader
     - Id: 1394569783013684877
       Path: Assets\Test.sdshader
     - Id: 12930546794366294590
       Path: Assets\Test.sdshader
     - Id: 9117430595865642682
       Path: Assets\PBR.sdshader
-    - Id: 4759843178858843689
-      Path: Assets\Test.sdshader
     - Id: 2127543428726329379
+      Path: Assets\Test.sdshader
+    - Id: 4759843178858843689
       Path: Assets\Test.sdshader
     - Id: 15291427209434904066
       Path: Assets\Test.sdshader
@@ -848,6 +890,8 @@ Resources:
       Path: Assets\Test.sdshader
     - Id: 14500248068023394190
       Path: Assets\PBR.sdshader
+    - Id: 5575093516262916872
+      Path: Assets\Test.sdshader
     - Id: 4204712370830745450
       Path: Assets\Test.sdshader
     - Id: 5038919211031734833

@@ -1,4 +1,4 @@
-Id: 14403712109610799155
+Id: 618491858973921487
 Name: Scene
 Entities:
   - Components:
@@ -6,7 +6,69 @@ Entities:
         Members:
           - Name: ID
             Type: 6
-            Value: 6631027385738877932
+            Value: 1693564385590040683
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 5
+            Value: Floor
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 8
+            Value: [2.40047359, -0.0113015175, 0.0837186426]
+          - Name: Rotation
+            Type: 10
+            Value: [0, 0, 0]
+          - Name: Scale
+            Type: 8
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 13
+            Value: 9947518808451872226
+          - Name: Materials
+            Type: 18
+            Value:
+              - Id: 10931836586915569222
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 6
+            Value: 15183781494571023379
+      - Name: struct Seidon::NameComponent
+        Members:
+          - Name: Name
+            Type: 5
+            Value: Cube.005
+      - Name: struct Seidon::TransformComponent
+        Members:
+          - Name: Position
+            Type: 8
+            Value: [-0.246411324, 1.13966942, 1.57569695]
+          - Name: Rotation
+            Type: 10
+            Value: [0, -0, 0]
+          - Name: Scale
+            Type: 8
+            Value: [1, 1, 1]
+      - Name: struct Seidon::RenderComponent
+        Members:
+          - Name: Mesh
+            Type: 13
+            Value: 12479932026770599087
+          - Name: Materials
+            Type: 18
+            Value:
+              - Id: 16905598184999973402
+  - Components:
+      - Name: struct Seidon::IDComponent
+        Members:
+          - Name: ID
+            Type: 6
+            Value: 14858128365636976014
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
@@ -16,10 +78,10 @@ Entities:
         Members:
           - Name: Position
             Type: 8
-            Value: [-10.0107288, 3.22822213, 5.69927788]
+            Value: [-0.0495537594, 2.54268956, 7.06234455]
           - Name: Rotation
             Type: 10
-            Value: [-0.244346097, -1.17809725, 0]
+            Value: [-0.314159274, 6.25700521, 0]
           - Name: Scale
             Type: 8
             Value: [1, 1, 1]
@@ -48,7 +110,7 @@ Entities:
         Members:
           - Name: ID
             Type: 6
-            Value: 8823607601478620758
+            Value: 1102245363769916846
       - Name: struct Seidon::NameComponent
         Members:
           - Name: Name
@@ -61,45 +123,22 @@ Entities:
             Value: [0, 0, 0]
           - Name: Rotation
             Type: 10
-            Value: [0, 0, 0]
+            Value: [0.628651679, 0.963384628, -0.543509126]
           - Name: Scale
             Type: 8
-            Value: [1, 1, 1]
+            Value: [0.999997497, 0.999993145, 0.999991238]
       - Name: struct Seidon::CubemapComponent
         Members:
           - Name: Cubemap
             Type: 19
             Value: 775678886849274566
-  - Components:
-      - Name: struct Seidon::IDComponent
+      - Name: struct Seidon::DirectionalLightComponent
         Members:
-          - Name: ID
-            Type: 6
-            Value: 10968906813775119236
-      - Name: struct Seidon::NameComponent
-        Members:
-          - Name: Name
-            Type: 5
-            Value: "Entity #2"
-      - Name: struct Seidon::TransformComponent
-        Members:
-          - Name: Position
-            Type: 8
-            Value: [0, 0, 0]
-          - Name: Rotation
-            Type: 10
-            Value: [0, 0, 0]
-          - Name: Scale
-            Type: 8
-            Value: [1, 1, 1]
-      - Name: struct Seidon::RenderComponent
-        Members:
-          - Name: Mesh
-            Type: 13
-            Value: 14219862061215961085
-          - Name: Materials
-            Type: 18
-            Value:
-              - Id: 11068714216326143645
+          - Name: Color
+            Type: 9
+            Value: [1, 0.862745106, 0.647058845]
+          - Name: Intensity
+            Type: 2
+            Value: 3
 Systems:
   []

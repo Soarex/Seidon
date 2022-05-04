@@ -58,6 +58,11 @@ namespace Seidon
 			return registry->all_of<T>(ID);
 		}
 
+		bool IsValid()
+		{
+			return registry->valid(ID);
+		}
+
 		bool operator ==(const Entity& other) { return ID == other.ID; }
 	};
 }

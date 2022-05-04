@@ -65,7 +65,7 @@ private:
 public:
     void Update(float deltaTime) override
     {
-        auto players = scene->GetRegistry().group<PlayerComponent>(entt::get<Seidon::TransformComponent>);
+        auto players = scene->GetRegistry().group<PlayerComponent>(entt::get<Seidon::TransformComponent, Seidon::CharacterControllerComponent>);
         auto cameras = scene->GetRegistry().view<Seidon::CameraComponent>();
 
         if (players.empty()) return;
@@ -74,6 +74,7 @@ public:
             auto& cameraTransform = scene->GetRegistry().get<Seidon::TransformComponent>(e);
             auto& playerTransform = players.get<Seidon::TransformComponent>(players.front());
             auto& playerComponent = players.get<PlayerComponent>(players.front());
+            auto& characterController = players.get<Seidon::CharacterControllerComponent>(players.front());
 
             glm::vec3 input = { 0, 0, 0 };
 
@@ -104,7 +105,7 @@ public:
             playerComponent.velocity.x = direction.x * playerComponent.speed;
             playerComponent.velocity.z = direction.z * playerComponent.speed;
 
-            if (IsGrounded(playerTransform))
+            if (IsGrounded(characterController))
             {
                 playerComponent.velocity.y = 0;
                 if (inputManager->GetKeyPressed(GET_KEYCODE(SPACE)) || inputManager->GetGamepadButton(GET_GAMEPAD_BUTTONCODE(A)))
@@ -117,9 +118,9 @@ public:
         }
     }
 
-    bool IsGrounded(Seidon::TransformComponent& transform)
+    bool IsGrounded(Seidon::CharacterControllerComponent& characterController)
     {
-        return transform.position.y <= 0.51;
+        return characterController.isGrounded;//transform.position.y <= 0.51;
     }
 
     void Jump(PlayerComponent& player)

@@ -21,6 +21,7 @@ namespace Seidon
 
 		physx::PxCpuDispatcher* dispatcher;
 		physx::PxScene* physxScene;
+		physx::PxControllerManager* characterControllerManager;
 
 		physx::PxMaterial* defaultMaterial;
 
@@ -33,7 +34,8 @@ namespace Seidon
 		void Destroy();
 
 	private:
-		void SetupRigidbody(TransformComponent& transform, CubeColliderComponent& collider, RigidbodyComponent& rigidbody);
+		void SetupRigidbody(entt::entity entityId, TransformComponent& transform, CubeColliderComponent& collider, RigidbodyComponent& rigidbody);
+		void SetupCharacterController(entt::entity entityId, TransformComponent& transform, CharacterControllerComponent& controller);
 	};
 
 }
