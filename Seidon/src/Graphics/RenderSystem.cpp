@@ -85,12 +85,12 @@ namespace Seidon
 
 	void RenderSystem::Update(float deltaTime)
 	{
-		entt::basic_group lights    = scene->GetRegistry().group<DirectionalLightComponent>(entt::get<TransformComponent>);
-		entt::basic_group cameras   = scene->GetRegistry().group<CameraComponent, TransformComponent>();
-		entt::basic_view cubemaps   = scene->GetRegistry().view<CubemapComponent>();
-		entt::basic_group renderGroup = scene->GetRegistry().group<RenderComponent>(entt::get<TransformComponent>);
-		entt::basic_group skinnedRenderGroup = scene->GetRegistry().group<SkinnedRenderComponent>(entt::get<TransformComponent>);
-		entt::basic_group wireframeRenderGroup = scene->GetRegistry().group<WireframeRenderComponent>(entt::get<TransformComponent>);
+		auto lights    = scene->CreateComponentGroup<DirectionalLightComponent>(GetTypeList<TransformComponent>);
+		auto cameras   = scene->CreateComponentGroup<CameraComponent, TransformComponent>();
+		auto cubemaps   = scene->CreateComponentView<CubemapComponent>();
+		auto renderGroup = scene->CreateComponentGroup<RenderComponent>(GetTypeList<TransformComponent>);
+		auto skinnedRenderGroup = scene->CreateComponentGroup<SkinnedRenderComponent>(GetTypeList<TransformComponent>);
+		auto wireframeRenderGroup = scene->CreateComponentGroup<WireframeRenderComponent>(GetTypeList<TransformComponent>);
 
 		DirectionalLightComponent light;
 		TransformComponent lightTransform;
@@ -257,10 +257,6 @@ namespace Seidon
 			TransformComponent& t = renderGroup.get<TransformComponent>(e);
 
 			glm::mat4 modelMatrix = t.GetTransformMatrix();
-
-			while (r.mesh->subMeshes.size() > r.materials.size())
-				r.materials.push_back(resourceManager->GetMaterial("default_material"));
-
 
 			renderer.SubmitMesh(r.mesh, r.materials, modelMatrix);
 		}

@@ -1,6 +1,7 @@
 #pragma once
 #include "../Core/UUID.h"
 
+#include "Scene.h"
 #include "Components.h"
 #include "entt/entt.hpp"
 
@@ -14,11 +15,13 @@ namespace Seidon
 	{
 	public:
 		entt::entity ID;
-		entt::registry* registry;
+		Scene* scene;
+		
+		//entt::registry* registry;
 	public:
 		Entity() = default;
 		Entity(const Entity& entity) = default;
-		Entity(entt::entity id, entt::registry* registry);
+		Entity(entt::entity id, Scene* scene);
 
 		void Save(std::ofstream& fileOut);
 		void SaveText(YAML::Emitter& out);
@@ -31,36 +34,39 @@ namespace Seidon
 		template <typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			return registry->emplace_or_replace<T>(ID, std::forward<Args>(args)...);
+			T& component = scene->GetRegistry().emplace_or_replace<T>(ID, std::forward<Args>(args)...);
+			scene->OnComponentAdded<T>(ID);
+			return component;
 		}
 
 		template <typename T>
 		void EditComponent(std::function<void(T&)> editFunction)
 		{
-			registry->patch<T>(ID, editFunction);
+			scene->GetRegistry().patch<T>(ID, editFunction);
 		}
 
 		template <typename T>
 		void RemoveComponent()
 		{
-			registry->remove<T>(ID);
+			scene->OnComponentRemoved<T>(ID);
+			scene->GetRegistry().remove<T>(ID);
 		}
 
 		template <typename T>
 		T& GetComponent()
 		{
-			return registry->get<T>(ID);
+			return scene->GetRegistry().get<T>(ID);
 		}
 
 		template <typename T>
 		bool HasComponent()
 		{
-			return registry->all_of<T>(ID);
+			return scene->GetRegistry().all_of<T>(ID);
 		}
 
 		bool IsValid()
 		{
-			return registry->valid(ID);
+			return scene->GetRegistry().valid(ID);
 		}
 
 		bool operator ==(const Entity& other) { return ID == other.ID; }

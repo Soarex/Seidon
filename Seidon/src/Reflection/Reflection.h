@@ -83,6 +83,9 @@ namespace Seidon
 	{
 		std::string name;
 		std::vector<MemberData> members;
+		std::unordered_map<std::string, MemberData> nameToMember;
+
+		void(*OnChange)(void*) = nullptr;
 
 		template<typename T, typename U>
 		MetaType& AddMember(const std::string& name, U T::* member)
@@ -145,6 +148,7 @@ namespace Seidon
 				data.type = Types::SPRITE;
 
 			members.push_back(data);
+			nameToMember[data.name] = data;
 
 			return *this;
 		}
@@ -161,6 +165,24 @@ namespace Seidon
 			members.push_back(data);
 
 			return *this;
+		}
+
+		template<typename T>
+		void ModifyMember(const std::string& memberName, void* data, const T& newValue)
+		{
+			MemberData& memberData = nameToMember.at(memberName);
+
+			*(T*)((byte*)(data) + memberData.offset) = newValue;
+
+			if (OnChange) OnChange(data);
+		}
+
+		template<typename T>
+		T& GetMember(const std::string& memberName, void* data)
+		{
+			MemberData& memberData = nameToMember.at(memberName);
+
+			return *(T*)((byte*)(data) + memberData.offset);
 		}
 
 		void Save(std::ofstream& out, byte* data);
@@ -182,131 +204,8 @@ namespace Seidon
 			return !(*this == other); 
 		}
 
-		static Types StringToType(const std::string& string)
-		{
-			if (string == "INT")
-				return Types::INT;
-
-			if (string == "FLOAT")
-				return Types::FLOAT;
-
-			if (string == "FLOAT_NORMALIZED")
-				return Types::FLOAT_NORMALIZED;
-
-			if (string == "BOOL")
-				return Types::BOOL;
-
-			if (string == "STRING")
-				return Types::STRING;
-
-			if (string == "ID")
-				return Types::ID;
-
-			if (string == "VECTOR2")
-				return Types::VECTOR2;
-
-			if (string == "VECTOR3")
-				return Types::VECTOR3;
-
-			if (string == "VECTOR3_COLOR")
-				return Types::VECTOR3_COLOR;
-
-			if (string == "VECTOR3_ANGLES")
-				return Types::VECTOR3_ANGLES;
-
-			if (string == "MESH_VECTOR")
-				return Types::MESH_VECTOR;
-
-			if (string == "MATERIAL_VECTOR")
-				return Types::MATERIAL_VECTOR;
-
-			if (string == "TEXTURE_VECTOR")
-				return Types::TEXTURE_VECTOR;
-
-			if (string == "TEXTURE")
-				return Types::TEXTURE;
-
-			if (string == "CUBEMAP")
-				return Types::CUBEMAP;
-
-			if (string == "MESH")
-				return Types::MESH;
-
-			if (string == "ANIMATION")
-				return Types::ANIMATION;
-
-			if (string == "ARMATURE")
-				return Types::ARMATURE;
-
-			if (string == "SHADER")
-				return Types::SHADER;
-
-			if (string == "SPRITE")
-				return Types::SPRITE;
-		}
-
-		static std::string TypeToString(Types type)
-		{
-			if (type == Types::INT)
-				return "Int";
-
-			if (type == Types::FLOAT)
-				return "Float";
-
-			if (type == Types::FLOAT_NORMALIZED)
-				return "Float normalized";
-
-			if (type == Types::BOOL)
-				return "Bool";
-
-			if (type == Types::STRING)
-				return "String";
-
-			if (type == Types::ID)
-				return "Id";
-
-			if (type == Types::VECTOR2)
-				return "Vec2";
-
-			if (type == Types::VECTOR3)
-				return "Vec3";
-
-			if (type == Types::VECTOR3_COLOR)
-				return "Vec3 Color";
-
-			if (type == Types::VECTOR3_ANGLES)
-				return "Vec3 Angles";
-
-			if (type == Types::MESH_VECTOR)
-				return "Mesh Vector";
-
-			if (type == Types::MATERIAL_VECTOR)
-				return "Material Vector";
-
-			if (type == Types::TEXTURE_VECTOR)
-				return "Texture Vector";
-
-			if (type == Types::TEXTURE)
-				return "Texture";
-
-			if (type == Types::CUBEMAP)
-				return "Cubemap";
-
-			if (type == Types::MESH)
-				return "Mesh";
-
-			if (type == Types::ANIMATION)
-				return "Animation";
-
-			if (type == Types::ARMATURE)
-				return "Armature";
-
-			if (type == Types::SHADER)
-				return "Shader";
-
-			if (type == Types::SPRITE)
-				return "Sprite";
-		}
+		static Types StringToType(const std::string& string);
+		static std::string TypeToString(Types type);
 	};
 
 	class Entity;

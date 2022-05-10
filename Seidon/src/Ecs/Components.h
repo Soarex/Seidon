@@ -8,6 +8,8 @@
 
 #include "Animation/Animation.h"
 
+#include "../Physics/CollisionData.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -129,6 +131,8 @@ namespace Seidon
 		}
 
 		void SetMesh(Mesh* mesh);
+
+		static void Revalidate(void* component);
 	};
 
 	struct SkinnedRenderComponent : public RenderComponent
@@ -240,17 +244,38 @@ namespace Seidon
 		glm::vec3 offset = glm::vec3(0);
 		glm::vec3 halfExtents = { 0.5f, 0.5f, 0.5f };
 
-		void* runtimeShape = nullptr;
+		void* runtimeShape;
 
 		CubeColliderComponent() = default;
 		CubeColliderComponent(const CubeColliderComponent&) = default;
 	};
 
+	struct MeshColliderComponent
+	{
+		//glm::vec3 offset = glm::vec3(0);
+		//glm::vec3 halfExtents = { 0.5f, 0.5f, 0.5f };
+		Mesh* mesh;
+
+		MeshColliderComponent();
+		MeshColliderComponent(const MeshColliderComponent&) = default;
+	};
+
 	//class physx::PxRigidActor;
-	struct RigidbodyComponent
+	struct StaticRigidbodyComponent
+	{
+		void* runtimeBody = nullptr;
+
+		StaticRigidbodyComponent() = default;
+		StaticRigidbodyComponent(const StaticRigidbodyComponent&)
+		{
+
+		}
+	};
+
+	struct DynamicRigidbodyComponent
 	{
 		float mass = 1;
-		bool dynamic = false;
+		bool kinematic = false;
 
 		bool lockXRotation = false;
 		bool lockYRotation = false;
@@ -258,20 +283,39 @@ namespace Seidon
 
 		void* runtimeBody = nullptr;
 
-		RigidbodyComponent() = default;
-		RigidbodyComponent(const RigidbodyComponent&) = default;
+		DynamicRigidbodyComponent() = default;
+		DynamicRigidbodyComponent(const DynamicRigidbodyComponent& other)
+		{
+			mass = other.mass;
+			kinematic = other.kinematic;
+			lockXRotation = other.lockXRotation;
+			lockYRotation = other.lockYRotation;
+			lockZRotation = other.lockZRotation;
+		}
 	};
 
-	//class physx::PxController;
+	struct CollisionData;
 	struct CharacterControllerComponent
 	{
 		float colliderHeight = 1;
-		float colliderRadius = 1;
+		float colliderRadius = 0.5f;
+		float contactOffset = 0.01f;
+		float maxSlopeAngle = 0;
 
 		void* runtimeController = nullptr;
 		bool isGrounded = false;
 
+		std::vector<CollisionData> collisions;
+
 		CharacterControllerComponent() = default;
-		CharacterControllerComponent(const CharacterControllerComponent&) = default;
+		CharacterControllerComponent(const CharacterControllerComponent& other)
+		{
+			colliderHeight = other.colliderHeight;
+			colliderRadius = other.colliderRadius;
+			contactOffset = other.contactOffset;
+			maxSlopeAngle = other.maxSlopeAngle;
+		}
+
+		void Move(TransformComponent& transform, glm::vec3 velocity, float deltaTime);
 	};
 }

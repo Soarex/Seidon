@@ -9,7 +9,7 @@ namespace Seidon
 	class Prefab
 	{
 	private:
-		static entt::registry prefabRegistry;
+		static Scene prefabScene;
 
 		Entity referenceEntity = { entt::null, nullptr };
 	public:

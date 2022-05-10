@@ -13,7 +13,7 @@ namespace Seidon
 		entt::basic_group cameras = scene->GetRegistry().group<CameraComponent, TransformComponent>();
 
 		if (!cameras.empty())
-			camera = Entity(cameras.front(), &scene->GetRegistry());
+			camera = Entity(cameras.front(), scene);
 	}
 	 
 	void FlyingCameraControlSystem::Update(float deltaTime)

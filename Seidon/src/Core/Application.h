@@ -67,9 +67,9 @@ namespace Seidon
 		}
 
 		template<typename Type>
-		static Type& AddComponent(Entity entity)
+		static void* AddComponent(Entity entity)
 		{
-			return entity.AddComponent<Type>();
+			return &entity.AddComponent<Type>();
 		}
 
 		template<typename Type>

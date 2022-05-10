@@ -8,9 +8,15 @@
 #include "Utils/Dialogs.h"
 #include "EditorCameraControlSystem.h"
 
+#include <Debug/Timer.h>
+
 namespace Seidon
 {
-    Mesh test;
+    struct Test
+    {
+        int a;
+        float b;
+    };
     void Editor::Init()
 	{
         int width, height, channelCount;
@@ -23,21 +29,9 @@ namespace Seidon
 
         drawColliders = [&](Renderer& renderer)
         {
-            auto group = sceneManager->GetActiveScene()->GetRegistry().group<CubeColliderComponent>(entt::get<TransformComponent>);
-
-            for (auto e : group)
-            {
-                TransformComponent& t = group.get<TransformComponent>(e);
-                CubeColliderComponent& c = group.get<CubeColliderComponent>(e);
-
-                TransformComponent t1;
-                t1.position = t.position + c.offset;
-                t1.rotation = t.rotation;
-
-                float bias = 0.005;
-                t1.scale = t.scale * c.halfExtents + glm::vec3(bias);
-                renderer.SubmitMeshWireframe(&test, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
-            }
+            DrawCubeColliders(renderer);
+            DrawMeshColliders(renderer);
+            DrawCharacterControllers(renderer);
         };
 
         editorResourceManager.Init();
@@ -66,7 +60,6 @@ namespace Seidon
         scene->Init();
         sceneManager->SetActiveScene(scene);
 
-        test.Load("Assets/Cubes/Cube.005.sdmesh");
         rs.AddMainRenderPassFunction(drawColliders);
 
         selectedEntity = { entt::null, nullptr };
@@ -80,6 +73,10 @@ namespace Seidon
         e.Init();
 
         inputManager->ListenToCursor(false);
+
+        editorResourceManager.LoadMesh("Assets\\Cube.sdmesh");
+        editorResourceManager.LoadMesh("Assets\\Cylinder.sdmesh");
+        editorResourceManager.LoadMesh("Assets\\Semisphere.sdmesh");
 	}
 
 	void Editor::Update()
@@ -237,7 +234,7 @@ namespace Seidon
             {
                 auto& selection = sceneManager->GetActiveScene()->GetRegistry().get<MouseSelectionComponent>(e);
 
-                if (selection.status == SelectionStatus::CLICKED && !ImGuizmo::IsUsing()) selectedEntity = Entity(e, &sceneManager->GetActiveScene()->GetRegistry());
+                if (selection.status == SelectionStatus::CLICKED && !ImGuizmo::IsUsing()) selectedEntity = Entity(e, sceneManager->GetActiveScene());
             }
         }
         else
@@ -285,7 +282,7 @@ namespace Seidon
 
             for (entt::entity e : cameras)
             {
-                Entity camera = { e, &scene->GetRegistry() };
+                Entity camera = { e, scene};
 
                 ImGuizmo::SetOrthographic(false);
                 ImGuizmo::SetDrawlist();
@@ -347,7 +344,6 @@ namespace Seidon
         fileBrowserPanel.Draw();
         
         dockspace.End();
-        GL_CHECK(;);
 	}
 
 	void Editor::Destroy()
@@ -360,6 +356,85 @@ namespace Seidon
 
         editorResourceManager.Destroy();
 	}
+
+    void Editor::DrawCubeColliders(Renderer& renderer)
+    {
+        auto group = sceneManager->GetActiveScene()->GetRegistry().group<CubeColliderComponent>(entt::get<TransformComponent>);
+
+        for (auto e : group)
+        {
+            TransformComponent& t = group.get<TransformComponent>(e);
+            CubeColliderComponent& c = group.get<CubeColliderComponent>(e);
+
+            TransformComponent t1;
+            t1.position = t.position + c.offset;
+            t1.rotation = t.rotation;
+
+            float bias = 0.005f;
+            t1.scale = t.scale * c.halfExtents * 2.0f + glm::vec3(bias);
+
+            auto m = editorResourceManager.GetMesh("Assets\\Cube.sdmesh");
+            renderer.SubmitMeshWireframe(editorResourceManager.GetMesh("Assets\\Cube.sdmesh"), glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+        }
+    }
+
+    void Editor::DrawMeshColliders(Renderer& renderer)
+    {
+        auto group = sceneManager->GetActiveScene()->GetRegistry().group<MeshColliderComponent>(entt::get<TransformComponent>);
+
+        for (auto e : group)
+        {
+            TransformComponent& t = group.get<TransformComponent>(e);
+            MeshColliderComponent& c = group.get<MeshColliderComponent>(e);
+
+            TransformComponent t1;
+            t1.position = t.position;
+            t1.rotation = t.rotation;
+
+            float bias = 0.005f;
+            t1.scale = t.scale + glm::vec3(bias);
+
+            renderer.SubmitMeshWireframe(c.mesh, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+        }
+    }
+
+    void Editor::DrawCharacterControllers(Renderer& renderer)
+    {
+        auto group = sceneManager->GetActiveScene()->GetRegistry().group<CharacterControllerComponent>(entt::get<TransformComponent>);
+
+        for (auto e : group)
+        {
+            TransformComponent& t = group.get<TransformComponent>(e);
+            CharacterControllerComponent& c = group.get<CharacterControllerComponent>(e);
+
+            TransformComponent t1;
+            t1.position = t.position;
+
+            float bias = 0.005f;
+            t1.scale = { c.colliderRadius * 2, c.colliderHeight, c.colliderRadius * 2 };
+            t1.scale += glm::vec3(bias);
+            
+            Mesh* semisphere = editorResourceManager.GetMesh("Assets\\Semisphere.sdmesh");
+            Mesh* cylinder = editorResourceManager.GetMesh("Assets\\Cylinder.sdmesh");
+
+            renderer.SubmitMeshWireframe(cylinder, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+
+            t1.scale.y = t1.scale.x;
+            t1.position.y += c.colliderHeight / 2;
+
+            renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+
+            t1.position.y -= c.colliderHeight;
+            t1.rotation.x = glm::radians(180.0f);
+
+            renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+
+            t1.position.y -= c.contactOffset / 2 + 1 * c.colliderRadius;
+            t1.scale.y = c.contactOffset;
+
+            renderer.SubmitMeshWireframe(cylinder, glm::vec3(1, 1, 1), t1.GetTransformMatrix());
+        }
+    }
 
 
     Application* Seidon::CreateApplication() 

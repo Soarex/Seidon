@@ -378,4 +378,134 @@ namespace Seidon
 			}
 		}
 	}
+
+	std::string MetaType::TypeToString(Types type)
+	{
+		if (type == Types::INT)
+			return "Int";
+
+		if (type == Types::FLOAT)
+			return "Float";
+
+		if (type == Types::FLOAT_NORMALIZED)
+			return "Float normalized";
+
+		if (type == Types::BOOL)
+			return "Bool";
+
+		if (type == Types::STRING)
+			return "String";
+
+		if (type == Types::ID)
+			return "Id";
+
+		if (type == Types::VECTOR2)
+			return "Vec2";
+
+		if (type == Types::VECTOR3)
+			return "Vec3";
+
+		if (type == Types::VECTOR3_COLOR)
+			return "Vec3 Color";
+
+		if (type == Types::VECTOR3_ANGLES)
+			return "Vec3 Angles";
+
+		if (type == Types::MESH_VECTOR)
+			return "Mesh Vector";
+
+		if (type == Types::MATERIAL_VECTOR)
+			return "Material Vector";
+
+		if (type == Types::TEXTURE_VECTOR)
+			return "Texture Vector";
+
+		if (type == Types::TEXTURE)
+			return "Texture";
+
+		if (type == Types::CUBEMAP)
+			return "Cubemap";
+
+		if (type == Types::MESH)
+			return "Mesh";
+
+		if (type == Types::ANIMATION)
+			return "Animation";
+
+		if (type == Types::ARMATURE)
+			return "Armature";
+
+		if (type == Types::SHADER)
+			return "Shader";
+
+		if (type == Types::SPRITE)
+			return "Sprite";
+
+		return "Unknown";
+	}
+
+	Types MetaType::StringToType(const std::string& string)
+	{
+		if (string == "INT")
+			return Types::INT;
+
+		if (string == "FLOAT")
+			return Types::FLOAT;
+
+		if (string == "FLOAT_NORMALIZED")
+			return Types::FLOAT_NORMALIZED;
+
+		if (string == "BOOL")
+			return Types::BOOL;
+
+		if (string == "STRING")
+			return Types::STRING;
+
+		if (string == "ID")
+			return Types::ID;
+
+		if (string == "VECTOR2")
+			return Types::VECTOR2;
+
+		if (string == "VECTOR3")
+			return Types::VECTOR3;
+
+		if (string == "VECTOR3_COLOR")
+			return Types::VECTOR3_COLOR;
+
+		if (string == "VECTOR3_ANGLES")
+			return Types::VECTOR3_ANGLES;
+
+		if (string == "MESH_VECTOR")
+			return Types::MESH_VECTOR;
+
+		if (string == "MATERIAL_VECTOR")
+			return Types::MATERIAL_VECTOR;
+
+		if (string == "TEXTURE_VECTOR")
+			return Types::TEXTURE_VECTOR;
+
+		if (string == "TEXTURE")
+			return Types::TEXTURE;
+
+		if (string == "CUBEMAP")
+			return Types::CUBEMAP;
+
+		if (string == "MESH")
+			return Types::MESH;
+
+		if (string == "ANIMATION")
+			return Types::ANIMATION;
+
+		if (string == "ARMATURE")
+			return Types::ARMATURE;
+
+		if (string == "SHADER")
+			return Types::SHADER;
+
+		if (string == "SPRITE")
+			return Types::SPRITE;
+
+		return Types::UNKNOWN;
+	}
 }

@@ -114,13 +114,26 @@ public:
             else
                 playerComponent.velocity.y += gravity * deltaTime;
 
-            playerTransform.position += playerComponent.velocity * deltaTime;
+            characterController.Move(playerTransform, playerComponent.velocity, deltaTime);
+
+            for (Seidon::CollisionData& data : characterController.collisions)
+            {
+                Seidon::Entity e = scene->GetEntityByEntityId(data.hitEntityId);
+                
+                if (e.HasComponent<Seidon::DynamicRigidbodyComponent>())
+                {
+                    auto& rigidbody = e.GetComponent<Seidon::DynamicRigidbodyComponent>();
+
+                    physx::PxVec3 force = { data.hitDirection.x, data.hitDirection.y, data.hitDirection.z };
+                    ((physx::PxRigidDynamic*)rigidbody.runtimeBody)->addForce(force, physx::PxForceMode::eIMPULSE);
+                }
+            }
         }
     }
 
     bool IsGrounded(Seidon::CharacterControllerComponent& characterController)
     {
-        return characterController.isGrounded;//transform.position.y <= 0.51;
+        return characterController.isGrounded;
     }
 
     void Jump(PlayerComponent& player)

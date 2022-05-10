@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PhysicsApi.h"
+#include "CharacterControllerCallbacks.h"
 
 #include "Ecs/System.h"
 #include "Ecs/Components.h"
@@ -19,11 +20,24 @@ namespace Seidon
 
 		PhysicsApi* api;
 
+		physx::PxPhysics* physics;
 		physx::PxCpuDispatcher* dispatcher;
 		physx::PxScene* physxScene;
 		physx::PxControllerManager* characterControllerManager;
 
 		physx::PxMaterial* defaultMaterial;
+
+		CharacterControllerCallbacks* characterControllerCallbacks;
+
+		ComponentCallbackId cubeColliderAddedCallbackId;
+		ComponentCallbackId staticRigidbodyAddedCallbackId;
+		ComponentCallbackId dynamicRigidbodyAddedCallbackId;
+		ComponentCallbackId characterControllerAddedCallbackId;
+
+		ComponentCallbackId cubeColliderRemovedCallbackId;
+		ComponentCallbackId staticRigidbodyRemovedCallbackId;
+		ComponentCallbackId dynamicRigidbodyRemovedCallbackId;
+		ComponentCallbackId characterControllerRemovedCallbackId;
 
 		float timeSinceLastStep = 0;
 	public:
@@ -34,8 +48,15 @@ namespace Seidon
 		void Destroy();
 
 	private:
-		void SetupRigidbody(entt::entity entityId, TransformComponent& transform, CubeColliderComponent& collider, RigidbodyComponent& rigidbody);
-		void SetupCharacterController(entt::entity entityId, TransformComponent& transform, CharacterControllerComponent& controller);
+		void SetupCubeCollider(EntityId id);
+		void SetupStaticRigidbody(EntityId id);
+		void SetupDynamicRigidbody(EntityId id);
+		void SetupCharacterController(EntityId id);
+
+		void DeleteCubeCollider(EntityId id);
+		void DeleteStaticRigidbody(EntityId id);
+		void DeleteDynamicRigidbody(EntityId id);
+		void DeleteCharacterController(EntityId id);
 	};
 
 }

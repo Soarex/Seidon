@@ -53,7 +53,8 @@ namespace Seidon
 
 		RegisterComponent<RenderComponent>()
 			.AddMember("Mesh", &RenderComponent::mesh)
-			.AddMember("Materials", &RenderComponent::materials);
+			.AddMember("Materials", &RenderComponent::materials)
+			.OnChange = RenderComponent::Revalidate;
 
 		RegisterComponent<SkinnedRenderComponent>()
 			.AddMember("Mesh", &SkinnedRenderComponent::mesh)
@@ -89,16 +90,23 @@ namespace Seidon
 			.AddMember("Offset", &CubeColliderComponent::offset)
 			.AddMember("Half Extents", &CubeColliderComponent::halfExtents);
 
-		RegisterComponent<RigidbodyComponent>()
-			.AddMember("Mass", &RigidbodyComponent::mass)
-			.AddMember("Dynamic", &RigidbodyComponent::dynamic)
-			.AddMember("Lock X Rotation", &RigidbodyComponent::lockXRotation)
-			.AddMember("Lock Y Rotation", &RigidbodyComponent::lockYRotation)
-			.AddMember("Lock Z Rotation", &RigidbodyComponent::lockZRotation);
+		RegisterComponent<MeshColliderComponent>()
+			.AddMember("Mesh", &MeshColliderComponent::mesh);
+
+		RegisterComponent<DynamicRigidbodyComponent>()
+			.AddMember("Mass", &DynamicRigidbodyComponent::mass)
+			.AddMember("Kinematic", &DynamicRigidbodyComponent::kinematic)
+			.AddMember("Lock X Rotation", &DynamicRigidbodyComponent::lockXRotation)
+			.AddMember("Lock Y Rotation", &DynamicRigidbodyComponent::lockYRotation)
+			.AddMember("Lock Z Rotation", &DynamicRigidbodyComponent::lockZRotation);
+
+		RegisterComponent<StaticRigidbodyComponent>();
 
 		RegisterComponent<CharacterControllerComponent>()
 			.AddMember("Collider Height", &CharacterControllerComponent::colliderHeight)
-			.AddMember("Collider Radius", &CharacterControllerComponent::colliderRadius);
+			.AddMember("Collider Radius", &CharacterControllerComponent::colliderRadius)
+			.AddMember("Contact Offset", &CharacterControllerComponent::contactOffset)
+			.AddMember("Max Slope Angle", &CharacterControllerComponent::maxSlopeAngle);
 
 		Init();
 	}

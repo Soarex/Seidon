@@ -1,6 +1,8 @@
 #include "Components.h"
 #include "../Core/Application.h"
 
+#include <Physx/PxPhysics.h>
+
 namespace Seidon
 {
 	RenderComponent::RenderComponent()
@@ -23,13 +25,21 @@ namespace Seidon
 	void RenderComponent::SetMesh(Mesh* mesh)
 	{
 		this->mesh = mesh;
-		int oldSize = materials.size();
 
-		materials.resize(mesh->subMeshes.size());
+		Revalidate(this);
+	}
 
-		if (oldSize < mesh->subMeshes.size())
-			for (int i = oldSize; i < mesh->subMeshes.size(); i++)
-				materials[i] = Application::Get()->GetResourceManager()->GetMaterial("default_material");
+	void RenderComponent::Revalidate(void* component)
+	{
+		RenderComponent& rc = *(RenderComponent*)component;
+		int oldSize = rc.materials.size();
+
+		if (oldSize < rc.mesh->subMeshes.size())
+		{
+			rc.materials.resize(rc.mesh->subMeshes.size());
+			for (int i = oldSize; i < rc.mesh->subMeshes.size(); i++)
+				rc.materials[i] = Application::Get()->GetResourceManager()->GetMaterial("default_material");
+		}
 	}
 
 	CubemapComponent::CubemapComponent()
@@ -49,5 +59,26 @@ namespace Seidon
 			lastRotationKeyIndices[i] = 0;
 			lastScalingKeyIndices[i] = 0;
 		}
+	}
+
+	MeshColliderComponent::MeshColliderComponent()
+	{
+		mesh = Application::Get()->GetResourceManager()->GetMesh("empty_mesh");
+	}
+
+	void CharacterControllerComponent::Move(TransformComponent& transform, glm::vec3 velocity, float deltaTime)
+	{
+		if (!runtimeController) return;
+
+		physx::PxController& controller = *(physx::PxController*)runtimeController;
+
+		physx::PxVec3 v = { velocity.x, velocity.y, velocity.z };
+
+		physx::PxControllerCollisionFlags collisionFlags = controller.move(v * deltaTime, 0.01, deltaTime, physx::PxControllerFilters());
+		isGrounded = collisionFlags.isSet(physx::PxControllerCollisionFlag::eCOLLISION_DOWN);
+
+		physx::PxExtendedVec3 p = controller.getPosition();
+
+		transform.position = { p.x, p.y, p.z };
 	}
 }

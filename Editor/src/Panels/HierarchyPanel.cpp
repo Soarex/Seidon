@@ -17,7 +17,7 @@ namespace Seidon
 
 		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityID)
 			{
-				Entity entity(entityID, &Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry());
+				Entity entity(entityID, Application::Get()->GetSceneManager()->GetActiveScene());
 
 				DrawEntityNode(entity);
 

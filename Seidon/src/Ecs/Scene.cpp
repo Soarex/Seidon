@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "Entity.h"
+#include "Prefab.h"
 #include "../Core/Application.h"
 
 #include <yaml-cpp/yaml.h>
@@ -235,7 +236,7 @@ namespace Seidon
 
 		registry.each([&](auto entityID)
 			{
-				Entity entity = { entityID, &registry };
+				Entity entity = { entityID, this };
 				entity.SaveText(out);
 			});
 
@@ -319,12 +320,12 @@ namespace Seidon
 		srcRegistry.each([&](auto entityId) 
 			{
 				for (auto& metaType : components)
-					if (metaType.Has(Entity(entityId, &srcRegistry )))
+					if (metaType.Has(Entity(entityId, this)))
 					{
 						UUID uuid = srcRegistry.get<IDComponent>(entityId).ID;
 						entt::entity dstEnttID = enttMap.at(uuid);
 
-						metaType.Copy(Entity(entityId, &srcRegistry), Entity(dstEnttID, &dstRegistry));
+						metaType.Copy(Entity(entityId, this), Entity(dstEnttID, other));
 					}
 			});
 
@@ -340,7 +341,7 @@ namespace Seidon
 
 	Entity Scene::CreateEntity(const std::string& name, const UUID& id)
 	{
-		Entity e(registry.create(), &registry);
+		Entity e(registry.create(), this);
 		e.AddComponent<TransformComponent>();
 		e.AddComponent<IDComponent>(id);
 		e.AddComponent<MouseSelectionComponent>();
@@ -355,7 +356,7 @@ namespace Seidon
 
 	Entity Scene::CreateEntityFromPrefab(Prefab& prefab, const std::string& name, const UUID& id)
 	{
-		Entity e(registry.create(), &registry);
+		Entity e(registry.create(), this);
 
 		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
 		for (auto& metaType : components)
@@ -373,6 +374,16 @@ namespace Seidon
 
 	void Scene::DestroyEntity(const Entity& entity)
 	{
+		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
+		for (auto& metaType : components)
+			if (metaType.Has(entity))
+				metaType.Remove(entity);
+
 		registry.destroy(entity.ID);
+	}
+
+	Entity Scene::GetEntityByEntityId(EntityId id)
+	{ 
+		return Entity(id, this); 
 	}
 }

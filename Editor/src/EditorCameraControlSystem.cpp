@@ -18,7 +18,7 @@ namespace Seidon
 
 		for (entt::entity e : cameras)
 		{
-			Entity camera = { e, &scene->GetRegistry() };
+			Entity camera = { e, scene };
 			TransformComponent& cameraTransform = camera.GetComponent<TransformComponent>();
 
 			glm::vec3 forward = cameraTransform.GetForwardDirection();

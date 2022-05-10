@@ -75,7 +75,7 @@ namespace Seidon
             {
                 ImGui::Indent();
 
-                DrawReflectedMembers(metaType.Get(*scene), metaType.members);
+                DrawMetaType(metaType.Get(*scene), metaType);
                 
                 ImGui::Unindent();
             }

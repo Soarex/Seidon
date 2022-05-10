@@ -191,6 +191,7 @@
     <ClCompile Include="src\Graphics\Mesh.cpp" />
     <ClCompile Include="src\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Graphics\Sprite.cpp" />
+    <ClCompile Include="src\Physics\CharacterControllerCallbacks.cpp" />
     <ClCompile Include="src\Physics\PhysicsApi.cpp" />
     <ClCompile Include="src\Physics\PhysicSystem.cpp" />
     <ClCompile Include="src\Ecs\System.cpp" />
@@ -261,6 +262,7 @@
     <ClInclude Include="src\Ecs\Components.h" />
     <ClInclude Include="src\Core\Core.h" />
     <ClInclude Include="src\Ecs\Ecs.h" />
+    <ClInclude Include="src\Ecs\EnttWrappers.h" />
     <ClInclude Include="src\Ecs\Prefab.h" />
     <ClInclude Include="src\Ecs\Scene.h" />
     <ClInclude Include="src\Ecs\SceneManager.h" />
@@ -277,6 +279,8 @@
     <ClInclude Include="src\Graphics\Renderer.h" />
     <ClInclude Include="src\Graphics\Sprite.h" />
     <ClInclude Include="src\Graphics\Vertex.h" />
+    <ClInclude Include="src\Physics\CharacterControllerCallbacks.h" />
+    <ClInclude Include="src\Physics\CollisionData.h" />
     <ClInclude Include="src\Physics\Physics.h" />
     <ClInclude Include="src\Physics\PhysicsApi.h" />
     <ClInclude Include="src\Physics\PhysicSystem.h" />

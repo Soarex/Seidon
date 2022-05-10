@@ -25,5 +25,6 @@ namespace Seidon
 		void Destroy();
 
 		inline physx::PxPhysics* GetPhysics() { return physics; };
+		inline physx::PxCooking* GetCooker() { return cooking; };
 	};
 }

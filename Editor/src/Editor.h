@@ -26,7 +26,6 @@ namespace Seidon
         HierarchyPanel hierarchyPanel;
         InspectorPanel inspectorPanel;
         FileBrowserPanel fileBrowserPanel;
-        //AssetBrowserPanel assetBrowserPanel;
         SystemsPanel systemsPanel;
         Dockspace dockspace;
         Extension e;
@@ -45,5 +44,10 @@ namespace Seidon
 
         void SaveCurrentScene();
         void LoadScene();
+
+    private:
+        void DrawCubeColliders(Renderer& renderer);
+        void DrawMeshColliders(Renderer& renderer);
+        void DrawCharacterControllers(Renderer& renderer);
     };
 }

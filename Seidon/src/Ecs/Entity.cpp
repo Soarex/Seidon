@@ -8,8 +8,8 @@
 
 namespace Seidon
 {
-	Entity::Entity(entt::entity id, entt::registry* registry)
-		:ID(id), registry(registry) {}
+	Entity::Entity(entt::entity id, Scene* scene)
+		:ID(id), scene(scene) {}
 
 	void Entity::SaveText(YAML::Emitter& out)
 	{
@@ -137,6 +137,7 @@ namespace Seidon
 			RemoveComponent<IDComponent>();
 			RemoveComponent<NameComponent>();
 			RemoveComponent<TransformComponent>();
+			RemoveComponent<MouseSelectionComponent>();
 		}
 
 		YAML::Node components = entityNode["Components"];
@@ -221,7 +222,12 @@ namespace Seidon
 
 	Entity Entity::Duplicate()
 	{
-		Entity e(registry->create(), registry);
+		Entity e = scene->CreateEntity();
+
+		e.RemoveComponent<NameComponent>();
+		e.RemoveComponent<IDComponent>();
+		e.RemoveComponent<MouseSelectionComponent>();
+		e.RemoveComponent<TransformComponent>();
 
 		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
 		for (auto& metaType : components)

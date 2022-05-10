@@ -61,7 +61,7 @@ namespace Seidon
             }
 
             if (metaType.Has(selectedEntity) && open)
-                DrawReflectedMembers(metaType.Get(selectedEntity), metaType.members);
+                DrawMetaType(metaType.Get(selectedEntity), metaType);
 
         }
 

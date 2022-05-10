@@ -8,20 +8,25 @@
 
 namespace Seidon
 {
-	entt::registry Prefab::prefabRegistry;
+	Scene Prefab::prefabScene;
 
 	Prefab::~Prefab()
 	{
 		if (referenceEntity.ID != entt::null)
-			prefabRegistry.destroy(referenceEntity.ID);
+			prefabScene.DestroyEntity(referenceEntity);
 	}
 
 	void Prefab::MakeFromEntity(Entity e)
 	{
 		if(referenceEntity.ID != entt::null)
-			prefabRegistry.destroy(referenceEntity.ID);
+			prefabScene.DestroyEntity(referenceEntity);
 
-		referenceEntity = Entity(prefabRegistry.create(), &prefabRegistry);
+		referenceEntity = prefabScene.CreateEntity();
+
+		referenceEntity.RemoveComponent<NameComponent>();
+		referenceEntity.RemoveComponent<IDComponent>();
+		referenceEntity.RemoveComponent<MouseSelectionComponent>();
+		referenceEntity.RemoveComponent<TransformComponent>();
 
 		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
 		for (auto& metaType : components)
@@ -56,7 +61,7 @@ namespace Seidon
 			return;
 		}
 
-		referenceEntity = Entity(prefabRegistry.create(), &prefabRegistry);
+		referenceEntity = prefabScene.CreateEntity();
 
 		referenceEntity.LoadText(data);
 	}
