@@ -616,6 +616,17 @@ namespace Seidon
 			changed = DrawMeshControl(member.name.c_str(), m);
 		}
 
+		if (member.type == Types::MATERIAL)
+		{
+			Material** m = (Material**)(obj + member.offset);
+			static bool open;
+
+			if (DrawMaterialControl(member.name.c_str(), m))
+				open = true;
+
+			changed = DrawMaterialEditor("Material Editor", *m, &open);
+		}
+
 		if (member.type == Types::MATERIAL_VECTOR)
 		{
 			std::vector<Material*>* v = (std::vector<Material*>*)(obj + member.offset);

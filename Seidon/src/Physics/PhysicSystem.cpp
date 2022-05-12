@@ -49,6 +49,27 @@ namespace Seidon
 			});
 
 		/*
+			Mesh Colliders
+		*/
+		scene->CreateViewAndIterate<MeshColliderComponent>
+		(
+			[&](EntityId id, MeshColliderComponent&)
+			{
+				SetupMeshCollider(id);
+			}
+		);
+
+		meshColliderAddedCallbackId = scene->AddComponentAddedCallback<MeshColliderComponent>([&](EntityId id)
+			{
+				SetupMeshCollider(id);
+			});
+
+		meshColliderRemovedCallbackId = scene->AddComponentRemovedCallback<MeshColliderComponent>([&](EntityId id)
+			{
+				DeleteMeshCollider(id);
+			});
+
+		/*
 			Static Rigidbodies
 		*/
 		scene->CreateViewAndIterate<StaticRigidbodyComponent>
@@ -130,7 +151,7 @@ namespace Seidon
 				glm::quat q = glm::quat(transform.rotation);
 				t.q = PxQuat(q.x, q.y, q.z, q.w);
 
-				PxRigidDynamic& actor = *(PxRigidDynamic*)rigidbody.runtimeBody;
+				PxRigidDynamic& actor = *rigidbody.actor.physxActor;
 				if (rigidbody.kinematic)
 				{
 					actor.setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, true);
@@ -216,21 +237,25 @@ namespace Seidon
 		physxScene->release();
 
 		scene->RemoveComponentAddedCallback<CubeColliderComponent>(cubeColliderAddedCallbackId);
+		scene->RemoveComponentAddedCallback<MeshColliderComponent>(meshColliderAddedCallbackId);
 		scene->RemoveComponentAddedCallback<StaticRigidbodyComponent>(staticRigidbodyAddedCallbackId);
 		scene->RemoveComponentAddedCallback<DynamicRigidbodyComponent>(dynamicRigidbodyAddedCallbackId);
 		scene->RemoveComponentAddedCallback<CharacterControllerComponent>(characterControllerAddedCallbackId);
 
 		scene->RemoveComponentRemovedCallback<CubeColliderComponent>(cubeColliderRemovedCallbackId);
+		scene->RemoveComponentRemovedCallback<MeshColliderComponent>(meshColliderRemovedCallbackId);
 		scene->RemoveComponentRemovedCallback<StaticRigidbodyComponent>(staticRigidbodyRemovedCallbackId);
 		scene->RemoveComponentRemovedCallback<DynamicRigidbodyComponent>(dynamicRigidbodyRemovedCallbackId);
 		scene->RemoveComponentRemovedCallback<CharacterControllerComponent>(characterControllerRemovedCallbackId);
 	}
 
 
-	/*
-	void PhysicSystem::SetupDynamicRigidbody(entt::entity entityId, TransformComponent& transform, MeshColliderComponent& meshCollider, DynamicRigidbodyComponent& rigidbody)
+	
+	void PhysicSystem::SetupMeshCollider(EntityId id)
 	{
-		PxPhysics* physics = api->GetPhysics();
+		Entity e = scene->GetEntityByEntityId(id);
+		TransformComponent& transform = e.GetComponent<TransformComponent>();
+		MeshColliderComponent& collider = e.GetComponent<MeshColliderComponent>();
 
 		glm::vec3 position = transform.position;
 		PxTransform t;
@@ -243,7 +268,7 @@ namespace Seidon
 
 		int vertexCount = 0;
 		int indexCount = 0;
-		for (SubMesh* submesh : meshCollider.mesh->subMeshes)
+		for (SubMesh* submesh : collider.mesh->subMeshes)
 		{
 			vertexCount += submesh->vertices.size();
 			indexCount += submesh->indices.size();
@@ -257,16 +282,19 @@ namespace Seidon
 
 		int vertexOffset = 0;
 		int indexOffset = 0;
-		for (SubMesh* submesh : meshCollider.mesh->subMeshes)
+		for (SubMesh* submesh : collider.mesh->subMeshes)
 		{
 			memcpy(&vertices[vertexOffset], &submesh->vertices[0], submesh->vertices.size() * sizeof(Vertex));
-			memcpy(&indices[indexOffset], &submesh->indices[0], submesh->vertices.size() * sizeof(int));
+
+			for (int i = 0; i < submesh->indices.size(); i++)
+				indices[indexOffset + i] = submesh->indices[i] + vertexOffset;
 
 			vertexOffset += submesh->vertices.size();
 			indexOffset += submesh->indices.size();
 		}
 		
 		PxTriangleMeshDesc meshDesc;
+
 		meshDesc.points.count = vertices.size();
 		meshDesc.points.stride = sizeof(Vertex);
 		meshDesc.points.data = &vertices[0];
@@ -275,13 +303,15 @@ namespace Seidon
 		meshDesc.triangles.stride = 3 * sizeof(int);
 		meshDesc.triangles.data = &indices[0];
 
+		std::cout << meshDesc.isValid() << std::endl;
+
 		PxDefaultMemoryOutputStream writeBuffer;
 		PxTriangleMeshCookingResult::Enum result;
 
 		bool status = api->GetCooker()->cookTriangleMesh(meshDesc, writeBuffer, &result);
 		if (!status)
 		{
-			std::cerr << "Error cooking mesh " << meshCollider.mesh->name << std::endl;
+			std::cerr << "Error cooking mesh " << collider.mesh->name << std::endl;
 			return;
 		}
 
@@ -291,21 +321,27 @@ namespace Seidon
 		PxMeshScale scale({ size.x, size.y, size.z }, PxQuat(PxIdentity));
 		PxTriangleMeshGeometry geometry(triangleMesh, scale);
 
-		auto actor = physics->createRigidDynamic(t);
-		PxRigidBodyExt::setMassAndUpdateInertia(*actor, rigidbody.mass);
+		PxShape* shape = physics->createShape(geometry, *defaultMaterial, true);
 
-		PxRigidActorExt::createExclusiveShape(*actor, geometry, *defaultMaterial);
+		collider.shape.physxShape = shape;
+		collider.shape.initialized = true;
 
-		if (rigidbody.lockXRotation) actor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, true);
-		if (rigidbody.lockYRotation) actor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, true);
-		if (rigidbody.lockZRotation) actor->setRigidDynamicLockFlag(PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, true);
 
-		actor->userData = (void*)entityId;
-		physxScene->addActor(*actor);
-		rigidbody.runtimeBody = actor;
+		if (e.HasComponent<StaticRigidbodyComponent>())
+		{
+			StaticRigidbodyComponent& r = e.GetComponent<StaticRigidbodyComponent>();
 
+			if (r.runtimeBody) ((PxRigidStatic*)r.runtimeBody)->attachShape(*shape);
+		}
+
+		if (e.HasComponent<DynamicRigidbodyComponent>())
+		{
+			DynamicRigidbodyComponent& r = e.GetComponent<DynamicRigidbodyComponent>();
+
+			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->attachShape(*shape);
+		}
 	}
-	*/
+
 	void PhysicSystem::SetupCharacterController(EntityId id)
 	{
 		Entity e = scene->GetEntityByEntityId(id);
@@ -342,9 +378,11 @@ namespace Seidon
 
 		PxTransform t;
 		t.p = PxVec3(cubeCollider.offset.x, cubeCollider.offset.y, cubeCollider.offset.z);
+		t.q = PxQuat(PxIDENTITY());
 		shape->setLocalPose(t);
 
-		cubeCollider.runtimeShape = shape;
+		cubeCollider.shape.physxShape = shape;
+		cubeCollider.shape.initialized = true;
 
 		if (e.HasComponent<StaticRigidbodyComponent>())
 		{
@@ -357,7 +395,7 @@ namespace Seidon
 		{
 			DynamicRigidbodyComponent& r = e.GetComponent<DynamicRigidbodyComponent>();
 
-			if (r.runtimeBody) ((PxRigidDynamic*)r.runtimeBody)->attachShape(*shape);
+			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->attachShape(*shape);
 		}
 	}
 
@@ -378,9 +416,16 @@ namespace Seidon
 
 		if (e.HasComponent<CubeColliderComponent>())
 		{
-			CubeColliderComponent& cubeCollider = e.GetComponent<CubeColliderComponent>();
+			CubeColliderComponent& collider = e.GetComponent<CubeColliderComponent>();
 
-			if (cubeCollider.runtimeShape) actor->attachShape(*((PxShape*)cubeCollider.runtimeShape));
+			if (collider.shape.IsInitialized()) actor->attachShape(*(collider.shape.GetInternalShape()));
+		}
+
+		if (e.HasComponent<MeshColliderComponent>())
+		{
+			MeshColliderComponent& collider = e.GetComponent<MeshColliderComponent>();
+
+			if (collider.shape.IsInitialized()) actor->attachShape(*(collider.shape.GetInternalShape()));
 		}
 
 		physxScene->addActor(*actor);
@@ -409,13 +454,22 @@ namespace Seidon
 
 		if (e.HasComponent<CubeColliderComponent>())
 		{
-			CubeColliderComponent& cubeCollider = e.GetComponent<CubeColliderComponent>();
-			
-			if (cubeCollider.runtimeShape)actor->attachShape(*((PxShape*)cubeCollider.runtimeShape));
+			CubeColliderComponent& collider = e.GetComponent<CubeColliderComponent>();
+
+			if (collider.shape.IsInitialized())actor->attachShape(*collider.shape.GetInternalShape());
+		}
+
+		if (e.HasComponent<MeshColliderComponent>())
+		{
+			MeshColliderComponent& collider = e.GetComponent<MeshColliderComponent>();
+
+			if (collider.shape.IsInitialized()) actor->attachShape(*(collider.shape.GetInternalShape()));
 		}
 
 		physxScene->addActor(*actor);
-		rigidbody.runtimeBody = actor;
+		rigidbody.actor.physxActor = actor;
+		rigidbody.actor.referenceScene = physxScene;
+		rigidbody.actor.initialized = true;
 	}
 
 	void PhysicSystem::DeleteCubeCollider(EntityId id)
@@ -423,7 +477,7 @@ namespace Seidon
 		Entity e = scene->GetEntityByEntityId(id);
 		CubeColliderComponent& cubeCollider = e.GetComponent<CubeColliderComponent>();
 
-		PxShape* shape = (PxShape*)cubeCollider.runtimeShape;
+		PxShape* shape = cubeCollider.shape.GetInternalShape();
 
 		if (e.HasComponent<StaticRigidbodyComponent>())
 		{
@@ -434,11 +488,36 @@ namespace Seidon
 		if (e.HasComponent<DynamicRigidbodyComponent>())
 		{
 			DynamicRigidbodyComponent& r = e.GetComponent<DynamicRigidbodyComponent>();
-			if (r.runtimeBody) ((PxRigidDynamic*)r.runtimeBody)->detachShape(*shape);
+			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->detachShape(*shape);
 		}
 
 		shape->release();
-		cubeCollider.runtimeShape = nullptr;
+		cubeCollider.shape.initialized = false;
+		cubeCollider.shape.physxShape = nullptr;
+	}
+
+	void PhysicSystem::DeleteMeshCollider(EntityId id)
+	{
+		Entity e = scene->GetEntityByEntityId(id);
+		MeshColliderComponent& collider = e.GetComponent<MeshColliderComponent>();
+
+		PxShape* shape = collider.shape.GetInternalShape();
+
+		if (e.HasComponent<StaticRigidbodyComponent>())
+		{
+			StaticRigidbodyComponent& r = e.GetComponent<StaticRigidbodyComponent>();
+			if (r.runtimeBody) ((PxRigidStatic*)r.runtimeBody)->detachShape(*shape);
+		}
+
+		if (e.HasComponent<DynamicRigidbodyComponent>())
+		{
+			DynamicRigidbodyComponent& r = e.GetComponent<DynamicRigidbodyComponent>();
+			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->detachShape(*shape);
+		}
+
+		shape->release();
+		collider.shape.initialized = false;
+		collider.shape.physxShape = nullptr;
 	}
 
 	void PhysicSystem::DeleteStaticRigidbody(EntityId id)
@@ -457,10 +536,10 @@ namespace Seidon
 		Entity e = scene->GetEntityByEntityId(id);
 		DynamicRigidbodyComponent& rigidbody = e.GetComponent<DynamicRigidbodyComponent>();
 
-		PxRigidActor* actor = (PxRigidActor*)rigidbody.runtimeBody;
+		PxRigidActor* actor = rigidbody.actor.GetInternalActor();
 		actor->release();
 
-		rigidbody.runtimeBody = nullptr;
+		rigidbody.actor.initialized = false;
 	}
 
 	void PhysicSystem::DeleteCharacterController(EntityId id)

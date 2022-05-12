@@ -15,6 +15,25 @@ struct UIComponent
     glm::vec3 clickColor;
 };
 
+struct DamageableComponent
+{
+    Seidon::Material* m;
+    Seidon::Material* old = nullptr;
+    bool hit = false;
+
+    float hitFlashTime = 0;
+
+    DamageableComponent()
+    {
+        m = Seidon::Application::Get()->GetResourceManager()->GetMaterial("default_material");
+    }
+};
+
+struct AttackerComponent
+{
+    float a;
+};
+
 
 class CameraSystem : public Seidon::System
 {
@@ -87,6 +106,11 @@ public:
                 input.z = -inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_Y));
             }
 
+            if (inputManager->GetGamepadButton(GET_GAMEPAD_BUTTONCODE(CIRCLE)))
+            {
+                Attack(characterController, playerTransform);
+            }
+
             glm::vec3 forward = cameraTransform.GetForwardDirection();
             forward = glm::normalize(forward);
 
@@ -124,8 +148,8 @@ public:
                 {
                     auto& rigidbody = e.GetComponent<Seidon::DynamicRigidbodyComponent>();
 
-                    physx::PxVec3 force = { data.hitDirection.x, data.hitDirection.y, data.hitDirection.z };
-                    ((physx::PxRigidDynamic*)rigidbody.runtimeBody)->addForce(force, physx::PxForceMode::eIMPULSE);
+                    glm::vec3 force = data.hitDirection + glm::vec3(0, 1, 0);
+                    rigidbody.actor.AddForce(force / 2.0f, Seidon::ForceMode::IMPULSE);
                 }
             }
         }
@@ -139,6 +163,23 @@ public:
     void Jump(PlayerComponent& player)
     {
         player.velocity.y = std::sqrt(-2.0f * gravity * player.jumpHeight);
+    }
+    
+    void Attack(Seidon::CharacterControllerComponent& characterController, Seidon::TransformComponent& t)
+    {
+        /*
+        Seidon::RaycastResult res;
+        glm::vec3 pos = t.position;
+        pos.z += t.scale.z + 0.1f;
+
+        
+
+        if (!actor.Raycast(pos, { 0, 0, 1 }, 10, res)) return;
+
+        Seidon::Entity hitEntity = scene->GetEntityByEntityId(res.hitEntityId);
+        if (hitEntity.HasComponent<DamageableComponent>())
+            hitEntity.GetComponent<DamageableComponent>().hit = true;
+            */
     }
 };
 
@@ -175,6 +216,65 @@ public:
     }
 };
 
+class AttackerSystem : public Seidon::System
+{
+private:
+
+public:
+    void Update(float deltaTime) override
+    {
+        scene->CreateGroupAndIterate<AttackerComponent>
+        (
+            Seidon::GetTypeList<Seidon::TransformComponent>,
+
+            [&](Seidon::EntityId id, AttackerComponent& s, Seidon::TransformComponent& t)
+            {
+                Seidon::Entity e = scene->GetEntityByEntityId(id);
+                s.a += 0.0000001;
+                Seidon::DynamicActor& actor = e.GetComponent<Seidon::DynamicRigidbodyComponent>().actor;
+
+                Seidon::RaycastResult res;
+                glm::vec3 pos = t.position;
+                pos.z += t.scale.z + 0.1f;
+
+                if (!actor.Raycast(pos, { 0, 0, 1 }, 10, res)) return;
+
+                Seidon::Entity hitEntity = scene->GetEntityByEntityId(res.hitEntityId);
+                if (hitEntity.HasComponent<DamageableComponent>())
+                    hitEntity.GetComponent<DamageableComponent>().hit = true;
+            }
+        );
+
+        scene->CreateGroupAndIterate<DamageableComponent>
+            (
+                Seidon::GetTypeList<Seidon::TransformComponent, Seidon::RenderComponent>,
+
+                [&](Seidon::EntityId id, DamageableComponent& d, Seidon::TransformComponent& t, Seidon::RenderComponent& r)
+                {
+                    Seidon::Entity e = scene->GetEntityByEntityId(id);
+                    if (!d.old)
+                    {
+                        d.m = new Seidon::Material(*r.materials[0]);
+                        d.old = r.materials[0];
+                    }
+
+                    if (d.hit)
+                    {
+                        d.m->ModifyProperty("Tint", glm::vec3(1, 0, 1));
+                        r.materials[0] = d.m;
+                        d.hit = false;
+                        d.hitFlashTime = 1;
+                    }
+                   
+                    glm::vec3 tint = glm::mix(glm::vec3(1, 1, 1), glm::vec3(1, 0, 0), d.hitFlashTime);
+                    r.materials[0]->ModifyProperty("Tint", tint);
+
+                    d.hitFlashTime = max(d.hitFlashTime - deltaTime, 0);
+                }
+        );
+    }
+};
+
 void Init(Seidon::Application& app)
 {
     app.RegisterComponent<PlayerComponent>()
@@ -186,9 +286,15 @@ void Init(Seidon::Application& app)
         .AddMember("Hover Color", &UIComponent::hoverColor, Seidon::Types::VECTOR3_COLOR)
         .AddMember("Click Color", &UIComponent::clickColor, Seidon::Types::VECTOR3_COLOR);
 
+    app.RegisterComponent<DamageableComponent>()
+        .AddMember("Material", &DamageableComponent::m);
+
+    app.RegisterComponent<AttackerComponent>();
+
     app.RegisterSystem<PlayerSystem>();
     app.RegisterSystem<CameraSystem>();
     app.RegisterSystem<UISystem>();
+    app.RegisterSystem<AttackerSystem>();
 }
 
 void Destroy(Seidon::Application& app)
@@ -196,4 +302,5 @@ void Destroy(Seidon::Application& app)
     app.UnregisterSystem<CameraSystem>();
     app.UnregisterSystem<PlayerSystem>();
     app.UnregisterSystem<UISystem>();
+    app.UnregisterSystem<AttackerSystem>();
 }

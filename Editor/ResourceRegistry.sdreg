@@ -365,14 +365,14 @@ Resources:
       Path: Assets\Buildings\Gate.sdmesh
     - Id: 8329328333672704882
       Path: empty_mesh
-    - Id: 9560339930850446458
-      Path: Assets\Buildings\Block Sign.001.sdmesh
-    - Id: 8592016916215456372
-      Path: Assets\Sphere.sdmesh
-    - Id: 10713606887341580765
-      Path: Assets\Raw\Kachujin.sdmesh
     - Id: 18090839453669292969
       Path: empty_mesh
+    - Id: 9560339930850446458
+      Path: Assets\Buildings\Block Sign.001.sdmesh
+    - Id: 10713606887341580765
+      Path: Assets\Raw\Kachujin.sdmesh
+    - Id: 8592016916215456372
+      Path: Assets\Sphere.sdmesh
     - Id: 11899216318523687193
       Path: Assets\Cube.001.sdmesh
     - Id: 12389094204162315436

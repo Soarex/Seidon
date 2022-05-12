@@ -30,11 +30,13 @@ namespace Seidon
 		CharacterControllerCallbacks* characterControllerCallbacks;
 
 		ComponentCallbackId cubeColliderAddedCallbackId;
+		ComponentCallbackId meshColliderAddedCallbackId;
 		ComponentCallbackId staticRigidbodyAddedCallbackId;
 		ComponentCallbackId dynamicRigidbodyAddedCallbackId;
 		ComponentCallbackId characterControllerAddedCallbackId;
 
 		ComponentCallbackId cubeColliderRemovedCallbackId;
+		ComponentCallbackId meshColliderRemovedCallbackId;
 		ComponentCallbackId staticRigidbodyRemovedCallbackId;
 		ComponentCallbackId dynamicRigidbodyRemovedCallbackId;
 		ComponentCallbackId characterControllerRemovedCallbackId;
@@ -49,11 +51,13 @@ namespace Seidon
 
 	private:
 		void SetupCubeCollider(EntityId id);
+		void SetupMeshCollider(EntityId id);
 		void SetupStaticRigidbody(EntityId id);
 		void SetupDynamicRigidbody(EntityId id);
 		void SetupCharacterController(EntityId id);
 
 		void DeleteCubeCollider(EntityId id);
+		void DeleteMeshCollider(EntityId id);
 		void DeleteStaticRigidbody(EntityId id);
 		void DeleteDynamicRigidbody(EntityId id);
 		void DeleteCharacterController(EntityId id);

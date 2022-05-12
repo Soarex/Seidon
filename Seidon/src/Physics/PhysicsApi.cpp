@@ -30,7 +30,6 @@ namespace Seidon
 			return;
 		}
 
-		/*
 		cooking = PxCreateCooking(PX_PHYSICS_VERSION, *foundation, PxCookingParams(scale));
 
 		if (!cooking)
@@ -38,7 +37,7 @@ namespace Seidon
 			std::cerr << "Physx cooking initialization error" << std::endl;
 			return;
 		}
-		*/
+		
 		if (!PxInitExtensions(*physics, pvd))
 		{
 			std::cerr << "Physx extensions initialization error" << std::endl;

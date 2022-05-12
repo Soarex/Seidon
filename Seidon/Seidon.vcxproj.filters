@@ -255,6 +255,12 @@
     <ClCompile Include="src\Physics\CharacterControllerCallbacks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Physics\DynamicActor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics\PhysicsShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Shader.h">
@@ -822,6 +828,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Ecs\EnttWrappers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\DynamicActor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysxSceneQueryResult.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics\PhysicsShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

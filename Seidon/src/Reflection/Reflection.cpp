@@ -508,4 +508,25 @@ namespace Seidon
 
 		return Types::UNKNOWN;
 	}
+
+	void MetaType::CopyMember(const std::string& memberName, void* srcData, void* dstData)
+	{
+		MemberData& memberData = nameToMember.at(memberName);
+
+		byte* srcMember = (byte*)srcData + memberData.offset;
+		byte* dstMember = (byte*)dstData + memberData.offset;
+
+		memcpy(dstMember, srcMember, memberData.size);
+	}
+
+	void MetaType::CopyMembers(void* srcData, void* dstData)
+	{
+		for (MemberData& data : members)
+		{
+			byte* srcMember = (byte*)srcData + data.offset;
+			byte* dstMember = (byte*)dstData + data.offset;
+
+			memcpy(dstMember, srcMember, data.size);
+		}
+	}
 }

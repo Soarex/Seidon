@@ -2,6 +2,7 @@
 
 #define PVD_HOST "127.0.0.1"
 
+#include <Physx/PxConfig.h>
 #include <Physx/PxPhysicsAPI.h>
 #include <Physx/extensions/PxDefaultErrorCallback.h>
 #include <Physx/extensions/PxDefaultAllocator.h>

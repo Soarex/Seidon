@@ -7,6 +7,7 @@
 
 #include "../Ecs/Scene.h"
 #include "../Graphics/Mesh.h"
+#include "../Graphics/Material.h"
 #include "../Graphics/HdrCubemap.h"
 #include "../Graphics/Armature.h"
 #include "../Animation/Animation.h"

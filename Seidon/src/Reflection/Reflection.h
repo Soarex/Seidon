@@ -20,7 +20,9 @@
 
 namespace Seidon
 {
-	typedef unsigned char Byte;
+	typedef unsigned char byte;
+
+	class Material;
 
 	enum class Types
 	{
@@ -135,6 +137,9 @@ namespace Seidon
 			if (typeid(U).hash_code() == typeid(Mesh*).hash_code())
 				data.type = Types::MESH;
 
+			if (typeid(U).hash_code() == typeid(Material*).hash_code())
+				data.type = Types::MATERIAL;
+
 			if (typeid(U).hash_code() == typeid(Animation*).hash_code())
 				data.type = Types::ANIMATION;
 
@@ -184,6 +189,10 @@ namespace Seidon
 
 			return *(T*)((byte*)(data) + memberData.offset);
 		}
+
+		void CopyMember(const std::string& memberName, void* srcData, void* dstData);
+		void CopyMembers(void* srcData, void* dstData);
+		
 
 		void Save(std::ofstream& out, byte* data);
 		void Load(std::ifstream& in, byte* data);

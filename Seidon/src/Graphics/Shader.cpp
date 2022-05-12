@@ -105,6 +105,7 @@ namespace Seidon
             }
 
             bufferLayout->members.push_back(member);
+            bufferLayout->nameToMember[member.name] = member;
         }
 
         if (!endFound)

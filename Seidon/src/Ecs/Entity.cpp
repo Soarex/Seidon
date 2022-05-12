@@ -148,7 +148,7 @@ namespace Seidon
 
 			YAML::Node membersNode = componentNode["Members"];
 
-			Byte* data = (Byte*)metaType.Add(*this);
+			byte* data = (byte*)metaType.Add(*this);
 
 			for (int i = 0 ; i < metaType.members.size(); i++)
 			{
@@ -163,7 +163,7 @@ namespace Seidon
 					return;
 				}
 
-				Byte* member = data + memberData.offset;
+				byte* member = data + memberData.offset;
 
 				switch(memberData.type)
 				{

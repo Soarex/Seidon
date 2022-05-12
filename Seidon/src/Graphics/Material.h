@@ -1,8 +1,11 @@
 #pragma once
-#include <string>
-#include <glm/vec3.hpp>
 #include "Texture.h"
 #include "Shader.h"
+#include "../Reflection/Reflection.h"
+
+#include <glm/vec3.hpp>
+
+#include <string>
 
 namespace Seidon
 {
@@ -23,5 +26,17 @@ namespace Seidon
 		void SaveAsync(const std::string& path);
 		void Load(const std::string& path);
 		void LoadAsync(const std::string& path);
+
+		template<typename T>
+		void ModifyProperty(const std::string& propertyName, const T& value)
+		{
+			shader->GetBufferLayout()->ModifyMember(propertyName, data, value);
+		}
+
+		template<typename T>
+		T& GetProperty(const std::string& propertyName)
+		{
+			return shader->GetBufferLayout()->GetMember(propertyName, data);
+		}
 	};
 }

@@ -88,7 +88,8 @@ namespace Seidon
 
 		RegisterComponent<CubeColliderComponent>()
 			.AddMember("Offset", &CubeColliderComponent::offset)
-			.AddMember("Half Extents", &CubeColliderComponent::halfExtents);
+			.AddMember("Half Extents", &CubeColliderComponent::halfExtents)
+			.OnChange = CubeColliderComponent::Invalidate;
 
 		RegisterComponent<MeshColliderComponent>()
 			.AddMember("Mesh", &MeshColliderComponent::mesh);

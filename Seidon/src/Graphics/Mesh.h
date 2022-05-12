@@ -1,11 +1,11 @@
 #pragma once
+#include "Vertex.h"
+#include "../Core/UUID.h"
+
 #include <Glad/glad.h>
 
 #include <vector>
 #include <string>
-
-#include "Vertex.h"
-#include "Material.h"
 
 namespace Seidon
 {

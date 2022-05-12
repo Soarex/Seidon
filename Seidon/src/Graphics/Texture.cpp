@@ -153,7 +153,7 @@ namespace Seidon
             break;
         }
 
-        Byte* pixels = new Byte[(long long)width * height * elementsPerPixel];
+        byte* pixels = new byte[(long long)width * height * elementsPerPixel];
         
         Bind(0);
         GL_CHECK(glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)format, GL_UNSIGNED_BYTE, pixels));
@@ -172,7 +172,7 @@ namespace Seidon
         out.write((char*)&height, sizeof(unsigned int));
         out.write((char*)&format, sizeof(TextureFormat));
 
-        out.write((char*)pixels, sizeof(Byte) * width * height * elementsPerPixel);
+        out.write((char*)pixels, sizeof(byte) * width * height * elementsPerPixel);
 
         delete[] pixels;
     }
@@ -202,7 +202,7 @@ namespace Seidon
             break;
         }
 
-        Byte* pixels = new Byte[(long long)width * height * elementsPerPixel];
+        byte* pixels = new byte[(long long)width * height * elementsPerPixel];
 
         Bind(0);
         GL_CHECK(glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)format, GL_UNSIGNED_BYTE, pixels));
@@ -222,7 +222,7 @@ namespace Seidon
                 out.write((char*)&height, sizeof(unsigned int));
                 out.write((char*)&format, sizeof(TextureFormat));
 
-                out.write((char*)pixels, sizeof(Byte) * width * height * elementsPerPixel);
+                out.write((char*)pixels, sizeof(byte) * width * height * elementsPerPixel);
 
                 delete[] pixels;
             }
@@ -280,9 +280,9 @@ namespace Seidon
             break;
         }
 
-        Byte* pixels = new Byte[(long long)width * height * elementsPerPixel];
+        byte* pixels = new byte[(long long)width * height * elementsPerPixel];
 
-        in.read((char*)pixels, sizeof(Byte) * width * height * elementsPerPixel);
+        in.read((char*)pixels, sizeof(byte) * width * height * elementsPerPixel);
 
 
         TextureFormat internalFormat = format;
@@ -343,9 +343,9 @@ namespace Seidon
                     break;
                 }
 
-                Byte* pixels = new Byte[(long long)width * height * elementsPerPixel];
+                byte* pixels = new byte[(long long)width * height * elementsPerPixel];
 
-                in.read((char*)pixels, sizeof(Byte) * width * height * elementsPerPixel);
+                in.read((char*)pixels, sizeof(byte) * width * height * elementsPerPixel);
 
 
                 TextureFormat internalFormat = format;

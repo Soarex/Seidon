@@ -153,7 +153,7 @@ namespace Seidon
 
 			YAML::Node membersNode = systemNode["Members"];
 
-			Byte* data = (Byte*)metaType.Add(scene);
+			byte* data = (byte*)metaType.Add(scene);
 
 			for (int i = 0; i < metaType.members.size(); i++)
 			{
@@ -168,7 +168,7 @@ namespace Seidon
 					return;
 				}
 
-				Byte* member = data + memberData.offset;
+				byte* member = data + memberData.offset;
 
 				switch (memberData.type)
 				{
@@ -304,7 +304,7 @@ namespace Seidon
 	{
 		auto& srcRegistry = registry;
 		auto& dstRegistry = other->registry;
-		std::unordered_map<UUID, entt::entity> enttMap;
+		std::unordered_map<UUID, EntityId> enttMap;
 
 		auto idView = srcRegistry.view<IDComponent>();
 		for (auto e : idView)
@@ -323,7 +323,7 @@ namespace Seidon
 					if (metaType.Has(Entity(entityId, this)))
 					{
 						UUID uuid = srcRegistry.get<IDComponent>(entityId).ID;
-						entt::entity dstEnttID = enttMap.at(uuid);
+						EntityId dstEnttID = enttMap.at(uuid);
 
 						metaType.Copy(Entity(entityId, this), Entity(dstEnttID, other));
 					}
