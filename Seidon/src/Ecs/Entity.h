@@ -5,8 +5,6 @@
 #include "Components.h"
 #include "entt/entt.hpp"
 
-#include <yaml-cpp/yaml.h>
-
 #include <iostream>
 
 namespace Seidon
@@ -23,11 +21,9 @@ namespace Seidon
 		Entity(const Entity& entity) = default;
 		Entity(entt::entity id, Scene* scene);
 
-		void Save(std::ofstream& fileOut);
-		void SaveText(YAML::Emitter& out);
+		void Save(std::ofstream& out);
 
-		void Load(std::ifstream& fileIn);
-		void LoadText(YAML::Node& entityNode);
+		void Load(std::ifstream& in);
 
 		Entity Duplicate();
 

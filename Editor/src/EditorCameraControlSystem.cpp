@@ -21,7 +21,7 @@ namespace Seidon
 			Entity camera = { e, scene };
 			TransformComponent& cameraTransform = camera.GetComponent<TransformComponent>();
 
-			glm::vec3 forward = cameraTransform.GetForwardDirection();
+			glm::vec3 forward = -cameraTransform.GetForwardDirection();
 			forward = glm::normalize(forward);
 
 			glm::vec3 right = cameraTransform.GetRightDirection();

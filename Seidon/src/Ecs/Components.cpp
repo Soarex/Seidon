@@ -68,13 +68,13 @@ namespace Seidon
 
 	void CharacterControllerComponent::Move(TransformComponent& transform, glm::vec3 velocity, float deltaTime)
 	{
-		if (!runtimeController) return;
+		if (!runtimeController.IsInitialized()) return;
 
-		physx::PxController& controller = *(physx::PxController*)runtimeController;
+		physx::PxController& controller = *runtimeController.GetInternalController();
 
 		physx::PxVec3 v = { velocity.x, velocity.y, velocity.z };
 
-		physx::PxControllerCollisionFlags collisionFlags = controller.move(v * deltaTime, 0.01, deltaTime, physx::PxControllerFilters());
+		physx::PxControllerCollisionFlags collisionFlags = controller.move(v * deltaTime, minMoveDistance, deltaTime, physx::PxControllerFilters());
 		isGrounded = collisionFlags.isSet(physx::PxControllerCollisionFlag::eCOLLISION_DOWN);
 
 		physx::PxExtendedVec3 p = controller.getPosition();

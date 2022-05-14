@@ -1,7 +1,6 @@
 #include "ResourceManager.h"
 
 #include <unordered_set>
-#include <yaml-cpp/yaml.h>
 
 #include <iostream>
 #include <fstream>
@@ -117,131 +116,203 @@ namespace Seidon
         idToAnimationPath.clear();
     }
 
-    void ResourceManager::SaveText(const std::string& path)
+    void ResourceManager::Save(std::ofstream& out)
     {
-        YAML::Emitter out;
-        out << YAML::BeginMap;
-        out << YAML::Key << "Resources";
+        size_t size = idToTexturePath.size();
+        out.write((char*)&size, sizeof(size_t));
 
-        out << YAML::BeginMap;
-        
-        out << YAML::Key << "Textures" << YAML::BeginSeq;
         for (auto& [id, path] : idToTexturePath)
         {
-            out << YAML::BeginMap;
-            out << YAML::Key << "Id" << YAML::Value << id;
-            out << YAML::Key << "Path" << YAML::Value << path;
-            out << YAML::EndMap;
-        }
-        out << YAML::EndSeq;
+            out.write((char*)&id, sizeof(UUID));
 
-        out << YAML::Key << "Meshes" << YAML::BeginSeq;
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+        size = idToMeshPath.size();
+        out.write((char*)&size, sizeof(size_t));
+
         for (auto& [id, path] : idToMeshPath)
         {
-            out << YAML::BeginMap;
-            out << YAML::Key << "Id" << YAML::Value << id;
-            out << YAML::Key << "Path" << YAML::Value << path;
-            out << YAML::EndMap;
-        }
-        out << YAML::EndSeq;
+            out.write((char*)&id, sizeof(UUID));
 
-        out << YAML::Key << "Materials" << YAML::BeginSeq;
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+        size = idToMaterialPath.size();
+        out.write((char*)&size, sizeof(size_t));
+
         for (auto& [id, path] : idToMaterialPath)
         {
-            out << YAML::BeginMap;
-            out << YAML::Key << "Id" << YAML::Value << id;
-            out << YAML::Key << "Path" << YAML::Value << path;
-            out << YAML::EndMap;
-        }
-        out << YAML::EndSeq;
+            out.write((char*)&id, sizeof(UUID));
 
-        out << YAML::Key << "Cubemaps" << YAML::BeginSeq;
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+        size = idToCubemapPath.size();
+        out.write((char*)&size, sizeof(size_t));
+
         for (auto& [id, path] : idToCubemapPath)
         {
-            out << YAML::BeginMap;
-            out << YAML::Key << "Id" << YAML::Value << id;
-            out << YAML::Key << "Path" << YAML::Value << path;
-            out << YAML::EndMap;
-        }
-        out << YAML::EndSeq;
+            out.write((char*)&id, sizeof(UUID));
 
-        out << YAML::Key << "Armatures" << YAML::BeginSeq;
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+        size = idToArmaturePath.size();
+        out.write((char*)&size, sizeof(size_t));
+
         for (auto& [id, path] : idToArmaturePath)
         {
-            out << YAML::BeginMap;
-            out << YAML::Key << "Id" << YAML::Value << id;
-            out << YAML::Key << "Path" << YAML::Value << path;
-            out << YAML::EndMap;
-        }
-        out << YAML::EndSeq;
+            out.write((char*)&id, sizeof(UUID));
 
-        out << YAML::Key << "Animations" << YAML::BeginSeq;
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+        size = idToAnimationPath.size();
+        out.write((char*)&size, sizeof(size_t));
+        
         for (auto& [id, path] : idToAnimationPath)
         {
-            out << YAML::BeginMap;
-            out << YAML::Key << "Id" << YAML::Value << id;
-            out << YAML::Key << "Path" << YAML::Value << path;
-            out << YAML::EndMap;
-        }
-        out << YAML::EndSeq;
+            out.write((char*)&id, sizeof(UUID));
 
-        out << YAML::Key << "Shaders" << YAML::BeginSeq;
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+        size = idToShaderPath.size();
+        out.write((char*)&size, sizeof(size_t));
+
         for (auto& [id, path] : idToShaderPath)
         {
-            out << YAML::BeginMap;
-            out << YAML::Key << "Id" << YAML::Value << id;
-            out << YAML::Key << "Path" << YAML::Value << path;
-            out << YAML::EndMap;
+            out.write((char*)&id, sizeof(UUID));
+
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
         }
-        out << YAML::EndSeq;
-
-        out << YAML::EndMap;
-        out << YAML::EndMap;
-
-        std::ofstream outStream(path);
-        outStream << out.c_str();
     }
 
-    void ResourceManager::LoadText(const std::string& path)
+    void ResourceManager::Load(std::ifstream& in)
     {
-        //Destroy();
-        //Init();
-        YAML::Node data;
+        char buffer[500];
+        size_t size = 0;
 
-        try
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
         {
-            data = YAML::LoadFile(path);
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
+
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
+
+            std::string path = std::string(buffer);
+
+            idToTexturePath[id] = path;
         }
-        catch (YAML::ParserException e)
+
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
         {
-            std::cout << e.msg << std::endl;
-            return;
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
+
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
+
+            std::string path = std::string(buffer);
+
+            idToMeshPath[id] = path;
         }
 
-        YAML::Node resources = data["Resources"];
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
+        {
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
 
-        for (YAML::Node texture : resources["Textures"])
-            idToTexturePath[texture["Id"].as<uint64_t>()] = texture["Path"].as<std::string>();
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
 
-        for (YAML::Node mesh : resources["Meshes"])
-            idToMeshPath[mesh["Id"].as<uint64_t>()] = mesh["Path"].as<std::string>();
+            std::string path = std::string(buffer);
 
-        for (YAML::Node material : resources["Materials"])
-            idToMaterialPath[material["Id"].as<uint64_t>()] = material["Path"].as<std::string>();
+            idToMaterialPath[id] = path;
+        }
 
-        for (YAML::Node shader : resources["Shaders"])
-            idToShaderPath[shader["Id"].as<uint64_t>()] = shader["Path"].as<std::string>();
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
+        {
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
 
-        for (YAML::Node cubemap : resources["Cubemaps"])
-            idToCubemapPath[cubemap["Id"].as<uint64_t>()] = cubemap["Path"].as<std::string>();
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
 
-        for (YAML::Node armature : resources["Armatures"])
-            idToArmaturePath[armature["Id"].as<uint64_t>()] = armature["Path"].as<std::string>();
+            std::string path = std::string(buffer);
 
-        for (YAML::Node animation : resources["Animations"])
-            idToAnimationPath[animation["Id"].as<uint64_t>()] = animation["Path"].as<std::string>();
+            idToCubemapPath[id] = path;
+        }
+
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
+        {
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
+
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
+
+            std::string path = std::string(buffer);
+
+            idToArmaturePath[id] = path;
+        }
+
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
+        {
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
+
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
+
+            std::string path = std::string(buffer);
+
+            idToAnimationPath[id] = path;
+        }
+
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
+        {
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
+
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
+
+            std::string path = std::string(buffer);
+
+            idToShaderPath[id] = path;
+        }
     }
-
 
     Shader* ResourceManager::LoadShader(const std::string& path, UUID id)
     {   

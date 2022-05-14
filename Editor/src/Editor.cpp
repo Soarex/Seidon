@@ -25,7 +25,10 @@ namespace Seidon
         delete data;
 
         if (std::filesystem::exists("ResourceRegistry.sdreg"))
-            resourceManager->LoadText("ResourceRegistry.sdreg");
+        {
+            std::ifstream in("ResourceRegistry.sdreg", std::ios::in | std::ios::binary);
+            resourceManager->Load(in);
+        }
 
         drawColliders = [&](Renderer& renderer)
         {
@@ -54,7 +57,7 @@ namespace Seidon
 		window->SetName("Seidon Editor");
         window->SetSize(1280, 720);
 
-        scene = new Scene("Main Scene");
+        scene = new Scene("Editor Scene");
         auto& rs = scene->AddSystem<RenderSystem>();
         scene->AddSystem<EditorCameraControlSystem>();
         scene->Init();
@@ -122,8 +125,10 @@ namespace Seidon
                         runtimeSystems.Destroy();
                         scene->Destroy();
 
-                        Scene tempScene;
-                        tempScene.LoadText(filepath);
+                        Scene tempScene("Temporary Scene");
+
+                        std::ifstream in(filepath, std::ios::in | std::ios::binary);
+                        tempScene.Load(in);
                         
                         tempScene.CopyEntities(scene);
                         tempScene.CopySystems(&runtimeSystems);
@@ -140,13 +145,13 @@ namespace Seidon
                     std::string filepath = SaveFile("Seidon Scene (*.sdscene)\0*.sdscene\0");
                     if (!filepath.empty())
                     {
-                        std::ofstream out(filepath);
-                        Scene tempScene;
+                        std::ofstream out(filepath, std::ios::out | std::ios::binary);
+                        Scene tempScene("Temporary Scene");
 
                         scene->CopyEntities(&tempScene);
                         runtimeSystems.CopySystems(&tempScene);
 
-                        tempScene.SaveText(out);
+                        tempScene.Save(out);
                     }
                 }
 
@@ -173,7 +178,7 @@ namespace Seidon
             {
                 guizmoOperation = -1;
 
-                runtimeScene = new Scene(scene->GetName());
+                runtimeScene = new Scene("Runtime Scene");
                 scene->CopyEntities(runtimeScene);
                 runtimeSystems.CopySystems(runtimeScene);
 
@@ -252,7 +257,9 @@ namespace Seidon
                 scene->Destroy();
 
                 Scene tempScene;
-                tempScene.LoadText(path);
+
+                std::ifstream in(path, std::ios::in | std::ios::binary);
+                tempScene.Load(in);
 
                 tempScene.CopyEntities(scene);
                 tempScene.CopySystems(&runtimeSystems);
@@ -348,9 +355,12 @@ namespace Seidon
 
 	void Editor::Destroy()
 	{
-        resourceManager->SaveText("ResourceRegistry.sdreg");
+        std::ofstream out("ResourceRegistry.sdreg", std::ios::out | std::ios::binary);
+        resourceManager->Save(out);
+
         editorSystems.Destroy();
         runtimeSystems.Destroy();
+
         e.Destroy();
         e.Unbind();
 

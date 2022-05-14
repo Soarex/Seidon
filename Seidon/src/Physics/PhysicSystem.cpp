@@ -74,42 +74,42 @@ namespace Seidon
 		*/
 		scene->CreateViewAndIterate<StaticRigidbodyComponent>
 		(
-				[&](EntityId id, StaticRigidbodyComponent&)
-				{
-					SetupStaticRigidbody(id);
-				}
+			[&](EntityId id, StaticRigidbodyComponent&)
+			{
+				SetupStaticRigidbody(id);
+			}
 		);
 
 		staticRigidbodyAddedCallbackId = scene->AddComponentAddedCallback<StaticRigidbodyComponent>([&](EntityId id)
-			{
-				SetupStaticRigidbody(id);
-			});
+		{
+			SetupStaticRigidbody(id);
+		});
 
 		staticRigidbodyRemovedCallbackId = scene->AddComponentRemovedCallback<StaticRigidbodyComponent>([&](EntityId id)
-			{
-				DeleteStaticRigidbody(id);
-			});
+		{
+			DeleteStaticRigidbody(id);
+		});
 
 		/*
 			Dynamic Rigidbodies
 		*/
 		scene->CreateViewAndIterate<DynamicRigidbodyComponent>
-			(
-				[&](EntityId id, DynamicRigidbodyComponent&)
-				{
-					SetupDynamicRigidbody(id);
-				}
+		(
+			[&](EntityId id, DynamicRigidbodyComponent&)
+			{
+				SetupDynamicRigidbody(id);
+			}
 		);
 
 		dynamicRigidbodyAddedCallbackId = scene->AddComponentAddedCallback<DynamicRigidbodyComponent>([&](EntityId id)
-			{
-				SetupDynamicRigidbody(id);
-			});
+		{
+			SetupDynamicRigidbody(id);
+		});
 
 		dynamicRigidbodyRemovedCallbackId = scene->AddComponentRemovedCallback<DynamicRigidbodyComponent>([&](EntityId id)
-			{
-				DeleteDynamicRigidbody(id);
-			});
+		{
+			DeleteDynamicRigidbody(id);
+		});
 
 		/*
 			Character controllers
@@ -331,14 +331,14 @@ namespace Seidon
 		{
 			StaticRigidbodyComponent& r = e.GetComponent<StaticRigidbodyComponent>();
 
-			if (r.runtimeBody) ((PxRigidStatic*)r.runtimeBody)->attachShape(*shape);
+			if (r.actor.IsInitialized() && r.actor.referenceScene == physxScene) r.actor.GetInternalActor()->attachShape(*shape);
 		}
 
 		if (e.HasComponent<DynamicRigidbodyComponent>())
 		{
 			DynamicRigidbodyComponent& r = e.GetComponent<DynamicRigidbodyComponent>();
 
-			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->attachShape(*shape);
+			if (r.actor.IsInitialized() && r.actor.referenceScene == physxScene) r.actor.GetInternalActor()->attachShape(*shape);
 		}
 	}
 
@@ -362,7 +362,9 @@ namespace Seidon
 		PxController* c = characterControllerManager->createController(desc);
 		c->getActor()->userData = (void*)id;
 
-		controller.runtimeController = c;
+		controller.runtimeController.physxController = c;
+		controller.runtimeController.referenceScene = physxScene;
+		controller.runtimeController.initialized = true;
 	}
 
 	void PhysicSystem::SetupCubeCollider(EntityId id)
@@ -388,14 +390,14 @@ namespace Seidon
 		{
 			StaticRigidbodyComponent& r = e.GetComponent<StaticRigidbodyComponent>();
 
-			if (r.runtimeBody) ((PxRigidStatic*)r.runtimeBody)->attachShape(*shape);
+			if (r.actor.IsInitialized() && r.actor.referenceScene == physxScene) r.actor.GetInternalActor()->attachShape(*shape);
 		}
 
 		if (e.HasComponent<DynamicRigidbodyComponent>())
 		{
 			DynamicRigidbodyComponent& r = e.GetComponent<DynamicRigidbodyComponent>();
 
-			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->attachShape(*shape);
+			if (r.actor.IsInitialized() && r.actor.referenceScene == physxScene) r.actor.GetInternalActor()->attachShape(*shape);
 		}
 	}
 
@@ -429,7 +431,9 @@ namespace Seidon
 		}
 
 		physxScene->addActor(*actor);
-		rigidbody.runtimeBody = actor;
+		rigidbody.actor.physxActor = actor;
+		rigidbody.actor.referenceScene = physxScene;
+		rigidbody.actor.initialized = true;
 	}
 
 	void PhysicSystem::SetupDynamicRigidbody(EntityId id)
@@ -482,7 +486,7 @@ namespace Seidon
 		if (e.HasComponent<StaticRigidbodyComponent>())
 		{
 			StaticRigidbodyComponent& r = e.GetComponent<StaticRigidbodyComponent>();
-			if (r.runtimeBody) ((PxRigidStatic*)r.runtimeBody)->detachShape(*shape);
+			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->detachShape(*shape);
 		}
 
 		if (e.HasComponent<DynamicRigidbodyComponent>())
@@ -506,7 +510,7 @@ namespace Seidon
 		if (e.HasComponent<StaticRigidbodyComponent>())
 		{
 			StaticRigidbodyComponent& r = e.GetComponent<StaticRigidbodyComponent>();
-			if (r.runtimeBody) ((PxRigidStatic*)r.runtimeBody)->detachShape(*shape);
+			if (r.actor.IsInitialized()) r.actor.GetInternalActor()->detachShape(*shape);
 		}
 
 		if (e.HasComponent<DynamicRigidbodyComponent>())
@@ -525,10 +529,10 @@ namespace Seidon
 		Entity e = scene->GetEntityByEntityId(id);
 		StaticRigidbodyComponent& rigidbody = e.GetComponent<StaticRigidbodyComponent>();
 
-		PxRigidActor* actor = (PxRigidActor*)rigidbody.runtimeBody;
+		PxRigidActor* actor = rigidbody.actor.GetInternalActor();
 		actor->release();
 
-		rigidbody.runtimeBody = nullptr;
+		rigidbody.actor.initialized = false;
 	}
 
 	void PhysicSystem::DeleteDynamicRigidbody(EntityId id)
@@ -547,9 +551,11 @@ namespace Seidon
 		Entity e = scene->GetEntityByEntityId(id);
 		CharacterControllerComponent& controller = e.GetComponent<CharacterControllerComponent>();
 
-		PxController* c = (PxController*)controller.runtimeController;
+		PxController* c = controller.runtimeController.GetInternalController();
 		c->release();
 
-		controller.runtimeController = nullptr;
+		controller.runtimeController.physxController = nullptr;
+		controller.runtimeController.referenceScene = nullptr;
+		controller.runtimeController.initialized = false;
 	}
 }

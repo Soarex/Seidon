@@ -191,12 +191,14 @@
     <ClCompile Include="src\Graphics\Mesh.cpp" />
     <ClCompile Include="src\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Graphics\Sprite.cpp" />
+    <ClCompile Include="src\Physics\CharacterController.cpp" />
     <ClCompile Include="src\Physics\CharacterControllerCallbacks.cpp" />
     <ClCompile Include="src\Physics\DynamicActor.cpp" />
     <ClCompile Include="src\Physics\PhysicsApi.cpp" />
     <ClCompile Include="src\Physics\PhysicsShape.cpp" />
     <ClCompile Include="src\Physics\PhysicSystem.cpp" />
     <ClCompile Include="src\Ecs\System.cpp" />
+    <ClCompile Include="src\Physics\StaticActor.cpp" />
     <ClCompile Include="src\Reflection\Reflection.cpp" />
     <ClCompile Include="src\Utils\MatrixDecompose.cpp" />
     <ClCompile Include="src\Utils\AssetImporter.cpp" />
@@ -281,6 +283,7 @@
     <ClInclude Include="src\Graphics\Renderer.h" />
     <ClInclude Include="src\Graphics\Sprite.h" />
     <ClInclude Include="src\Graphics\Vertex.h" />
+    <ClInclude Include="src\Physics\CharacterController.h" />
     <ClInclude Include="src\Physics\CharacterControllerCallbacks.h" />
     <ClInclude Include="src\Physics\CollisionData.h" />
     <ClInclude Include="src\Physics\DynamicActor.h" />
@@ -289,6 +292,7 @@
     <ClInclude Include="src\Physics\PhysicsShape.h" />
     <ClInclude Include="src\Physics\PhysicSystem.h" />
     <ClInclude Include="src\Physics\PhysxSceneQueryResult.h" />
+    <ClInclude Include="src\Physics\StaticActor.h" />
     <ClInclude Include="src\Reflection\Reflection.h" />
     <ClInclude Include="src\Utils\MatrixDecompose.h" />
     <ClInclude Include="src\Utils\AssetImporter.h" />

@@ -304,7 +304,7 @@ namespace Seidon
 					UUID id;
 					in.read((char*)&id, sizeof(UUID));
 
-					if (resourceManager.IsMeshRegistered(id))
+					if (resourceManager.IsMaterialRegistered(id))
 						item.push_back(resourceManager.GetOrLoadMaterial(id));
 					else
 						item.push_back(resourceManager.GetMaterial("default_material"));

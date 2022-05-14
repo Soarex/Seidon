@@ -39,11 +39,8 @@ namespace Seidon
 		void Update(float deltaTime);
 		void Destroy();
 
-		void Save(std::ofstream& fileOut);
-		void SaveText(std::ofstream& fileOut);
-
-		void Load(std::ifstream& fileIn);
-		void LoadText(const std::string& path);
+		void Save(std::ofstream& out);
+		void Load(std::ifstream& in);
 
 		Scene* Duplicate();
 		void CopyEntities(Scene* other);

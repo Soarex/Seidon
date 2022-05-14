@@ -42,8 +42,8 @@ namespace Seidon
 		void Init();
 		void Destroy();
 
-		void SaveText(const std::string& path);
-		void LoadText(const std::string& path);
+		void Save(std::ofstream& out);
+		void Load(std::ifstream& in);
 		
 		Shader* LoadShader(const std::string& path, UUID id = UUID());
 		Mesh* LoadMesh(const std::string& path);

@@ -157,6 +157,17 @@ namespace Seidon
 		}
 
 		template<typename Type>
+		bool IsComponentRegistered()
+		{
+			return registeredComponentsIndexToName.count(typeid(Type).name()) > 0;
+		}
+
+		bool IsComponentRegistered(const std::string& name)
+		{
+			return registeredComponentsIndexToName.count(name) > 0;
+		}
+
+		template<typename Type>
 		SystemMetaType GetSystemMetaType()
 		{
 			return registeredSystems[registeredSystemsIndexToName.at(typeid(Type).name())];
@@ -171,6 +182,17 @@ namespace Seidon
 		std::vector<SystemMetaType> GetSystemsMetaTypes()
 		{		
 			return registeredSystems;
+		}
+
+		template<typename Type>
+		bool IsSystemRegistered()
+		{
+			return registeredSystemsIndexToName.count(typeid(Type).name()) > 0;
+		}
+
+		bool IsSystemRegistered(const std::string& name)
+		{
+			return registeredSystemsIndexToName.count(name) > 0;
 		}
 
 		template<typename Type>

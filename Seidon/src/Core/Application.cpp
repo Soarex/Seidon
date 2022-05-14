@@ -107,6 +107,7 @@ namespace Seidon
 			.AddMember("Collider Height", &CharacterControllerComponent::colliderHeight)
 			.AddMember("Collider Radius", &CharacterControllerComponent::colliderRadius)
 			.AddMember("Contact Offset", &CharacterControllerComponent::contactOffset)
+			.AddMember("Min Movement Distance", &CharacterControllerComponent::minMoveDistance)
 			.AddMember("Max Slope Angle", &CharacterControllerComponent::maxSlopeAngle);
 
 		Init();

@@ -3,13 +3,11 @@
 #include "Prefab.h"
 #include "../Core/Application.h"
 
-#include <yaml-cpp/yaml.h>
 #include <iostream>
 #include <fstream>
 
 namespace Seidon
 {
-
 	Scene::Scene(const std::string& name)
 		: name(name)
 	{
@@ -31,251 +29,94 @@ namespace Seidon
 			system->SysUpdate(deltaTime);
 	}
 
-	void SaveSystems(YAML::Emitter& out, Scene& scene)
+	void Scene::Save(std::ofstream& out)
 	{
-		for (auto& metaType : Application::Get()->GetSystemsMetaTypes())
-		{
-			if (!metaType.Has(scene)) continue;
+		out.write((char*)&id, sizeof(UUID));
 
-			out << YAML::BeginMap;
-			out << YAML::Key << "Name" << metaType.name;
-			out << YAML::Key << "Members" << YAML::BeginSeq;
+		size_t size = name.length() + 1;
 
-			for (auto& member : metaType.members)
-			{
-				out << YAML::BeginMap;
-				unsigned char* obj = (unsigned char*)metaType.Get(scene);
+		out.write((char*)&size, sizeof(size_t));
+		out.write(name.c_str(), size * sizeof(char));
 
-				out << YAML::Key << "Name" << YAML::Value << member.name;
-				out << YAML::Key << "Type" << YAML::Value << (int)member.type;
-
-				switch (member.type)
-				{
-				case Types::ID:
-				{
-					UUID* data = (UUID*)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << *data;
-					break;
-				}
-				case Types::STRING:
-				{
-					std::string* data = (std::string*)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << *data;
-					break;
-				}
-				case Types::FLOAT:
-				{
-					float* data = (float*)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << *data;
-					break;
-				}
-				case Types::BOOL:
-				{
-					bool* data = (bool*)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << *data;
-					break;
-				}
-				case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
-				{
-					glm::vec3* data = (glm::vec3*)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << *data;
-					break;
-				}
-				case Types::TEXTURE:
-				{
-					Texture* t = *(Texture**)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << t->GetId();
-					break;
-				}
-				case Types::MESH:
-				{
-					Mesh* m = *(Mesh**)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << m->id;
-					break;
-				}
-				case Types::MATERIAL_VECTOR:
-				{
-					std::vector<Material*>* v = (std::vector<Material*>*)(obj + member.offset);
-
-					out << YAML::Key << "Value" << YAML::BeginSeq;
-
-					for (Material* m : *v)
-					{
-						out << YAML::BeginMap;
-						out << YAML::Key << "Id" << YAML::Value << m->id;
-						out << YAML::EndMap;
-					}
-					out << YAML::EndSeq;
-					break;
-				}
-				case Types::CUBEMAP:
-				{
-					HdrCubemap* c = *(HdrCubemap**)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << c->GetId();
-					break;
-				}
-				case Types::ANIMATION:
-				{
-					Animation* a = *(Animation**)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << a->id;
-					break;
-				}
-				case Types::ARMATURE:
-				{
-					Armature* a = *(Armature**)(obj + member.offset);
-					out << YAML::Key << "Value" << YAML::Value << a->id;
-					break;
-				}
-				case Types::UNKNOWN:
-				{
-					unsigned char* data = obj + member.offset;
-					out << YAML::Key << "Value" << YAML::BeginSeq;
-
-					for (int i = 0; i < member.size; i++)
-						out << (unsigned int)data[i];
-
-					out << YAML::EndSeq;
-					break;
-				}
-				}
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-			out << YAML::EndMap;
-		}
-	}
-
-	void LoadSystems(YAML::Node& node, Scene& scene)
-	{
-		for (YAML::Node systemNode : node)
-		{
-			SystemMetaType metaType = Application::Get()->GetSystemMetaTypeByName(systemNode["Name"].as<std::string>());
-
-			YAML::Node membersNode = systemNode["Members"];
-
-			byte* data = (byte*)metaType.Add(scene);
-
-			for (int i = 0; i < metaType.members.size(); i++)
-			{
-				YAML::Node memberNode = membersNode[i];
-				MemberData memberData = metaType.members[i];
-
-				if (memberData.name != memberNode["Name"].as<std::string>() || (int)memberData.type != memberNode["Type"].as<int>())
-				{
-					std::cout << "Error parsing file for " << metaType.name << std::endl;
-					std::cout << "Should be " << memberData.name << " but is " << memberNode["Name"].as<std::string>() << std::endl;
-					std::cout << "Should be " << (int)memberData.type << " but is " << memberNode["Type"].as<int>() << std::endl;
-					return;
-				}
-
-				byte* member = data + memberData.offset;
-
-				switch (memberData.type)
-				{
-				case Types::ID:
-					*(UUID*)member = memberNode["Value"].as<uint64_t>();
-					break;
-
-				case Types::STRING:
-					*(std::string*)member = memberNode["Value"].as<std::string>();
-					break;
-
-				case Types::FLOAT:
-					*(float*)member = memberNode["Value"].as<float>();
-					break;
-
-				case Types::BOOL:
-					*(bool*)member = memberNode["Value"].as<bool>();
-					break;
-
-				case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
-					*(glm::vec3*)member = memberNode["Value"].as<glm::vec3>();
-					break;
-
-				case Types::TEXTURE:
-					*(Texture**)member = Application::Get()->GetResourceManager()->GetOrLoadTexture(memberNode["Value"].as<uint64_t>());
-					break;
-
-				case Types::MESH:
-					*(Mesh**)member = Application::Get()->GetResourceManager()->GetOrLoadMesh(memberNode["Value"].as<uint64_t>());
-					break;
-
-				case Types::MATERIAL_VECTOR:
-					for (YAML::Node material : memberNode["Value"])
-						((std::vector<Material*>*)member)->push_back(
-							Application::Get()->GetResourceManager()->GetOrLoadMaterial(material["Id"].as<uint64_t>()));
-					break;
-
-				case Types::CUBEMAP:
-					*(HdrCubemap**)member = Application::Get()->GetResourceManager()->GetOrLoadCubemap(memberNode["Value"].as<uint64_t>());
-					break;
-
-				case Types::ARMATURE:
-					*(Armature**)member = Application::Get()->GetResourceManager()->GetOrLoadArmature(memberNode["Value"].as<uint64_t>());
-					break;
-
-				case Types::ANIMATION:
-					*(Animation**)member = Application::Get()->GetResourceManager()->GetOrLoadAnimation(memberNode["Value"].as<uint64_t>());
-					break;
-
-				case Types::UNKNOWN:
-					break;
-				}
-			}
-		}
-	}
-
-	void Scene::SaveText(std::ofstream& fileOut)
-	{
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Id" << YAML::Value << id;
-		out << YAML::Key << "Name" << YAML::Value << name;
-
-		out << YAML::Key << "Entities" << YAML::BeginSeq;
+		size_t entityCount = registry.alive();
+		out.write((char*)&entityCount, sizeof(size_t));
 
 		registry.each([&](auto entityID)
-			{
-				Entity entity = { entityID, this };
-				entity.SaveText(out);
-			});
+		{
+			Entity entity = { entityID, this };
+			entity.Save(out);
+		});
 
-		out << YAML::EndSeq;
+		size_t systemCount = systems.size();
+		out.write((char*)&systemCount, sizeof(size_t));
 
-		out << YAML::Key << "Systems" << YAML::BeginSeq;
+		for (auto& [name, system] : systems)
+		{
+			SystemMetaType metaType = Application::Get()->GetSystemMetaTypeByName(name);
 
-		SaveSystems(out, *this);
+			size_t size = metaType.name.length() + 1;
 
-		out << YAML::EndSeq;
+			out.write((char*)&size, sizeof(size_t));
+			out.write(metaType.name.c_str(), size * sizeof(char));
 
-		out << YAML::EndMap;
-		fileOut << out.c_str();
+			size_t memberCount = metaType.members.size();
+			out.write((char*)&memberCount, sizeof(size_t));
+
+			metaType.Save(out, (byte*)system);
+		}
 	}
 
-	void Scene::LoadText(const std::string& path)
+	void Scene::Load(std::ifstream& in)
 	{
-		YAML::Node data;
+		in.read((char*)&id, sizeof(UUID));
 
-		try
+		size_t size = 0;
+		char buffer[500];
+
+		in.read((char*)&size, sizeof(size_t));
+		in.read(buffer, size * sizeof(char));
+
+		name = std::string(buffer);
+
+		size_t entityCount = 0;
+		in.read((char*)&entityCount, sizeof(size_t));
+
+		for (int i = 0; i < entityCount; i++)
 		{
-			data = YAML::LoadFile(path);
+			Entity e(registry.create(), this);
+			e.Load(in);
 		}
-		catch (YAML::ParserException e)
+
+		size_t systemCount = 0;
+		in.read((char*)&systemCount, sizeof(size_t));
+
+		for (int i = 0; i < systemCount; i++)
 		{
-			std::cout << e.msg << std::endl;
-			return;
+			size_t size = 0;
+
+			in.read((char*)&size, sizeof(size_t));
+			in.read(buffer, size * sizeof(char));
+
+			if (!Application::Get()->IsSystemRegistered(buffer))
+			{
+				std::cerr << "Serialized system '" << buffer << "' is not a registered system" << std::endl;
+				continue;
+			}
+
+			SystemMetaType metaType = Application::Get()->GetSystemMetaTypeByName(buffer);
+
+			size_t memberCount = 0;
+			in.read((char*)&memberCount, sizeof(size_t));
+
+			if (metaType.members.size() != memberCount)
+			{
+				std::cerr << "Serialized system '" << buffer << "' not compatible with current types" << std::endl;
+				continue;
+			}
+
+			void* system = metaType.Add(*this);
+			metaType.Load(in, (byte*)system);
 		}
-
-		Destroy();
-
-		id = data["Id"].as<uint64_t>();
-		name = data["Name"].as<std::string>();
-
-		for (YAML::Node entityNode : data["Entities"])
-			CreateEntity().LoadText(entityNode);
-
-		YAML::Node systemsNode = data["Systems"];
-		LoadSystems(systemsNode, *this);
 	}
 
 	void Scene::Destroy()
@@ -336,7 +177,10 @@ namespace Seidon
 		const std::vector<SystemMetaType>& systems = Application::Get()->GetSystemsMetaTypes();
 		for (auto& metaType : systems)
 			if (metaType.Has(*this))
-				metaType.Copy(*this, *other);
+			{
+				//metaType.Copy(*this, *other);
+				metaType.Add(*other);
+			}
 	}
 
 	Entity Scene::CreateEntity(const std::string& name, const UUID& id)

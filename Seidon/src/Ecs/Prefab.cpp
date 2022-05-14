@@ -3,8 +3,6 @@
 #include "../Core/Application.h"
 
 #include <fstream>
-#include <iostream>
-#include <yaml-cpp/yaml.h>
 
 namespace Seidon
 {
@@ -38,31 +36,17 @@ namespace Seidon
 
 	void Prefab::Save(const std::string& path)
 	{
-		std::ofstream fileOut(path);
+		std::ofstream out(path, std::ios::out | std::ios::binary);
 
-		YAML::Emitter out;
-
-		referenceEntity.SaveText(out);
-
-		fileOut << out.c_str();
+		referenceEntity.Save(out);
 	}
 
 	void Prefab::Load(const std::string& path)
 	{
-		YAML::Node data;
-
-		try
-		{
-			data = YAML::LoadFile(path);
-		}
-		catch (YAML::ParserException e)
-		{
-			std::cout << e.msg << std::endl;
-			return;
-		}
+		std::ifstream in(path, std::ios::in | std::ios::binary);
 
 		referenceEntity = prefabScene.CreateEntity();
 
-		referenceEntity.LoadText(data);
+		referenceEntity.Load(in);
 	}
 }

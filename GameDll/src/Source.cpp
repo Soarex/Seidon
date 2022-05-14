@@ -98,15 +98,15 @@ public:
             glm::vec3 input = { 0, 0, 0 };
 
             input.x = -inputManager->GetKey(GET_KEYCODE(A)) + inputManager->GetKey(GET_KEYCODE(D));
-            input.z = -inputManager->GetKey(GET_KEYCODE(S)) + inputManager->GetKey(GET_KEYCODE(W));
+            input.z = inputManager->GetKey(GET_KEYCODE(S)) + -inputManager->GetKey(GET_KEYCODE(W));
             
             if (inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_X)) != 0 || inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_Y)) != 0)
             {
                 input.x = inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_X));
-                input.z = -inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_Y));
+                input.z = inputManager->GetGamepadAxis(GET_GAMEPAD_AXISCODE(LEFT_Y));
             }
 
-            if (inputManager->GetGamepadButton(GET_GAMEPAD_BUTTONCODE(CIRCLE)))
+            if (inputManager->GetGamepadButton(GET_GAMEPAD_BUTTONCODE(SQUARE)))
             {
                 Attack(characterController, playerTransform);
             }
@@ -167,19 +167,15 @@ public:
     
     void Attack(Seidon::CharacterControllerComponent& characterController, Seidon::TransformComponent& t)
     {
-        /*
         Seidon::RaycastResult res;
         glm::vec3 pos = t.position;
-        pos.z += t.scale.z + 0.1f;
+        pos += t.GetForwardDirection() * (t.scale.z + 0.1f);
 
-        
-
-        if (!actor.Raycast(pos, { 0, 0, 1 }, 10, res)) return;
+        if (!characterController.runtimeController.Raycast(pos, t.GetForwardDirection(), 10, res)) return;
 
         Seidon::Entity hitEntity = scene->GetEntityByEntityId(res.hitEntityId);
         if (hitEntity.HasComponent<DamageableComponent>())
             hitEntity.GetComponent<DamageableComponent>().hit = true;
-            */
     }
 };
 
