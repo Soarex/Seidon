@@ -18,7 +18,8 @@ void main()
 
 ~FRAGMENT SHADER
 #version 330 core
-out vec4 fragmentColor;
+layout(location = 0) out vec4 fragmentColor;
+layout(location = 1) out int entityOutput;
 
 in vec3 localPosition;
 
@@ -29,4 +30,5 @@ void main()
     vec3 environmentColor = texture(environmentMap, localPosition).rgb;
 
     fragmentColor = vec4(environmentColor, 1.0);
+    entityOutput = -1;
 }

@@ -25,6 +25,14 @@ namespace Seidon
 
 	void Scene::Update(float deltaTime)
 	{
+		CreateViewAndIterate<TransformComponent>
+		(
+			[](EntityId id, TransformComponent& transform)
+			{
+				transform.cacheValid = false;
+			}
+		);
+
 		for (auto& [typeName, system] : systems)
 			system->SysUpdate(deltaTime);
 	}
@@ -187,13 +195,15 @@ namespace Seidon
 	{
 		Entity e(registry.create(), this);
 		e.AddComponent<TransformComponent>();
-		e.AddComponent<IDComponent>(id);
+		UUID i = e.AddComponent<IDComponent>(id).ID;
 		e.AddComponent<MouseSelectionComponent>();
 
 		if (name == "")
 			e.AddComponent<NameComponent>("Entity #" + std::to_string((int)e.ID));
 		else
 			e.AddComponent<NameComponent>(name);
+
+		idToEntityMap[i] = e.ID;
 
 		return e;
 	}
@@ -207,17 +217,21 @@ namespace Seidon
 			if (metaType.Has(prefab.referenceEntity))
 				metaType.Copy(prefab.referenceEntity, e);
 
-		e.AddComponent<IDComponent>(id);
+		e.GetComponent<IDComponent>().ID = id;
 		e.AddComponent<MouseSelectionComponent>();
 
 		if (name != "")
 			e.GetComponent<NameComponent>().name = name;
 
+		idToEntityMap[id] = e.ID;
+		
 		return e;
 	}
 
-	void Scene::DestroyEntity(const Entity& entity)
+	void Scene::DestroyEntity(Entity& entity)
 	{
+		idToEntityMap.erase(entity.GetId());
+
 		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
 		for (auto& metaType : components)
 			if (metaType.Has(entity))
@@ -229,5 +243,10 @@ namespace Seidon
 	Entity Scene::GetEntityByEntityId(EntityId id)
 	{ 
 		return Entity(id, this); 
+	}
+
+	Entity Scene::GetEntityById(UUID id)
+	{
+		return Entity(idToEntityMap.at(id), this);
 	}
 }

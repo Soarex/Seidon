@@ -4,6 +4,8 @@
 #include "Shader.h"
 #include "HdrCubemap.h"
 
+#include "../Ecs/EnttWrappers.h"
+
 #include <unordered_map>
 
 namespace Seidon
@@ -49,7 +51,18 @@ namespace Seidon
 		uint32_t objectCount = 0;
 		std::vector<RenderCommand> commands;
 		std::vector<glm::mat4> transforms;
+		std::vector<int> entityIds;
 		std::vector<MaterialData> materials;
+	};
+
+	struct RiggedMeshData
+	{
+		RenderCommand command;
+		glm::mat4 transform;
+		int entityId;
+		MaterialData material;
+
+		std::vector<glm::mat4>* bones;
 	};
 
 	struct WireframeBatchData
@@ -57,6 +70,7 @@ namespace Seidon
 		uint32_t objectCount = 0;
 		std::vector<RenderCommand> commands;
 		std::vector<glm::mat4> transforms;
+		std::vector<int> entityIds;
 		std::vector<glm::vec4> colors;
 	};
 
@@ -87,12 +101,16 @@ namespace Seidon
 		size_t maxVertexCount;
 		size_t maxObjects;
 
+		int shaderBufferOffsetAlignment;
+
 		std::unordered_map <UUID, std::vector<CacheEntry>> meshCache;
 		std::unordered_map<Shader*, BatchData> batches;
 
 		Shader* wireframeShader;
 		WireframeBatchData wireframeBatch;
 		BatchData spriteObjects;
+
+		std::vector<RiggedMeshData> riggedMeshes;
 
 		RenderStats stats;
 
@@ -102,6 +120,7 @@ namespace Seidon
 		uint32_t instanceDataBuffer;
 
 		uint32_t storageBuffers[3];
+		uint32_t entityIdBuffers[3];
 		uint32_t materialBuffers[3];
 		uint32_t indirectBuffers[3];
 
@@ -113,10 +132,12 @@ namespace Seidon
 		uint32_t indexBufferHeadPosition = 0;
 
 		glm::mat4* storageBufferPointers[3];
+		int* entityIdBufferPointers[3];
 		byte* materialBufferPointers[3];
 		RenderCommand* indirectBufferPointers[3];
 
 		glm::mat4* storageBufferHead = 0;
+		int* entityIdBufferHead = 0;
 		byte* materialBufferHead = 0;
 		RenderCommand* indirectBufferHead = 0;
 
@@ -135,8 +156,9 @@ namespace Seidon
 		void Init();
 		void Begin();
 
-		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform);
-		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform);
+		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
+		void SubmitRiggedMesh(Mesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
+		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 
 		void SetCamera(const CameraData& camera);
 		void SetShadowMaps(const ShadowMappingData& shadowMaps);
@@ -151,7 +173,8 @@ namespace Seidon
 		void Destroy();
 
 	private:
-		void DrawMeshes(int& offset, int& materialOffset);
-		void DrawWireframes(int& offset, int& materialOffset);
+		void DrawMeshes(int& offset, int& materialOffset, int& idOffset);
+		void DrawRiggedMeshes(int& offset, int& materialOffset, int& idOffset);
+		void DrawWireframes(int& offset, int& materialOffset, int& idOffset);
 	};
 }

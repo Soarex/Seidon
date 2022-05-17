@@ -16,4 +16,6 @@ namespace Seidon
 	inline constexpr TypeList<Types...> GetTypeList{};
 
 	typedef entt::entity EntityId;
+	inline constexpr entt::null_t NullEntityId{};
+
 }

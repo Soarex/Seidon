@@ -13,6 +13,8 @@
 
 namespace Seidon
 {
+	class Material;
+
 	class HdrCubemap
 	{
 	private:
@@ -23,7 +25,7 @@ namespace Seidon
 		unsigned int irradianceMapID;
 		unsigned int prefilteredMapID;
 		
-		Texture BRDFLookupMap;
+		Texture* BRDFLookupMap;
 
 		unsigned int faceSize;
 		unsigned int irradianceMapSize;
@@ -45,6 +47,7 @@ namespace Seidon
 		void LoadAsync(const std::string& path);
 		
 		void CreateFromEquirectangularMap(Texture* texture);
+		void CreateFromMaterial(Material* material);
 		void LoadFromEquirectangularMap(std::string path);
 		
 		void BindSkybox(unsigned int slot = 0);

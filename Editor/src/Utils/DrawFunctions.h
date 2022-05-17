@@ -7,6 +7,7 @@ namespace Seidon
 {
 	bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 	bool DrawColorControl(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
+	bool DrawIdControl(const std::string& label, UUID& value, float columnWidth = 100.0f);
 	bool DrawFloatControl(const std::string& label, float& value, float columnWidth = 100.0f);
 	bool DrawFloatSliderControl(const std::string& label, float& value, float min = 0, float max = 1, float columnWidth = 100.0f);
 	bool DrawBoolControl(const std::string& label, bool& value, float columnWidth = 100.0f);

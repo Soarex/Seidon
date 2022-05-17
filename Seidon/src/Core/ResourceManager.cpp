@@ -41,34 +41,43 @@ namespace Seidon
         t->path = "ao_default";
         AddTexture("ao_default", t);
 
-        Shader* s = new Shader(11);
+        Shader* s = new Shader(6);
         s->LoadFromFile("Shaders/PBR.shader");
         AddShader("default_shader", s);
 
-        Material* m = new Material(6);
+        Material* m = new Material(7);
         m->name = "default_material";
         AddMaterial("default_material", m);
 
         Texture t1;
         t1.Create(1, 1, black);
         t1.path = "default_cubemap";
-        HdrCubemap* c = new HdrCubemap(UUID(7));
+        HdrCubemap* c = new HdrCubemap(UUID(8));
         c->CreateFromEquirectangularMap(&t1);
         AddCubemap("default_cubemap", c);
 
-        Mesh* mesh = new Mesh(8);
+        Mesh* mesh = new Mesh(9);
         mesh->name = "Empty Mesh";
         AddMesh("empty_mesh", mesh);
 
-        Armature* armature = new Armature(9);
+        Armature* armature = new Armature(10);
         armature->name = "Default Armature";
         AddArmature("default_armature", armature);
 
-        Animation* animation = new Animation(10);
+        Animation* animation = new Animation(11);
         animation->name = "Default Animation";
         animation->duration = 0;
         animation->ticksPerSecond = 24;
         AddAnimation("default_animation", animation);
+
+        m = new Material(12);
+        m->name = "Preetham Sky Material";
+        m->shader = GetOrLoadShader("Shaders/PreethamSky.sdshader");
+        m->ModifyProperty("Turbidity", 2.0f);
+        m->ModifyProperty("Azimuth", 0.0f);
+        m->ModifyProperty("Inclination", 0.0f);
+        m->ModifyProperty("Intensity", 1.0f);
+        AddMaterial("Preetham Sky Material", m);
     }
 
     void ResourceManager::Destroy()

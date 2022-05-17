@@ -58,6 +58,8 @@ namespace Seidon
 	void PhysicsApi::Destroy()
 	{
 		physics->release();
+		cooking->release();
+		pvd->release();
 		foundation->release();
 	}
 }

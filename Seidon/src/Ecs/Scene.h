@@ -27,10 +27,14 @@ namespace Seidon
 		UUID id;
 		std::string name;
 		entt::registry registry;
+
+		std::unordered_map<UUID, EntityId> idToEntityMap;
+
 		std::unordered_map<std::string, System*> systems;
 
 		std::unordered_map<std::string, std::vector<ComponentCallback>> componentAddedCallbacks;
 		std::unordered_map<std::string, std::vector<ComponentCallback>> componentRemovedCallbacks;
+
 	public:
 		Scene(const std::string& name = "Scene");
 		~Scene();
@@ -48,10 +52,15 @@ namespace Seidon
 
 		Entity CreateEntity(const std::string& name = std::string(), const UUID& id = UUID());
 		Entity CreateEntityFromPrefab(Prefab& prefab, const std::string& name = std::string(), const UUID& id = UUID());
+
 		Entity GetEntityByEntityId(EntityId id);
-		void DestroyEntity(const Entity& entity);
+		Entity GetEntityById(UUID id);
+
+		void DestroyEntity(Entity& entity);
 
 		inline bool IsEntityIdValid(EntityId id) { return registry.valid(id); }
+		inline bool IsIdValid(UUID id) { return idToEntityMap.count(id); }
+		
 
 		inline void SetName(const std::string& name) { this->name = name; }
 

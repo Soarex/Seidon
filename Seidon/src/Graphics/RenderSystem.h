@@ -58,7 +58,7 @@ namespace Seidon
 		bool renderToScreen = true;
 		unsigned int framebufferWidth, framebufferHeight;
 
-		entt::entity mouseSelectedEntity;
+		EntityId mouseSelectedEntity;
 
 		RenderStats stats;
 	public:

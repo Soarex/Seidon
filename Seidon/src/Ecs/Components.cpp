@@ -47,6 +47,11 @@ namespace Seidon
 		cubemap = Application::Get()->GetResourceManager()->GetCubemap("default_cubemap");
 	}
 
+	ProceduralSkylightComponent::ProceduralSkylightComponent()
+	{
+		material = Application::Get()->GetResourceManager()->GetMaterial("Preetham Sky Material");
+	}
+
 	AnimationComponent::AnimationComponent()
 	{
 		animation = Application::Get()->GetResourceManager()->GetAnimation("default_animation");

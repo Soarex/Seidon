@@ -65,6 +65,12 @@ namespace Seidon
 		glm::vec3 rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 
+		UUID parent = 0;
+		std::vector<UUID> children;
+
+		glm::mat4 chachedWorldSpaceMatrix;
+		bool cacheValid = false;
+
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 
@@ -186,6 +192,22 @@ namespace Seidon
 
 		CubemapComponent(HdrCubemap* cubemap)
 			:cubemap(cubemap) {}
+	};
+
+	struct ProceduralSkylightComponent
+	{
+		Material* material;
+
+		bool changed = false;
+		HdrCubemap* cachedCubemap = nullptr;
+
+		ProceduralSkylightComponent();
+		ProceduralSkylightComponent(const ProceduralSkylightComponent&) = default;
+
+		static void Invalidate(void* component)
+		{
+			((ProceduralSkylightComponent*)component)->changed = true;
+		}
 	};
 
 	struct DirectionalLightComponent

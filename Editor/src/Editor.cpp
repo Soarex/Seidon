@@ -32,6 +32,8 @@ namespace Seidon
 
         drawColliders = [&](Renderer& renderer)
         {
+            if (!colliderRenderingEnabled) return;
+
             DrawCubeColliders(renderer);
             DrawMeshColliders(renderer);
             DrawCharacterControllers(renderer);
@@ -166,6 +168,11 @@ namespace Seidon
 
         inputManager->BlockInput(!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered());
 
+        if (ImGui::Button("Colliders"))
+            colliderRenderingEnabled = !colliderRenderingEnabled;
+
+        ImGui::SameLine();
+
         if (!isPlaying)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
@@ -186,6 +193,7 @@ namespace Seidon
                 selectedEntity = { entt::null, nullptr };
                 isPlaying = true;
             }
+
             ImGui::PopStyleVar();
         }
         else
@@ -233,7 +241,7 @@ namespace Seidon
 
             ImGui::Image((ImTextureID)renderSystem.GetRenderTarget().GetRenderId(), ImVec2{ viewportPanelSize.x, viewportPanelSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
        
-            entt::entity e = renderSystem.GetMouseSelectedEntity();
+            EntityId e = renderSystem.GetMouseSelectedEntity();
 
             if (sceneManager->GetActiveScene()->GetRegistry().valid(e))
             {
@@ -241,6 +249,8 @@ namespace Seidon
 
                 if (selection.status == SelectionStatus::CLICKED && !ImGuizmo::IsUsing()) selectedEntity = Entity(e, sceneManager->GetActiveScene());
             }
+            //else
+            //    if (inputManager->GetMouseButtonPressed(MouseButton::LEFT) && !ImGuizmo::IsUsing()) selectedEntity = { NullEntityId, nullptr };
         }
         else
         {
@@ -277,7 +287,7 @@ namespace Seidon
                 Prefab p;
                 p.Load(path);
                 
-                scene->CreateEntityFromPrefab(p);
+                selectedEntity = scene->CreateEntityFromPrefab(p);
             }
 
             ImGui::EndDragDropTarget();
@@ -294,7 +304,7 @@ namespace Seidon
                 ImGuizmo::SetOrthographic(false);
                 ImGuizmo::SetDrawlist();
 
-                ImGuizmo::SetRect(viewportBounds[0].x, viewportBounds[0].y, viewportBounds[1].x - viewportBounds[0].x, viewportBounds[1].y - viewportBounds[0].y);
+                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
 
                 TransformComponent& cameraTransform = camera.GetComponent<TransformComponent>();
                 CameraComponent& cameraComponent = camera.GetComponent<CameraComponent>();
@@ -302,7 +312,7 @@ namespace Seidon
                 glm::mat4 cameraView = cameraComponent.GetViewMatrix(cameraTransform);
 
                 TransformComponent& entityTransform = selectedEntity.GetComponent<TransformComponent>();
-                glm::mat4 transform = entityTransform.GetTransformMatrix();
+                glm::mat4 transform = selectedEntity.GetGlobalTransformMatrix();
 
                 ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
                     (ImGuizmo::OPERATION)guizmoOperation, local ? ImGuizmo::LOCAL : ImGuizmo::WORLD, glm::value_ptr(transform),
@@ -311,7 +321,10 @@ namespace Seidon
                 if (ImGuizmo::IsUsing())
                 {
                     glm::vec3 position, rotation, scale;
-                    DecomposeTransform(transform, position, rotation, scale);
+                    if (selectedEntity.HasParent())
+                        DecomposeTransform(glm::inverse(selectedEntity.GetParent().GetGlobalTransformMatrix()) * transform, position, rotation, scale);
+                    else
+                        DecomposeTransform(transform, position, rotation, scale);
 
                     glm::vec3 deltaRotation = rotation - entityTransform.rotation;
                     entityTransform.position = position;
@@ -369,81 +382,88 @@ namespace Seidon
 
     void Editor::DrawCubeColliders(Renderer& renderer)
     {
-        auto group = sceneManager->GetActiveScene()->GetRegistry().group<CubeColliderComponent>(entt::get<TransformComponent>);
+        sceneManager->GetActiveScene()->CreateGroupAndIterate<CubeColliderComponent>
+        (
+            GetTypeList<TransformComponent>,
+            [&](EntityId id, CubeColliderComponent& c, TransformComponent& t)
+            {
+                TransformComponent globalTransform;
+                globalTransform.SetFromMatrix(sceneManager->GetActiveScene()->GetEntityByEntityId(id).GetGlobalTransformMatrix());
 
-        for (auto e : group)
-        {
-            TransformComponent& t = group.get<TransformComponent>(e);
-            CubeColliderComponent& c = group.get<CubeColliderComponent>(e);
+                TransformComponent t1;
+                t1.position = globalTransform.position + c.offset;
+                t1.rotation = globalTransform.rotation;
 
-            TransformComponent t1;
-            t1.position = t.position + c.offset;
-            t1.rotation = t.rotation;
+                float bias = 0.005f;
+                t1.scale = globalTransform.scale * c.halfExtents * 2.0f + glm::vec3(bias);
 
-            float bias = 0.005f;
-            t1.scale = t.scale * c.halfExtents * 2.0f + glm::vec3(bias);
-
-            auto m = editorResourceManager.GetMesh("Assets\\Cube.sdmesh");
-            renderer.SubmitMeshWireframe(editorResourceManager.GetMesh("Assets\\Cube.sdmesh"), glm::vec3(0, 1, 0), t1.GetTransformMatrix());
-        }
+                auto m = editorResourceManager.GetMesh("Assets\\Cube.sdmesh");
+                renderer.SubmitMeshWireframe(editorResourceManager.GetMesh("Assets\\Cube.sdmesh"), glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+            }
+        );
     }
 
     void Editor::DrawMeshColliders(Renderer& renderer)
     {
-        auto group = sceneManager->GetActiveScene()->GetRegistry().group<MeshColliderComponent>(entt::get<TransformComponent>);
+        sceneManager->GetActiveScene()->CreateGroupAndIterate<MeshColliderComponent>
+        (
+                GetTypeList<TransformComponent>,
+                [&](EntityId id, MeshColliderComponent& c, TransformComponent& t)
+                {
+                    TransformComponent globalTransform;
+                    globalTransform.SetFromMatrix(sceneManager->GetActiveScene()->GetEntityByEntityId(id).GetGlobalTransformMatrix());
 
-        for (auto e : group)
-        {
-            TransformComponent& t = group.get<TransformComponent>(e);
-            MeshColliderComponent& c = group.get<MeshColliderComponent>(e);
+                    TransformComponent t1;
+                    t1.position = globalTransform.position;
+                    t1.rotation = globalTransform.rotation;
 
-            TransformComponent t1;
-            t1.position = t.position;
-            t1.rotation = t.rotation;
+                    float bias = 0.005f;
+                    t1.scale = t.scale + glm::vec3(bias);
 
-            float bias = 0.005f;
-            t1.scale = t.scale + glm::vec3(bias);
-
-            renderer.SubmitMeshWireframe(c.mesh, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
-        }
+                    auto m = editorResourceManager.GetMesh("Assets\\Cube.sdmesh");
+                    renderer.SubmitMeshWireframe(c.mesh, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+                }
+        );
     }
 
     void Editor::DrawCharacterControllers(Renderer& renderer)
     {
-        auto group = sceneManager->GetActiveScene()->GetRegistry().group<CharacterControllerComponent>(entt::get<TransformComponent>);
+        sceneManager->GetActiveScene()->CreateGroupAndIterate<CharacterControllerComponent>
+        (
+                GetTypeList<TransformComponent>,
+                [&](EntityId id, CharacterControllerComponent& c, TransformComponent& t)
+                {
+                    TransformComponent globalTransform;
+                    globalTransform.SetFromMatrix(sceneManager->GetActiveScene()->GetEntityByEntityId(id).GetGlobalTransformMatrix());
 
-        for (auto e : group)
-        {
-            TransformComponent& t = group.get<TransformComponent>(e);
-            CharacterControllerComponent& c = group.get<CharacterControllerComponent>(e);
+                    TransformComponent t1;
+                    t1.position = globalTransform.position;
 
-            TransformComponent t1;
-            t1.position = t.position;
+                    float bias = 0.005f;
+                    t1.scale = { c.colliderRadius * 2, c.colliderHeight, c.colliderRadius * 2 };
+                    t1.scale += glm::vec3(bias);
 
-            float bias = 0.005f;
-            t1.scale = { c.colliderRadius * 2, c.colliderHeight, c.colliderRadius * 2 };
-            t1.scale += glm::vec3(bias);
-            
-            Mesh* semisphere = editorResourceManager.GetMesh("Assets\\Semisphere.sdmesh");
-            Mesh* cylinder = editorResourceManager.GetMesh("Assets\\Cylinder.sdmesh");
+                    Mesh* semisphere = editorResourceManager.GetMesh("Assets\\Semisphere.sdmesh");
+                    Mesh* cylinder = editorResourceManager.GetMesh("Assets\\Cylinder.sdmesh");
 
-            renderer.SubmitMeshWireframe(cylinder, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+                    renderer.SubmitMeshWireframe(cylinder, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
 
-            t1.scale.y = t1.scale.x;
-            t1.position.y += c.colliderHeight / 2;
+                    t1.scale.y = t1.scale.x;
+                    t1.position.y += c.colliderHeight / 2;
 
-            renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+                    renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
 
-            t1.position.y -= c.colliderHeight;
-            t1.rotation.x = glm::radians(180.0f);
+                    t1.position.y -= c.colliderHeight;
+                    t1.rotation.x = glm::radians(180.0f);
 
-            renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+                    renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
 
-            t1.position.y -= c.contactOffset / 2 + 1 * c.colliderRadius;
-            t1.scale.y = c.contactOffset;
+                    t1.position.y -= c.contactOffset / 2 + 1 * c.colliderRadius;
+                    t1.scale.y = c.contactOffset;
 
-            renderer.SubmitMeshWireframe(cylinder, glm::vec3(1, 1, 1), t1.GetTransformMatrix());
-        }
+                    renderer.SubmitMeshWireframe(cylinder, glm::vec3(1, 1, 1), t1.GetTransformMatrix());
+                }
+        );
     }
 
 

@@ -8,6 +8,124 @@ namespace Seidon
 	Entity::Entity(entt::entity id, Scene* scene)
 		:ID(id), scene(scene) {}
 
+	const std::string& Entity::GetName()
+	{
+		return GetComponent<NameComponent>().name;
+	}
+
+	UUID Entity::GetId()
+	{
+		return GetComponent<IDComponent>().ID;
+	}
+
+	glm::mat4 Entity::GetLocalTransformMatrix()
+	{
+		return GetComponent<TransformComponent>().GetTransformMatrix();
+	}
+
+	glm::mat4 Entity::GetGlobalTransformMatrix()
+	{
+		TransformComponent& localTransform = GetComponent<TransformComponent>();
+
+		if (localTransform.cacheValid) return localTransform.chachedWorldSpaceMatrix;
+
+		glm::mat4 worldSpaceMatrix(1.0f);
+
+		if (HasParent())
+			worldSpaceMatrix = GetParent().GetGlobalTransformMatrix();
+
+		localTransform.chachedWorldSpaceMatrix = worldSpaceMatrix * GetLocalTransformMatrix();
+		localTransform.cacheValid = true;
+
+		return localTransform.chachedWorldSpaceMatrix;
+	}
+
+	bool Entity::HasParent()
+	{
+		return scene->IsIdValid(GetComponent<TransformComponent>().parent);
+	}
+
+	Entity Entity::GetParent()
+	{
+		return scene->GetEntityById(GetComponent<TransformComponent>().parent);
+	}
+
+	void Entity::SetParent(Entity parent)
+	{
+		TransformComponent& t = GetComponent<TransformComponent>();
+
+		if (HasParent())
+		{
+			Entity currentParent = GetParent();
+			if (currentParent == parent) return;
+
+			currentParent.RemoveChild(*this);
+
+			t.SetFromMatrix(currentParent.GetGlobalTransformMatrix() * t.GetTransformMatrix());
+		}
+
+		t.parent = parent.GetId();
+		t.SetFromMatrix(glm::inverse(parent.GetGlobalTransformMatrix()) * t.GetTransformMatrix());
+
+		std::vector<UUID>& parentChildren = parent.GetChildrenIds();
+
+		UUID id = GetId();
+		if (std::find(parentChildren.begin(), parentChildren.end(), id) == parentChildren.end())
+			parentChildren.emplace_back(id);
+		
+	}
+
+	void Entity::RemoveParent()
+	{
+		if (!HasParent()) return;
+
+		Entity currentParent = GetParent();
+		currentParent.RemoveChild(*this);
+
+		TransformComponent& t = GetComponent<TransformComponent>();
+		t.SetFromMatrix(currentParent.GetGlobalTransformMatrix() * t.GetTransformMatrix());
+		t.parent = 0;
+	}
+
+	std::vector<UUID>& Entity::GetChildrenIds()
+	{
+		return GetComponent<TransformComponent>().children;
+	}
+
+	void Entity::RemoveChild(Entity e)
+	{
+		UUID childId = e.GetId();
+
+		std::vector<UUID>& children = GetChildrenIds();
+		auto it = std::find(children.begin(), children.end(), childId);
+
+		if (it != children.end())
+			children.erase(it);
+	}
+
+	bool Entity::IsAncestorOf(Entity e)
+	{
+		const auto& children = GetChildrenIds();
+
+		if (children.empty())
+			return false;
+
+		for (UUID child : children)
+			if (child == e.GetId())
+				return true;
+
+		for (UUID child : children)
+			if (scene->GetEntityById(child).IsAncestorOf(e))
+				return true;
+
+		return false;
+	}
+
+	bool Entity::IsDescendantOf(Entity e)
+	{
+		return e.IsAncestorOf(*this);
+	}
+
 	void Entity::Save(std::ofstream& out)
 	{
 		int componentCount = 0;

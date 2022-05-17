@@ -45,11 +45,13 @@ namespace Seidon
 
 		RegisterComponent<NameComponent>()
 			.AddMember("Name", &NameComponent::name);
-		
+
 		RegisterComponent<TransformComponent>()
 			.AddMember("Position", &TransformComponent::position)
 			.AddMember("Rotation", &TransformComponent::rotation, Types::VECTOR3_ANGLES)
-			.AddMember("Scale", &TransformComponent::scale);
+			.AddMember("Scale", &TransformComponent::scale)
+			.AddMember("Parent", &TransformComponent::parent)
+			.AddMember("Children", &TransformComponent::children);
 
 		RegisterComponent<RenderComponent>()
 			.AddMember("Mesh", &RenderComponent::mesh)
@@ -67,6 +69,10 @@ namespace Seidon
 		RegisterComponent<WireframeRenderComponent>()
 			.AddMember("Mesh", &WireframeRenderComponent::mesh)
 			.AddMember("Color", &WireframeRenderComponent::color, Types::VECTOR3_COLOR);
+
+		RegisterComponent<ProceduralSkylightComponent>()
+			.AddMember("Material", &ProceduralSkylightComponent::material)
+			.OnChange = ProceduralSkylightComponent::Invalidate;
 
 		RegisterComponent<CubemapComponent>()
 			.AddMember("Cubemap", &CubemapComponent::cubemap);

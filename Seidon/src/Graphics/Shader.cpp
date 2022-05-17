@@ -81,13 +81,13 @@ namespace Seidon
 
             switch (member.type)
             {
-            case Types::FLOAT: case Types::FLOAT_NORMALIZED:
+            case Types::FLOAT: case Types::FLOAT_NORMALIZED: case Types::FLOAT_ANGLE:
                 member.size = sizeof(float);
                 member.offset = offset;
                 offset += member.size;
                 break;
 
-            case Types::VECTOR3_COLOR:
+            case Types::VECTOR3_COLOR: case Types::VECTOR3_ANGLES:
                 member.size = sizeof(glm::vec3);
                 member.offset = offset;
                 offset += member.size;

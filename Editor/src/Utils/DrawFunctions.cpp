@@ -186,6 +186,43 @@ namespace Seidon
 		return changed;
 	}
 
+	bool DrawIdControl(const std::string& label, UUID& value, float columnWidth)
+	{
+		ImGui::PushID(label.c_str());
+
+		bool changed = false;
+
+		ImGui::PushItemWidth(-1);
+		ImGui::Columns(2);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		std::string s = std::to_string(value);
+		ImGui::InputText("##X", &s, ImGuiInputTextFlags_ReadOnly);
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHY_PANEL_ENTITY"))
+			{
+				Entity& entity = *(Entity*)payload->Data;
+
+				value = entity.GetId();
+
+				changed = true;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::Columns(1);
+
+		ImGui::PopItemWidth();
+		ImGui::PopID();
+
+		return changed;
+	}
+
 	bool DrawFloatControl(const std::string& label, float& value, float columnWidth)
 	{
 		ImGui::PushID(label.c_str());
@@ -579,8 +616,19 @@ namespace Seidon
 		bool changed = false;
 
 		char* obj = (char*) object;
+		
+		if (member.type == Types::ID)
+			changed = DrawIdControl(member.name.c_str(), *(UUID*)(obj + member.offset));
+
 		if (member.type == Types::FLOAT)
 			changed = DrawFloatControl(member.name.c_str(), *(float*)(obj + member.offset));
+
+		if (member.type == Types::FLOAT_ANGLE)
+		{
+			float temp = glm::degrees(*(float*)(obj + member.offset));
+			changed = DrawFloatControl(member.name.c_str(), temp, 0.0f);
+			*(float*)(obj + member.offset) = glm::radians(temp);
+		}
 
 		if (member.type == Types::FLOAT_NORMALIZED)
 			changed = DrawFloatSliderControl(member.name.c_str(), *(float*)(obj + member.offset));

@@ -30,9 +30,11 @@ namespace Seidon
 		INT,
 		FLOAT,
 		FLOAT_NORMALIZED,
+		FLOAT_ANGLE,
 		BOOL,
 		STRING,
 		ID,
+		ID_VECTOR,
 		VECTOR2,
 		VECTOR3,
 		VECTOR3_COLOR,
@@ -112,6 +114,9 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(UUID).hash_code())
 				data.type = Types::ID;
+
+			if (typeid(U).hash_code() == typeid(std::vector<UUID>).hash_code())
+				data.type = Types::ID_VECTOR;
 
 			if (typeid(U).hash_code() == typeid(glm::vec2).hash_code())
 				data.type = Types::VECTOR2;

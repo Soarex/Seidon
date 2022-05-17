@@ -50,7 +50,6 @@ namespace Seidon
             
             bool open = ImGui::CollapsingHeader(metaType.name.c_str() + 7, ImGuiTreeNodeFlags_DefaultOpen);
             
-
             if (metaType.name != typeid(TransformComponent).name() && ImGui::BeginPopupContextItem())
             {
                 if (ImGui::MenuItem("Remove Component"))

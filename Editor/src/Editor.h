@@ -31,6 +31,7 @@ namespace Seidon
         Extension e;
 
         RenderFunction drawColliders;
+        bool colliderRenderingEnabled = false;
 
         int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
         bool local = false;

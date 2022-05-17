@@ -30,8 +30,6 @@ namespace Seidon
 		for (auto& metaType : components)
 			if (metaType.Has(e))
 				metaType.Copy(e, referenceEntity);
-
-		referenceEntity.RemoveComponent<IDComponent>();
 	}
 
 	void Prefab::Save(const std::string& path)

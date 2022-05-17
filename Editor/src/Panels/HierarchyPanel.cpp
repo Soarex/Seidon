@@ -15,13 +15,46 @@ namespace Seidon
 			return;
 		}
 
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 1));
+		ImGui::Dummy({ ImGui::GetWindowSize().x, 10});
+		ImGui::PopStyleVar();
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHY_PANEL_ENTITY"))
+			{
+				Entity& e = *(Entity*)payload->Data;
+				e.RemoveParent();
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
 		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityID)
 			{
 				Entity entity(entityID, Application::Get()->GetSceneManager()->GetActiveScene());
 
+				UUID parentId = entity.GetComponent<TransformComponent>().parent;
+
+				if (entity.scene->IsIdValid(parentId)) return;
+
 				DrawEntityNode(entity);
 
 			});
+
+		ImGui::Dummy({ ImGui::GetWindowSize().x, 25 });
+		
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHY_PANEL_ENTITY"))
+			{
+				Entity& e = *(Entity*)payload->Data;
+
+				e.RemoveParent();
+			}
+
+			ImGui::EndDragDropTarget();
+		}
 
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
@@ -74,8 +107,31 @@ namespace Seidon
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-		if (ImGui::TreeNodeEx((void*)(long long)id, flags, name.c_str()))
-			ImGui::TreePop();
+		bool open = ImGui::TreeNodeEx((void*)(long long)id, flags, name.c_str());
+
+		if (ImGui::BeginDragDropSource())
+		{
+			ImGui::SetDragDropPayload("HIERARCHY_PANEL_ENTITY", &entity, sizeof(Entity));
+			ImGui::EndDragDropSource();
+		}
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("HIERARCHY_PANEL_ENTITY"))
+			{
+				Entity& e = *(Entity*)payload->Data;
+
+				if (!e.IsAncestorOf(entity))
+				{
+					e.SetParent(entity);
+
+					//glm::mat4 localTransformToParent = glm::inverse(entity.GetComponent<TransformComponent>().GetTransformMatrix()) * e.GetComponent<TransformComponent>().GetTransformMatrix();
+					//e.GetComponent<TransformComponent>().SetFromMatrix(localTransformToParent);
+				}
+			}
+
+			ImGui::EndDragDropTarget();
+		}
 
 		if (ImGui::IsItemClicked())
 		{
@@ -95,6 +151,18 @@ namespace Seidon
 			ImGui::EndPopup();
 		}
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+
+		if(open)
+		{
+			TransformComponent& t = entity.GetComponent<TransformComponent>();
+
+			for (UUID i : t.children)
+			{
+				Entity e = entity.scene->GetEntityById(i);
+				DrawEntityNode(e);
+			}
+			ImGui::TreePop();
+		}
 
 		if (entityDeleted)
 		{

@@ -144,8 +144,11 @@ namespace Seidon
 		(
 			GetTypeList<TransformComponent>,
 
-			[&](EntityId e, DynamicRigidbodyComponent& rigidbody, TransformComponent& transform)
+			[&](EntityId e, DynamicRigidbodyComponent& rigidbody, TransformComponent& localTransform)
 			{
+				TransformComponent transform;
+				transform.SetFromMatrix(scene->GetEntityByEntityId(e).GetGlobalTransformMatrix());
+
 				PxTransform t;
 				t.p = PxVec3(transform.position.x, transform.position.y, transform.position.z);
 				glm::quat q = glm::quat(transform.rotation);
@@ -194,9 +197,22 @@ namespace Seidon
 
 			Entity e = scene->GetEntityByEntityId(id);
 			
-			TransformComponent& t = e.GetComponent<TransformComponent>();
-			t.position = glm::vec3(transform.p.x, transform.p.y, transform.p.z);
-			t.rotation = glm::eulerAngles(glm::quat(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
+			TransformComponent& localTransform = e.GetComponent<TransformComponent>();
+
+			if (e.HasParent())
+			{
+				TransformComponent worldTransform;
+				worldTransform.SetFromMatrix(e.GetGlobalTransformMatrix());
+				worldTransform.position = glm::vec3(transform.p.x, transform.p.y, transform.p.z);
+				worldTransform.rotation = glm::eulerAngles(glm::quat(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
+
+				localTransform.SetFromMatrix(glm::inverse(e.GetParent().GetGlobalTransformMatrix()) * worldTransform.GetTransformMatrix());
+			}
+			else
+			{
+				localTransform.position = glm::vec3(transform.p.x, transform.p.y, transform.p.z);
+				localTransform.rotation = glm::eulerAngles(glm::quat(transform.q.w, transform.q.x, transform.q.y, transform.q.z));
+			}
 		}
 	}
 
@@ -254,8 +270,9 @@ namespace Seidon
 	void PhysicSystem::SetupMeshCollider(EntityId id)
 	{
 		Entity e = scene->GetEntityByEntityId(id);
-		TransformComponent& transform = e.GetComponent<TransformComponent>();
 		MeshColliderComponent& collider = e.GetComponent<MeshColliderComponent>();
+		TransformComponent transform;
+		transform.SetFromMatrix(e.GetGlobalTransformMatrix());
 
 		glm::vec3 position = transform.position;
 		PxTransform t;
@@ -345,8 +362,10 @@ namespace Seidon
 	void PhysicSystem::SetupCharacterController(EntityId id)
 	{
 		Entity e = scene->GetEntityByEntityId(id);
-		TransformComponent& transform = e.GetComponent<TransformComponent>();
 		CharacterControllerComponent& controller = e.GetComponent<CharacterControllerComponent>();
+
+		TransformComponent transform;
+		transform.SetFromMatrix(e.GetGlobalTransformMatrix());
 
 		PxCapsuleControllerDesc desc;
 		desc.setToDefault();
@@ -370,8 +389,10 @@ namespace Seidon
 	void PhysicSystem::SetupCubeCollider(EntityId id)
 	{
 		Entity e = scene->GetEntityByEntityId(id);
-		TransformComponent& transform = e.GetComponent<TransformComponent>();
 		CubeColliderComponent& cubeCollider = e.GetComponent<CubeColliderComponent>();
+
+		TransformComponent transform;
+		transform.SetFromMatrix(e.GetGlobalTransformMatrix());
 
 		glm::vec3 size = cubeCollider.halfExtents * transform.scale;
 		PxBoxGeometry geometry = PxBoxGeometry(size.x, size.y, size.z);
@@ -404,8 +425,10 @@ namespace Seidon
 	void PhysicSystem::SetupStaticRigidbody(EntityId id)
 	{
 		Entity e = scene->GetEntityByEntityId(id);
-		TransformComponent& transform = e.GetComponent<TransformComponent>();
 		StaticRigidbodyComponent& rigidbody = e.GetComponent<StaticRigidbodyComponent>();
+
+		TransformComponent transform;
+		transform.SetFromMatrix(e.GetGlobalTransformMatrix());
 
 		PxTransform t;
 		t.p = PxVec3(transform.position.x, transform.position.y, transform.position.z);
@@ -439,8 +462,10 @@ namespace Seidon
 	void PhysicSystem::SetupDynamicRigidbody(EntityId id)
 	{
 		Entity e = scene->GetEntityByEntityId(id);
-		TransformComponent& transform = e.GetComponent<TransformComponent>();
 		DynamicRigidbodyComponent& rigidbody = e.GetComponent<DynamicRigidbodyComponent>();
+
+		TransformComponent transform;
+		transform.SetFromMatrix(e.GetGlobalTransformMatrix());
 
 		PxTransform t;
 		t.p = PxVec3(transform.position.x, transform.position.y, transform.position.z);

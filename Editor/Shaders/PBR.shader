@@ -171,7 +171,10 @@ layout(std430, binding = 1) buffer textureBuffer
     Material materials[];
 };
 
-uniform int entityId;
+layout(std430, binding = 2) buffer ids
+{
+    int entityIds[];
+};
 
 const float PI = 3.14159265359;
 
@@ -242,7 +245,7 @@ void main()
     vec3 color = ambient + (1 - shadow) * Lo;
     
     fragmentColor = vec4(color, 1.0f);
-    entityOutput = entityId;
+    entityOutput = entityIds[fs_in.objectId];
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0)

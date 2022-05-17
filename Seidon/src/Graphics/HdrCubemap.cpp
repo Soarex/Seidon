@@ -1,5 +1,7 @@
 #include "HdrCubemap.h"
 
+#include "Material.h"
+
 #include "../Debug/Debug.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,6 +35,8 @@ namespace Seidon
         GL_CHECK(glDeleteTextures(1, &irradianceMapID));
         GL_CHECK(glDeleteTextures(1, &prefilteredMapID));
 
+        delete BRDFLookupMap;
+
         initialized = false;
     }
 
@@ -54,7 +58,7 @@ namespace Seidon
 
         float* pixels = new float[(long long)BRDFLookupSize * BRDFLookupSize * 2];
 
-        BRDFLookupMap.Bind(0);
+        BRDFLookupMap->Bind(0);
         GL_CHECK(glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)TextureFormat::RED_GREEN, GL_FLOAT, pixels));
 
         out.write((char*)&BRDFLookupSize, sizeof(unsigned int));
@@ -152,7 +156,8 @@ namespace Seidon
         float* pixels = new float[(long long)BRDFLookupSize * BRDFLookupSize * 2];
         in.read((char*)pixels, sizeof(float) * BRDFLookupSize * BRDFLookupSize * 2);
 
-        BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, pixels, TextureFormat::RED_GREEN, TextureFormat::FLOAT16_RED_GREEN, ClampingMode::CLAMP);
+        BRDFLookupMap = new Texture();
+        BRDFLookupMap->Create(BRDFLookupSize, BRDFLookupSize, pixels, TextureFormat::RED_GREEN, TextureFormat::FLOAT16_RED_GREEN, ClampingMode::CLAMP);
         delete[] pixels;
 
         initialized = true;
@@ -258,6 +263,75 @@ namespace Seidon
         initialized = true;
     }
 
+    void HdrCubemap::CreateFromMaterial(Material* material)
+    {
+        SD_ASSERT(!initialized, "Cubemap already initialized");
+
+        GL_CHECK(glGenTextures(1, &skyboxID));
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
+        for (unsigned int i = 0; i < 6; ++i)
+            GL_CHECK(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, faceSize, faceSize, 0, GL_RGB, GL_FLOAT, nullptr));
+
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
+
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+        glm::mat4 viewMatrices[] =
+        {
+           glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+           glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+           glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+           glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+           glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+           glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+        };
+
+        RenderBuffer depthAttachment;
+        depthAttachment.Create(faceSize, faceSize, RenderBufferType::DEPTH_STENCIL);
+
+        Framebuffer conversionFramebuffer;
+        conversionFramebuffer.Create();
+
+        material->shader->Use();
+        material->shader->SetFloat("turbidity", material->GetProperty<float>("Turbidity"));
+        material->shader->SetFloat("azimuth", material->GetProperty<float>("Azimuth"));
+        material->shader->SetFloat("inclination", material->GetProperty<float>("Inclination"));
+        material->shader->SetFloat("intensity", material->GetProperty<float>("Intensity"));
+        
+        material->shader->SetMat4("camera.projectionMatrix", projectionMatrix);
+
+        GL_CHECK(glViewport(0, 0, faceSize, faceSize));
+        conversionFramebuffer.Bind();
+
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            material->shader->SetMat4("camera.viewMatrix", viewMatrices[i]);
+
+            GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, skyboxID, 0));
+
+            conversionFramebuffer.SetDepthStencilRenderBuffer(depthAttachment);
+
+            GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+            DrawCaptureCube();
+        }
+        conversionFramebuffer.Unbind();
+
+        GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
+        GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
+
+        GenerateIrradianceMap();
+        GeneratePrefilteredMap();
+        GenerateBRDFLookupMap();
+
+        initialized = true;
+    }
+
 	void HdrCubemap::LoadFromEquirectangularMap(std::string path)
 	{
         SD_ASSERT(!initialized, "Cubemap already initialized");
@@ -317,7 +391,7 @@ namespace Seidon
     {
         SD_ASSERT(initialized, "Cubemap not initialized");
 
-        BRDFLookupMap.Bind(slot);
+        BRDFLookupMap->Bind(slot);
     }
 
     void HdrCubemap::ToCubemap(Texture& equirectangularMap)
@@ -517,13 +591,14 @@ namespace Seidon
 
     void HdrCubemap::GenerateBRDFLookupMap()
     {
-        BRDFLookupMap.Create(BRDFLookupSize, BRDFLookupSize, (float*)NULL, TextureFormat::RED_GREEN, TextureFormat::FLOAT16_RED_GREEN, ClampingMode::CLAMP);
+        BRDFLookupMap = new Texture();
+        BRDFLookupMap->Create(BRDFLookupSize, BRDFLookupSize, (float*)NULL, TextureFormat::RED_GREEN, TextureFormat::FLOAT16_RED_GREEN, ClampingMode::CLAMP);
         RenderBuffer depthAttachment;
         depthAttachment.Create(BRDFLookupSize, BRDFLookupSize, RenderBufferType::DEPTH_STENCIL);
 
         Framebuffer convolutionFramebuffer;
         convolutionFramebuffer.Create();
-        convolutionFramebuffer.SetColorTexture(BRDFLookupMap);
+        convolutionFramebuffer.SetColorTexture(*BRDFLookupMap);
         convolutionFramebuffer.SetDepthStencilRenderBuffer(depthAttachment);
         convolutionFramebuffer.Bind();
 

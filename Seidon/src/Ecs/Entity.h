@@ -27,6 +27,22 @@ namespace Seidon
 
 		Entity Duplicate();
 
+		const std::string& GetName();
+		UUID GetId();
+		glm::mat4 GetLocalTransformMatrix();
+		glm::mat4 GetGlobalTransformMatrix();
+
+		bool HasParent();
+		Entity GetParent();
+		void SetParent(Entity parent);
+		void RemoveParent();
+
+		std::vector<UUID>& GetChildrenIds();
+		void RemoveChild(Entity e);
+
+		bool IsAncestorOf(Entity e);
+		bool IsDescendantOf(Entity e);
+
 		template <typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{

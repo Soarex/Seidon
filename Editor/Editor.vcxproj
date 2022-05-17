@@ -172,19 +172,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\BRDFConvolution.shader" />
-    <None Include="Shaders\Convolution.shader" />
-    <None Include="Shaders\Cubemap.shader" />
-    <None Include="Shaders\Default.shader" />
-    <None Include="Shaders\EquirectangularConversion.shader" />
-    <None Include="Shaders\PBR.shader" />
-    <None Include="Shaders\PrefilterConvolution.shader" />
-    <None Include="Shaders\ShadowPass.shader" />
-    <None Include="Shaders\Simple.shader" />
-    <None Include="Shaders\Sprite.sdshader" />
-    <None Include="Shaders\Wireframe.sdshader" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\Dockspace.h" />
     <ClInclude Include="src\Editor.h" />

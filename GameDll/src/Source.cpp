@@ -168,6 +168,7 @@ public:
     void Attack(Seidon::CharacterControllerComponent& characterController, Seidon::TransformComponent& t)
     {
         Seidon::RaycastResult res;
+
         glm::vec3 pos = t.position;
         pos += t.GetForwardDirection() * (t.scale.z + 0.1f);
 

@@ -16,6 +16,17 @@ namespace Seidon
 				out.write((char*)item, sizeof(UUID));
 				break;
 			}
+			case Types::ID_VECTOR:
+			{
+				std::vector<UUID>* item = (std::vector<UUID>*) &data[m.offset];
+
+				size_t size = item->size();
+				out.write((char*)&size, sizeof(size_t));
+
+				for (UUID& id : *item)
+					out.write((char*)&id, sizeof(UUID));
+				break;
+			}
 			case Types::STRING:
 			{
 				std::string* item = (std::string*)&data[m.offset];
@@ -25,7 +36,7 @@ namespace Seidon
 				out.write(item->c_str(), size * sizeof(char));
 				break;
 			}
-			case Types::FLOAT: case Types::FLOAT_NORMALIZED :
+			case Types::FLOAT: case Types::FLOAT_NORMALIZED: case Types::FLOAT_ANGLE:
 			{
 				float* item = (float*)&data[m.offset];
 				out.write((char*)item, sizeof(float));
@@ -168,6 +179,25 @@ namespace Seidon
 				*(UUID*)&data[m.offset] = item;
 				break;
 			}
+			case Types::ID_VECTOR:
+			{
+				size_t size;
+				in.read((char*)&size, sizeof(size_t));
+
+				std::vector<UUID> item;
+				item.reserve(size);
+
+				for (int i = 0; i < size; i++)
+				{
+					UUID id;
+					in.read((char*)&id, sizeof(UUID));
+
+					item.push_back(id);
+				}
+
+				*(std::vector<UUID>*)& data[m.offset] = item;
+				break;
+			}
 			case Types::STRING:
 			{
 				size_t size;
@@ -179,7 +209,7 @@ namespace Seidon
 				*(std::string*)&data[m.offset] = buffer;
 				break;
 			}
-			case Types::FLOAT: case Types::FLOAT_NORMALIZED:
+			case Types::FLOAT: case Types::FLOAT_NORMALIZED: case Types::FLOAT_ANGLE:
 			{
 				float item;
 				in.read((char*)&item, sizeof(float));
@@ -390,6 +420,9 @@ namespace Seidon
 		if (type == Types::FLOAT_NORMALIZED)
 			return "Float normalized";
 
+		if (type == Types::FLOAT_ANGLE)
+			return "Float angle";
+
 		if (type == Types::BOOL)
 			return "Bool";
 
@@ -454,6 +487,9 @@ namespace Seidon
 
 		if (string == "FLOAT_NORMALIZED")
 			return Types::FLOAT_NORMALIZED;
+
+		if (string == "FLOAT_ANGLE")
+			return Types::FLOAT_ANGLE;
 
 		if (string == "BOOL")
 			return Types::BOOL;

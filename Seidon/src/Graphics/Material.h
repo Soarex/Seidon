@@ -30,13 +30,13 @@ namespace Seidon
 		template<typename T>
 		void ModifyProperty(const std::string& propertyName, const T& value)
 		{
-			shader->GetBufferLayout()->ModifyMember(propertyName, data, value);
+			shader->GetBufferLayout()->ModifyMember<T>(propertyName, data, value);
 		}
 
 		template<typename T>
 		T& GetProperty(const std::string& propertyName)
 		{
-			return shader->GetBufferLayout()->GetMember(propertyName, data);
+			return shader->GetBufferLayout()->GetMember<T>(propertyName, data);
 		}
 	};
 }

@@ -88,6 +88,7 @@ namespace Seidon
 		auto lights    = scene->CreateComponentGroup<DirectionalLightComponent>(GetTypeList<TransformComponent>);
 		auto cameras   = scene->CreateComponentGroup<CameraComponent, TransformComponent>();
 		auto cubemaps   = scene->CreateComponentView<CubemapComponent>();
+		auto skyLights = scene->CreateComponentView<ProceduralSkylightComponent>();
 		auto renderGroup = scene->CreateComponentGroup<RenderComponent>(GetTypeList<TransformComponent>);
 		auto skinnedRenderGroup = scene->CreateComponentGroup<SkinnedRenderComponent>(GetTypeList<TransformComponent>);
 		auto wireframeRenderGroup = scene->CreateComponentGroup<WireframeRenderComponent>(GetTypeList<TransformComponent>);
@@ -112,9 +113,29 @@ namespace Seidon
 		else
 			camera = defaultCamera;
 
-		CubemapComponent cubemap;
+		HdrCubemap* cubemap = resourceManager->GetCubemap("default_cubemap");
 		if (!cubemaps.empty())
-			cubemap = cubemaps.get<CubemapComponent>(cubemaps.front());
+			cubemap = cubemaps.get<CubemapComponent>(cubemaps.front()).cubemap;
+
+		if (!skyLights.empty())
+		{
+			ProceduralSkylightComponent& skyLight = skyLights.get<ProceduralSkylightComponent>(skyLights.front());
+
+			if (!skyLight.cachedCubemap)
+			{
+				skyLight.cachedCubemap = new HdrCubemap();
+				skyLight.cachedCubemap->CreateFromMaterial(skyLight.material);
+			}
+
+			if (skyLight.changed)
+			{
+				skyLight.cachedCubemap->Destroy();
+				skyLight.cachedCubemap->CreateFromMaterial(skyLight.material);
+				skyLight.changed = false;
+			}
+				
+			cubemap = skyLight.cachedCubemap;
+		}
 
 		camera.aspectRatio = (float)framebufferWidth / framebufferHeight;
 
@@ -158,17 +179,19 @@ namespace Seidon
 			static Material m;
 			m.shader = &depthShader;
 
-			for (entt::entity e : renderGroup)
-			{
-				RenderComponent r = renderGroup.get<RenderComponent>(e);
-				TransformComponent t = renderGroup.get<TransformComponent>(e);
-				glm::mat4 modelMatrix = t.GetTransformMatrix();
+			scene->Iterate
+			(
+				renderGroup,
+				[&](EntityId id, RenderComponent& renderComponent, TransformComponent& transform)
+				{
+					Entity e = scene->GetEntityByEntityId(id);
 
-				while (r.mesh->subMeshes.size() > ms.size())
-					ms.push_back(&m);
+					while (renderComponent.mesh->subMeshes.size() > ms.size())
+						ms.push_back(&m);
 
-				renderer.SubmitMesh(r.mesh, ms, modelMatrix);
-			}
+					renderer.SubmitMesh(renderComponent.mesh, ms, e.GetGlobalTransformMatrix(), id);
+				}
+			);
 
 			renderer.Render();
 
@@ -211,11 +234,11 @@ namespace Seidon
 		GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 		GL_CHECK(glCullFace(GL_BACK));
 		
-		//int clear = -1;
-		//GL_CHECK(glClearTexImage(entityMap.GetRenderId(), 0, GL_RED_INTEGER, GL_INT, &clear));
+		int clear = -1;
+		GL_CHECK(glClearTexImage(entityMap.GetRenderId(), 0, GL_RED_INTEGER, GL_INT, &clear));
 
-		//unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-		//GL_CHECK(glDrawBuffers(2, attachments));
+		unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		GL_CHECK(glDrawBuffers(2, attachments));
 
 		renderer.SetCamera
 		(
@@ -243,33 +266,34 @@ namespace Seidon
 			}
 		);
 
-		renderer.SetIBL(cubemap.cubemap);
+		renderer.SetIBL(cubemap);
 		renderer.SetTime(time);
 
 		time += deltaTime;
 
-		//shader->SetInt("entityId", (int)e);
-
 		renderer.Begin();
-		for (entt::entity e : renderGroup)
-		{
-			RenderComponent& r = renderGroup.get<RenderComponent>(e);
-			TransformComponent& t = renderGroup.get<TransformComponent>(e);
 
-			glm::mat4 modelMatrix = t.GetTransformMatrix();
+		scene->Iterate
+		(
+			renderGroup,
+			[&](EntityId id, RenderComponent& renderComponent, TransformComponent& transform)
+			{
+				Entity e = scene->GetEntityByEntityId(id);
 
-			renderer.SubmitMesh(r.mesh, r.materials, modelMatrix);
-		}
+				renderer.SubmitMesh(renderComponent.mesh, renderComponent.materials, e.GetGlobalTransformMatrix(), id);
+			}
+		);
 
-		for (entt::entity e : wireframeRenderGroup)
-		{
-			WireframeRenderComponent& r = wireframeRenderGroup.get<WireframeRenderComponent>(e);
-			TransformComponent& t = wireframeRenderGroup.get<TransformComponent>(e);
+		scene->Iterate
+		(
+			wireframeRenderGroup,
+			[&](EntityId id, WireframeRenderComponent& renderComponent, TransformComponent& transform)
+			{
+				Entity e = scene->GetEntityByEntityId(id);
 
-			glm::mat4 modelMatrix = t.GetTransformMatrix();
-
-			renderer.SubmitMeshWireframe(r.mesh, r.color, modelMatrix);
-		}
+				renderer.SubmitMeshWireframe(renderComponent.mesh, renderComponent.color, e.GetGlobalTransformMatrix(), id);
+			}
+		);
 
 		for (RenderFunction& f : mainPassFunctions)
 			f(renderer);
@@ -321,13 +345,15 @@ namespace Seidon
 			}
 		}
 		*/
-		//ProcessMouseSelection();
+		ProcessMouseSelection();
 		
 		GL_CHECK(glDepthFunc(GL_LEQUAL));
 		cubemapShader.Use();
 		cubemapShader.SetMat4("viewMatrix", glm::mat4(glm::mat3(camera.GetViewMatrix(cameraTransform))));
 		cubemapShader.SetMat4("projectionMatrix", camera.GetProjectionMatrix());
-		cubemap.cubemap->BindSkybox();
+
+		cubemap->BindSkybox();
+
 		captureCube.Draw();
 		GL_CHECK(glDepthFunc(GL_LESS));
 
@@ -473,7 +499,7 @@ namespace Seidon
 
 	void RenderSystem::ProcessMouseSelection()
 	{
-		static entt::entity previousEntity = entt::null;
+		static EntityId previousEntity = NullEntityId;
 		static int index = 0;
 
 		if (inputManager->GetMousePosition().x < framebufferWidth &&
@@ -498,7 +524,7 @@ namespace Seidon
 				return;
 			}
 
-			mouseSelectedEntity = (entt::entity)*buffer;
+			mouseSelectedEntity = (EntityId)*buffer;
 
 			GL_CHECK(glUnmapBuffer(GL_PIXEL_PACK_BUFFER));
 			GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, 0));
