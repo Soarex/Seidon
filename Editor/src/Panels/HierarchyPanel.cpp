@@ -30,13 +30,16 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityID)
+		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityId)
 			{
-				Entity entity(entityID, Application::Get()->GetSceneManager()->GetActiveScene());
+				Scene* scene = Application::Get()->GetSceneManager()->GetActiveScene();
+				if (!scene->IsEntityIdValid(entityId)) return;
+
+				Entity entity(entityId, scene);
 
 				UUID parentId = entity.GetComponent<TransformComponent>().parent;
 
-				if (entity.scene->IsIdValid(parentId)) return;
+				if (scene->IsIdValid(parentId)) return;
 
 				DrawEntityNode(entity);
 
@@ -166,13 +169,14 @@ namespace Seidon
 
 		if (entityDeleted)
 		{
-			Application::Get()->GetSceneManager()->GetActiveScene()->DestroyEntity(entity);
-			if (selectedEntity == entity)
+			if (selectedEntity == entity || selectedEntity.IsDescendantOf(entity))
 			{
-				selectedEntity = { entt::null, nullptr };
+				selectedEntity = { NullEntityId, nullptr };
 				for (auto& callback : onEntitySelectionCallbacks)
 					callback(selectedEntity);
 			}
+
+			Application::Get()->GetSceneManager()->GetActiveScene()->DestroyEntity(entity);
 		}
 
 		ImGui::PopStyleVar();

@@ -38,6 +38,7 @@ namespace Seidon
 		void RemoveParent();
 
 		std::vector<UUID>& GetChildrenIds();
+		void AddChild(Entity e);
 		void RemoveChild(Entity e);
 
 		bool IsAncestorOf(Entity e);

@@ -45,7 +45,9 @@ namespace Seidon
 
         for (auto& metaType : components)
         {
-            if (metaType.name == typeid(IDComponent).name() || metaType.name == typeid(NameComponent).name()) continue;
+            if (metaType.name == typeid(IDComponent).name() || metaType.name == typeid(NameComponent).name() 
+                || metaType.name == typeid(MouseSelectionComponent).name()) continue;
+
             if (!metaType.Has(selectedEntity)) continue;
             
             bool open = ImGui::CollapsingHeader(metaType.name.c_str() + 7, ImGuiTreeNodeFlags_DefaultOpen);

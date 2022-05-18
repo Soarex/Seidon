@@ -670,9 +670,10 @@ namespace Seidon
 			static bool open;
 
 			if (DrawMaterialControl(member.name.c_str(), m))
-				open = true;
-
-			changed = DrawMaterialEditor("Material Editor", *m, &open);
+				open = !open;
+			
+			if(open)
+				changed = DrawMaterialEditor("Material Editor", *m, &open);
 		}
 
 		if (member.type == Types::MATERIAL_VECTOR)

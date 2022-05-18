@@ -11,6 +11,7 @@
 #include <functional>
 
 #include <entt/entt.hpp>
+#include <glm/glm.hpp>
 
 
 namespace Seidon
@@ -51,7 +52,8 @@ namespace Seidon
 		void CopySystems(Scene* other);
 
 		Entity CreateEntity(const std::string& name = std::string(), const UUID& id = UUID());
-		Entity CreateEntityFromPrefab(Prefab& prefab, const std::string& name = std::string(), const UUID& id = UUID());
+		Entity InstantiatePrefab(Prefab& prefab, const glm::vec3& position = glm::vec3(0), const glm::vec3& rotation = glm::vec3(0),
+			const glm::vec3& scale = glm::vec3(1), const std::string& name = "");
 
 		Entity GetEntityByEntityId(EntityId id);
 		Entity GetEntityById(UUID id);
@@ -180,6 +182,7 @@ namespace Seidon
 					callback(entityId);
 			}
 
+			void AddChildEntityFromPrefab(Entity parentEntity, Entity prefabEntity);
 			friend class Entity;
 	};
 }

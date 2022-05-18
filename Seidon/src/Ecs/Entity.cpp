@@ -92,6 +92,11 @@ namespace Seidon
 		return GetComponent<TransformComponent>().children;
 	}
 
+	void Entity::AddChild(Entity e)
+	{
+		GetComponent<TransformComponent>().children.push_back(e.GetId());
+	}
+
 	void Entity::RemoveChild(Entity e)
 	{
 		UUID childId = e.GetId();

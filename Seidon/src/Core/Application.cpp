@@ -46,6 +46,8 @@ namespace Seidon
 		RegisterComponent<NameComponent>()
 			.AddMember("Name", &NameComponent::name);
 
+		RegisterComponent<MouseSelectionComponent>();
+
 		RegisterComponent<TransformComponent>()
 			.AddMember("Position", &TransformComponent::position)
 			.AddMember("Rotation", &TransformComponent::rotation, Types::VECTOR3_ANGLES)

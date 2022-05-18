@@ -67,7 +67,7 @@ namespace Seidon
 
         rs.AddMainRenderPassFunction(drawColliders);
 
-        selectedEntity = { entt::null, nullptr };
+        selectedEntity = { NullEntityId, nullptr };
         hierarchyPanel.AddSelectionCallback([&](Entity& entity)
             {
                 selectedEntity = entity;
@@ -138,7 +138,7 @@ namespace Seidon
                         scene->AddSystem<RenderSystem>().AddMainRenderPassFunction(drawColliders);
                         scene->AddSystem<EditorCameraControlSystem>();
                         
-                        selectedEntity = { entt::null, nullptr };
+                        selectedEntity = { NullEntityId, nullptr };
                     }
                 }
 
@@ -190,7 +190,7 @@ namespace Seidon
                 runtimeSystems.CopySystems(runtimeScene);
 
                 sceneManager->SetActiveScene(runtimeScene);
-                selectedEntity = { entt::null, nullptr };
+                selectedEntity = { NullEntityId, nullptr };
                 isPlaying = true;
             }
 
@@ -208,7 +208,7 @@ namespace Seidon
             {
                 sceneManager->SetActiveScene(scene);
                 delete runtimeScene;
-                selectedEntity = { entt::null, nullptr };
+                selectedEntity = { NullEntityId, nullptr };
                 isPlaying = false;
             }
             ImGui::PopStyleVar();
@@ -277,7 +277,7 @@ namespace Seidon
                 scene->AddSystem<RenderSystem>().AddMainRenderPassFunction(drawColliders);
                 scene->AddSystem<EditorCameraControlSystem>();
 
-                selectedEntity = { entt::null, nullptr };
+                selectedEntity = { NullEntityId, nullptr };
             }
 
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_PREFAB"))
@@ -287,13 +287,13 @@ namespace Seidon
                 Prefab p;
                 p.Load(path);
                 
-                selectedEntity = scene->CreateEntityFromPrefab(p);
+                selectedEntity = scene->InstantiatePrefab(p);
             }
 
             ImGui::EndDragDropTarget();
         }
 
-        if (!isPlaying && selectedEntity.ID != entt::null && guizmoOperation != -1)
+        if (!isPlaying && selectedEntity.ID != NullEntityId && guizmoOperation != -1)
         {
             entt::basic_group cameras = scene->GetRegistry().group<CameraComponent, TransformComponent>();
 

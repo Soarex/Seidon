@@ -93,6 +93,8 @@ namespace Seidon
 		{
 			Entity e(registry.create(), this);
 			e.Load(in);
+
+			idToEntityMap[e.GetId()] = e.ID;
 		}
 
 		size_t systemCount = 0;
@@ -208,28 +210,69 @@ namespace Seidon
 		return e;
 	}
 
-	Entity Scene::CreateEntityFromPrefab(Prefab& prefab, const std::string& name, const UUID& id)
+	Entity Scene::InstantiatePrefab(Prefab& prefab, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const std::string& name)
 	{
 		Entity e(registry.create(), this);
 
 		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
 		for (auto& metaType : components)
-			if (metaType.Has(prefab.referenceEntity))
-				metaType.Copy(prefab.referenceEntity, e);
+			if (metaType.Has(prefab.GetRootEntity()))
+				metaType.Copy(prefab.GetRootEntity(), e);
 
-		e.GetComponent<IDComponent>().ID = id;
-		e.AddComponent<MouseSelectionComponent>();
+		e.GetComponent<IDComponent>().ID = UUID();
 
 		if (name != "")
 			e.GetComponent<NameComponent>().name = name;
 
-		idToEntityMap[id] = e.ID;
+		TransformComponent& t = e.GetComponent<TransformComponent>();
+		t.position = position;
+		t.rotation = rotation;
+		t.scale = scale;
+		t.parent = 0;
+		t.children.clear();
+
+		for (UUID childId : prefab.GetRootEntity().GetChildrenIds())
+			AddChildEntityFromPrefab(e, prefab.prefabScene.GetEntityById(childId));
+
+		idToEntityMap[e.GetComponent<IDComponent>().ID] = e.ID;
 		
 		return e;
 	}
 
+	void Scene::AddChildEntityFromPrefab(Entity parentEntity, Entity prefabEntity)
+	{
+		Entity e(registry.create(), this);
+
+		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
+		for (auto& metaType : components)
+			if (metaType.Has(prefabEntity))
+				metaType.Copy(prefabEntity, e);
+
+		e.GetComponent<IDComponent>().ID = UUID();
+
+		TransformComponent& t = e.GetComponent<TransformComponent>();
+		t.parent = parentEntity.GetId();
+		t.children.clear();
+
+		parentEntity.AddChild(e);
+
+		for (UUID childId : prefabEntity.GetChildrenIds())
+			AddChildEntityFromPrefab(e, prefabEntity.scene->GetEntityById(childId));
+
+		idToEntityMap[e.GetComponent<IDComponent>().ID] = e.ID;
+	}
+
 	void Scene::DestroyEntity(Entity& entity)
 	{
+		if (entity.HasParent())
+			entity.GetParent().RemoveChild(entity);
+
+		for (UUID id : entity.GetChildrenIds())
+		{
+			Entity e = GetEntityById(id);
+			DestroyEntity(e);
+		}
+
 		idToEntityMap.erase(entity.GetId());
 
 		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();

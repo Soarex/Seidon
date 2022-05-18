@@ -9,15 +9,17 @@ namespace Seidon
 	class Prefab
 	{
 	private:
-		static Scene prefabScene;
-
-		Entity referenceEntity = { entt::null, nullptr };
+		UUID rootEntityId;
+		Scene prefabScene;
 	public:
-		~Prefab();
-		void MakeFromEntity(Entity e);
+		void MakeFromEntity(Entity entity);
+		Entity GetRootEntity();
 
 		void Save(const std::string& path);
 		void Load(const std::string& path);
+
+	private:
+		Entity AddEntityHierarchy(Entity entity);
 
 		friend class Scene;
 	};
