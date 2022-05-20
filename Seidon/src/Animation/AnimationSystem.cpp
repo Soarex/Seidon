@@ -21,10 +21,9 @@ namespace Seidon
 			AnimationComponent& a = group.get<AnimationComponent>(e);
 			SkinnedRenderComponent& r = group.get<SkinnedRenderComponent>(e);
 			TransformComponent& t = group.get<TransformComponent>(e);
-			a.runtimeBoneMatrices.clear();
 
 			Animation* animation = a.animation;
-			Armature* armature = r.armature;
+			Armature* armature = &r.mesh->armature;
 
 			if (animation->channels.size() != armature->bones.size())
 			{
@@ -107,7 +106,7 @@ namespace Seidon
 
 				a.localBoneMatrices[i] = parentTransform * animationTransform;
 
-				a.runtimeBoneMatrices.push_back(a.localBoneMatrices[i] * bone.inverseBindPoseMatrix);
+				r.boneTransforms[i] = a.localBoneMatrices[i] * bone.inverseBindPoseMatrix;
 			}
 		}
 	}

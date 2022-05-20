@@ -35,10 +35,19 @@ layout(location = 0) out vec4 fragmentColor;
 
 in vec3 localPosition;
 
-uniform float azimuth;
-uniform float turbidity;
-uniform float inclination;
-uniform float intensity;
+struct Material
+{
+	float turbidity;
+    float azimuth;
+	float inclination;
+	float intensity;
+};
+
+
+layout(std140, binding = 1) uniform materialBuffer
+{ 
+	Material material;
+};
 
 float SaturatedDot( in vec3 a, in vec3 b );
 vec3 YxyToXYZ( in vec3 Yxy );
@@ -51,6 +60,11 @@ vec3 CalculateSkyLuminanceRGB(in vec3 s, in vec3 e, in float t );
 
 void main()
 {
+	float azimuth = material.azimuth;
+	float inclination = material.inclination + radians(-90);
+	float turbidity = material.turbidity;
+	float intensity = material.intensity;
+
     vec3 sunDir     	= normalize( vec3( sin(inclination) * cos(azimuth), cos(inclination), sin(inclination) * sin(azimuth) ) );
     vec3 viewDir  		= normalize(localPosition);
     vec3 skyLuminance 	= CalculateSkyLuminanceRGB( sunDir, viewDir, turbidity );

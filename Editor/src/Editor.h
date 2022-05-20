@@ -4,7 +4,6 @@
 #include "Panels/InspectorPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/SystemsPanel.h"
-#include "Panels/AssetBrowserPanel.h"
 #include "Panels/FileBrowserPanel.h"
 #include "Dockspace.h"
 

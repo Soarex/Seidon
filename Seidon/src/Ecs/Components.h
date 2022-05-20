@@ -1,7 +1,6 @@
 #pragma once
 #include "Core/UUID.h"
 #include "Graphics/Mesh.h"
-#include "Graphics/Sprite.h"
 #include "Graphics/Armature.h"
 #include "Graphics/Material.h"
 #include "Graphics/HdrCubemap.h"
@@ -145,29 +144,35 @@ namespace Seidon
 		static void Revalidate(void* component);
 	};
 
-	struct SkinnedRenderComponent : public RenderComponent
+	struct SkinnedRenderComponent
 	{
-		Armature* armature;
+		SkinnedMesh* mesh;
+		std::vector<Material*> materials;
+
+		std::vector<glm::mat4> boneTransforms;
 
 		SkinnedRenderComponent();
 		SkinnedRenderComponent(const SkinnedRenderComponent&) = default;
 
-		SkinnedRenderComponent(Mesh* mesh, const std::vector<Material*>& materials)
+		SkinnedRenderComponent(SkinnedMesh* mesh, const std::vector<Material*>& materials)
 		{
 			this->materials = materials;
 			SetMesh(mesh);
 		}
 
+		void SetMesh(SkinnedMesh* mesh);
+
+		static void Revalidate(void* component);
 	};
 
 	struct SpriteRenderComponent
 	{
-		Sprite* sprite;
+		Texture* sprite;
 
 		SpriteRenderComponent() = default;
 		SpriteRenderComponent(const SpriteRenderComponent&) = default;
 
-		SpriteRenderComponent(Sprite* sprite)
+		SpriteRenderComponent(Texture* sprite)
 			: sprite(sprite) {}
 	};
 
@@ -258,8 +263,6 @@ namespace Seidon
 		float lastPositionKeyIndices[MAX_BONE_COUNT];
 		float lastRotationKeyIndices[MAX_BONE_COUNT];
 		float lastScalingKeyIndices[MAX_BONE_COUNT];
-
-		std::vector<glm::mat4> runtimeBoneMatrices;
 
 		AnimationComponent();
 		AnimationComponent(const AnimationComponent&) = default;

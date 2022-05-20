@@ -285,7 +285,7 @@ namespace Seidon
 
 		int vertexCount = 0;
 		int indexCount = 0;
-		for (SubMesh* submesh : collider.mesh->subMeshes)
+		for (Submesh* submesh : collider.mesh->subMeshes)
 		{
 			vertexCount += submesh->vertices.size();
 			indexCount += submesh->indices.size();
@@ -299,7 +299,7 @@ namespace Seidon
 
 		int vertexOffset = 0;
 		int indexOffset = 0;
-		for (SubMesh* submesh : collider.mesh->subMeshes)
+		for (Submesh* submesh : collider.mesh->subMeshes)
 		{
 			memcpy(&vertices[vertexOffset], &submesh->vertices[0], submesh->vertices.size() * sizeof(Vertex));
 

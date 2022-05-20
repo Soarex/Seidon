@@ -28,6 +28,7 @@ namespace Seidon
 		Entity Duplicate();
 
 		const std::string& GetName();
+		const void SetName(const std::string& name);
 		UUID GetId();
 		glm::mat4 GetLocalTransformMatrix();
 		glm::mat4 GetGlobalTransformMatrix();

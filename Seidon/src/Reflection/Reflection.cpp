@@ -48,6 +48,12 @@ namespace Seidon
 				out.write((char*)item, sizeof(bool));
 				break;
 			}
+			case Types::VECTOR2: case Types::VECTOR2_ANGLES:
+			{
+				glm::vec2* item = (glm::vec2*)&data[m.offset];
+				out.write((char*)item, sizeof(glm::vec2));
+				break;
+			}
 			case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
 			{
 				glm::vec3* item = (glm::vec3*)&data[m.offset];
@@ -102,6 +108,27 @@ namespace Seidon
 				}
 				break;
 			}
+			case Types::SKINNED_MESH:
+			{
+				SkinnedMesh* item = *(SkinnedMesh**)&data[m.offset];
+				UUID id = item->id;
+				out.write((char*)&id, sizeof(UUID));
+				break;
+			}
+			case Types::SKINNED_MESH_VECTOR:
+			{
+				std::vector<SkinnedMesh*>* item = (std::vector<SkinnedMesh*>*) & data[m.offset];
+
+				size_t size = item->size();
+				out.write((char*)&size, sizeof(size_t));
+
+				for (SkinnedMesh* m : *item)
+				{
+					UUID id = m->id;
+					out.write((char*)&id, sizeof(UUID));
+				}
+				break;
+			}
 			case Types::MATERIAL:
 			{
 				Material* item = *(Material**)&data[m.offset];
@@ -130,13 +157,6 @@ namespace Seidon
 				out.write((char*)&id, sizeof(UUID));
 				break;
 			}
-			case Types::ARMATURE:
-			{
-				Armature* item = *(Armature**)&data[m.offset];
-				UUID id = item->id;
-				out.write((char*)&id, sizeof(UUID));
-				break;
-			}
 			case Types::ANIMATION:
 			{
 				Animation* item = *(Animation**)&data[m.offset];
@@ -148,13 +168,6 @@ namespace Seidon
 			{
 				Shader* item = *(Shader**)&data[m.offset];
 				UUID id = item->GetId();
-				out.write((char*)&id, sizeof(UUID));
-				break;
-			}
-			case Types::SPRITE:
-			{
-				Sprite* item = *(Sprite**)&data[m.offset];
-				UUID id = item->id;
 				out.write((char*)&id, sizeof(UUID));
 				break;
 			}
@@ -225,6 +238,14 @@ namespace Seidon
 				*(bool*)&data[m.offset] = item;
 				break;
 			}
+			case Types::VECTOR2: case Types::VECTOR2_ANGLES:
+			{
+				glm::vec3 item;
+				in.read((char*)&item, sizeof(glm::vec2));
+
+				*(glm::vec2*)&data[m.offset] = item;
+				break;
+			}
 			case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
 			{
 				glm::vec3 item;
@@ -249,7 +270,10 @@ namespace Seidon
 				if(resourceManager.IsTextureRegistered(id))
 					*(Texture**)&data[m.offset] = resourceManager.GetOrLoadTexture(id);
 				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Texture id not registered" << std::endl;
 					*(Texture**)&data[m.offset] = resourceManager.GetTexture("albedo_default");
+				}
 
 				break;
 			}
@@ -269,7 +293,10 @@ namespace Seidon
 					if (resourceManager.IsTextureRegistered(id))
 						item.push_back(resourceManager.GetOrLoadTexture(id));
 					else
+					{
+						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Texture id not registered" << std::endl;
 						item.push_back(resourceManager.GetTexture("albedo_default"));
+					}
 				}
 
 				*(std::vector<Texture*>*)& data[m.offset] = item;
@@ -283,7 +310,10 @@ namespace Seidon
 				if (resourceManager.IsMeshRegistered(id))
 					*(Mesh**)&data[m.offset] = resourceManager.GetOrLoadMesh(id);
 				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Mesh id not registered" << std::endl;
 					*(Mesh**)&data[m.offset] = resourceManager.GetMesh("empty_mesh");
+				}
 
 				break;
 			}
@@ -303,10 +333,53 @@ namespace Seidon
 					if (resourceManager.IsMeshRegistered(id))
 						item.push_back(resourceManager.GetOrLoadMesh(id));
 					else
+					{
+						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Mesh id not registered" << std::endl;
 						item.push_back(resourceManager.GetMesh("empty_mesh"));
+					}
 				}
 
 				*(std::vector<Mesh*>*)& data[m.offset] = item;
+				break;
+			}
+			case Types::SKINNED_MESH:
+			{
+				UUID id;
+				in.read((char*)&id, sizeof(UUID));
+
+				if (resourceManager.IsSkinnedMeshRegistered(id))
+					*(SkinnedMesh**)&data[m.offset] = resourceManager.GetOrLoadSkinnedMesh(id);
+				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Skinned mesh id not registered" << std::endl;
+					*(SkinnedMesh**)&data[m.offset] = resourceManager.GetSkinnedMesh("empty_skinned_mesh");
+				}
+
+				break;
+			}
+			case Types::SKINNED_MESH_VECTOR:
+			{
+				size_t size;
+				in.read((char*)&size, sizeof(size_t));
+
+				std::vector<SkinnedMesh*> item;
+				item.reserve(size);
+
+				for (int i = 0; i < size; i++)
+				{
+					UUID id;
+					in.read((char*)&id, sizeof(UUID));
+
+					if (resourceManager.IsSkinnedMeshRegistered(id))
+						item.push_back(resourceManager.GetOrLoadSkinnedMesh(id));
+					else
+					{
+						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Skinned mesh id not registered" << std::endl;
+						item.push_back(resourceManager.GetSkinnedMesh("empty_skinned_mesh"));
+					}
+				}
+
+				*(std::vector<SkinnedMesh*>*)& data[m.offset] = item;
 				break;
 			}
 			case Types::MATERIAL:
@@ -317,7 +390,10 @@ namespace Seidon
 				if (resourceManager.IsMaterialRegistered(id))
 					*(Material**)&data[m.offset] = resourceManager.GetOrLoadMaterial(id);
 				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Material id not registered" << std::endl;
 					*(Material**)&data[m.offset] = resourceManager.GetMaterial("default_material");
+				}
 
 				break;
 			}
@@ -337,7 +413,10 @@ namespace Seidon
 					if (resourceManager.IsMaterialRegistered(id))
 						item.push_back(resourceManager.GetOrLoadMaterial(id));
 					else
+					{
+						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Material id not registered" << std::endl;
 						item.push_back(resourceManager.GetMaterial("default_material"));
+					}
 				}
 
 				*(std::vector<Material*>*)& data[m.offset] = item;
@@ -351,19 +430,10 @@ namespace Seidon
 				if (resourceManager.IsCubemapRegistered(id))
 					*(HdrCubemap**)&data[m.offset] = resourceManager.GetOrLoadCubemap(id);
 				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Cubemap id not registered" << std::endl;
 					*(HdrCubemap**)&data[m.offset] = resourceManager.GetCubemap("default_cubemap");
-
-				break;
-			}
-			case Types::ARMATURE:
-			{
-				UUID id;
-				in.read((char*)&id, sizeof(UUID));
-
-				if (resourceManager.IsArmatureRegistered(id))
-					*(Armature**)&data[m.offset] = resourceManager.GetOrLoadArmature(id);
-				else
-					*(Armature**)&data[m.offset] = resourceManager.GetArmature("default_armature");
+				}
 
 				break;
 			}
@@ -375,7 +445,10 @@ namespace Seidon
 				if (resourceManager.IsAnimationRegistered(id))
 					*(Animation**)&data[m.offset] = resourceManager.GetOrLoadAnimation(id);
 				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Animation id not registered" << std::endl;
 					*(Animation**)&data[m.offset] = resourceManager.GetAnimation("default_animation");
+				}
 
 				break;
 			}
@@ -387,26 +460,18 @@ namespace Seidon
 				if (resourceManager.IsShaderRegistered(id))
 					*(Shader**)&data[m.offset] = resourceManager.GetOrLoadShader(id);
 				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Shader id not registered" << std::endl;
 					*(Shader**)&data[m.offset] = resourceManager.GetShader("default_shader");
-
-				break;
-			}
-			case Types::SPRITE:
-			{
-				UUID id;
-				in.read((char*)&id, sizeof(UUID));
-				/*
-				if (resourceManager.IsShaderRegistered(id))
-					*(Shader**)&data[m.offset] = resourceManager.GetOrLoadShader(id);
-				else
-					*(Shader**)&data[m.offset] = resourceManager.GetShader("default_shader");
-				*/
+				}
 				break;
 			}
 			case Types::UNKNOWN:
 				break;
 			}
 		}
+
+		if (OnChange) OnChange(data);
 	}
 
 	std::string MetaType::TypeToString(Types type)
@@ -435,6 +500,9 @@ namespace Seidon
 		if (type == Types::VECTOR2)
 			return "Vec2";
 
+		if (type == Types::VECTOR2_ANGLES)
+			return "Vec2 Angles";
+
 		if (type == Types::VECTOR3)
 			return "Vec3";
 
@@ -446,6 +514,9 @@ namespace Seidon
 
 		if (type == Types::MESH_VECTOR)
 			return "Mesh Vector";
+
+		if (type == Types::SKINNED_MESH_VECTOR)
+			return "Skinned Mesh Vector";
 
 		if (type == Types::MATERIAL_VECTOR)
 			return "Material Vector";
@@ -462,17 +533,14 @@ namespace Seidon
 		if (type == Types::MESH)
 			return "Mesh";
 
+		if (type == Types::SKINNED_MESH)
+			return "Skinned Mesh";
+
 		if (type == Types::ANIMATION)
 			return "Animation";
 
-		if (type == Types::ARMATURE)
-			return "Armature";
-
 		if (type == Types::SHADER)
 			return "Shader";
-
-		if (type == Types::SPRITE)
-			return "Sprite";
 
 		return "Unknown";
 	}
@@ -503,6 +571,9 @@ namespace Seidon
 		if (string == "VECTOR2")
 			return Types::VECTOR2;
 
+		if (string == "VECTOR2_ANGLES")
+			return Types::VECTOR2_ANGLES;
+
 		if (string == "VECTOR3")
 			return Types::VECTOR3;
 
@@ -514,6 +585,9 @@ namespace Seidon
 
 		if (string == "MESH_VECTOR")
 			return Types::MESH_VECTOR;
+
+		if (string == "SKINNED_MESH_VECTOR")
+			return Types::SKINNED_MESH_VECTOR;
 
 		if (string == "MATERIAL_VECTOR")
 			return Types::MATERIAL_VECTOR;
@@ -530,17 +604,14 @@ namespace Seidon
 		if (string == "MESH")
 			return Types::MESH;
 
+		if (string == "SKINNED_MESH")
+			return Types::SKINNED_MESH;
+
 		if (string == "ANIMATION")
 			return Types::ANIMATION;
 
-		if (string == "ARMATURE")
-			return Types::ARMATURE;
-
 		if (string == "SHADER")
 			return Types::SHADER;
-
-		if (string == "SPRITE")
-			return Types::SPRITE;
 
 		return Types::UNKNOWN;
 	}

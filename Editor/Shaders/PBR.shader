@@ -14,7 +14,6 @@ Ambient Occlusion : TEXTURE
 
 
 #define MAX_CASCADE_COUNT 8
-#define MAX_BONE_COUNT 150
 #define MAX_BONE_INFLUENCE 4
 
 layout(location = 0) in vec3 vertexPosition;
@@ -44,6 +43,11 @@ layout(std430, binding = 0) buffer transforms
     mat4 modelMatrices[];
 };
 
+layout(std430, binding = 3) buffer bones
+{
+    mat4 boneTransforms[];
+};
+
 struct CameraData
 {
     vec3 position;
@@ -56,17 +60,15 @@ uniform CameraData camera;
 //uniform mat3 normalMatrix;
 uniform mat4 lightSpaceMatrices[MAX_CASCADE_COUNT];
 
-uniform mat4 boneMatrices[MAX_BONE_COUNT];
-
 void main()
 {
     /*
         Skinning
     */
-    mat4 boneTransformMatrix = mat4(0);
 
+    mat4 boneTransformMatrix = mat4(0);
     for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
-            boneTransformMatrix += boneMatrices[boneIds[i]] * boneWeights[i];
+            boneTransformMatrix += boneTransforms[boneIds[i]] * boneWeights[i];
 
     if (boneTransformMatrix == mat4(0))
         boneTransformMatrix = mat4(1);

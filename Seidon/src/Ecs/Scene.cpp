@@ -196,7 +196,7 @@ namespace Seidon
 	Entity Scene::CreateEntity(const std::string& name, const UUID& id)
 	{
 		Entity e(registry.create(), this);
-		e.AddComponent<TransformComponent>();
+		e.AddComponent<TransformComponent>().parent = 0;
 		UUID i = e.AddComponent<IDComponent>(id).ID;
 		e.AddComponent<MouseSelectionComponent>();
 

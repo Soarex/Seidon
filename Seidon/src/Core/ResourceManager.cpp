@@ -60,9 +60,9 @@ namespace Seidon
         mesh->name = "Empty Mesh";
         AddMesh("empty_mesh", mesh);
 
-        Armature* armature = new Armature(10);
-        armature->name = "Default Armature";
-        AddArmature("default_armature", armature);
+        SkinnedMesh* skinnedMesh = new SkinnedMesh(10);
+        skinnedMesh->name = "Empty Skinned Mesh";
+        AddSkinnedMesh("empty_skinned_mesh", skinnedMesh);
 
         Animation* animation = new Animation(11);
         animation->name = "Default Animation";
@@ -75,7 +75,7 @@ namespace Seidon
         m->shader = GetOrLoadShader("Shaders/PreethamSky.sdshader");
         m->ModifyProperty("Turbidity", 2.0f);
         m->ModifyProperty("Azimuth", 0.0f);
-        m->ModifyProperty("Inclination", 0.0f);
+        m->ModifyProperty("Inclination", glm::radians(45.0f));
         m->ModifyProperty("Intensity", 1.0f);
         AddMaterial("Preetham Sky Material", m);
     }
@@ -100,6 +100,12 @@ namespace Seidon
         nameToMeshId.clear();
         idToMeshPath.clear();
 
+        for (auto [id, mesh] : skinnedMeshes)
+            delete mesh;
+        skinnedMeshes.clear();
+        nameToSkinnedMeshId.clear();
+        idToSkinnedMeshPath.clear();
+
         for (auto [id, shader] : shaders)
             delete shader;
         shaders.clear();
@@ -111,12 +117,6 @@ namespace Seidon
         cubemaps.clear();
         nameToCubemapId.clear();
         idToCubemapPath.clear();
-
-        for (auto [id, armature] : armatures)
-            delete armature;
-        armatures.clear();
-        nameToArmatureId.clear();
-        idToArmaturePath.clear();
 
         for (auto [id, animation] : animations)
             delete animation;
@@ -151,6 +151,19 @@ namespace Seidon
             out.write(path.c_str(), lenght * sizeof(char));
         }
 
+        size = idToSkinnedMeshPath.size();
+        out.write((char*)&size, sizeof(size_t));
+
+        for (auto& [id, path] : idToSkinnedMeshPath)
+        {
+            out.write((char*)&id, sizeof(UUID));
+
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+
         size = idToMaterialPath.size();
         out.write((char*)&size, sizeof(size_t));
 
@@ -167,18 +180,6 @@ namespace Seidon
         out.write((char*)&size, sizeof(size_t));
 
         for (auto& [id, path] : idToCubemapPath)
-        {
-            out.write((char*)&id, sizeof(UUID));
-
-            size_t lenght = path.length() + 1;
-            out.write((char*)&lenght, sizeof(size_t));
-            out.write(path.c_str(), lenght * sizeof(char));
-        }
-
-        size = idToArmaturePath.size();
-        out.write((char*)&size, sizeof(size_t));
-
-        for (auto& [id, path] : idToArmaturePath)
         {
             out.write((char*)&id, sizeof(UUID));
 
@@ -259,6 +260,21 @@ namespace Seidon
 
             std::string path = std::string(buffer);
 
+            idToSkinnedMeshPath[id] = path;
+        }
+
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
+        {
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
+
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
+
+            std::string path = std::string(buffer);
+
             idToMaterialPath[id] = path;
         }
 
@@ -275,21 +291,6 @@ namespace Seidon
             std::string path = std::string(buffer);
 
             idToCubemapPath[id] = path;
-        }
-
-        in.read((char*)&size, sizeof(size_t));
-        for (int i = 0; i < size; i++)
-        {
-            UUID id;
-            in.read((char*)&id, sizeof(UUID));
-
-            size_t lenght = 0;
-            in.read((char*)&lenght, sizeof(size_t));
-            in.read(buffer, lenght * sizeof(char));
-
-            std::string path = std::string(buffer);
-
-            idToArmaturePath[id] = path;
         }
 
         in.read((char*)&size, sizeof(size_t));
@@ -337,12 +338,37 @@ namespace Seidon
 
     Mesh* ResourceManager::LoadMesh(const std::string& path)
     {
+        std::ifstream in(path, std::ios::in | std::ios::binary);
+        if (!in)
+        {
+            std::cerr << "Error loading mesh file: " << path << std::endl;
+            return nullptr;
+        }
+
         Mesh* m = new Mesh();
-        m->Load(path);
+        m->Load(in);
 
         AddMesh(path, m);
 
         idToMeshPath[m->id] = path;
+        return m;
+    }
+
+    SkinnedMesh* ResourceManager::LoadSkinnedMesh(const std::string& path)
+    {
+        std::ifstream in(path, std::ios::in | std::ios::binary);
+        if (!in)
+        {
+            std::cerr << "Error loading skinned mesh file: " << path << std::endl;
+            return nullptr;
+        }
+
+        SkinnedMesh* m = new SkinnedMesh();
+        m->Load(in);
+
+        AddSkinnedMesh(path, m);
+
+        idToSkinnedMeshPath[m->id] = path;
         return m;
     }
 
@@ -378,17 +404,6 @@ namespace Seidon
         return c;
     }
 
-    Armature* ResourceManager::LoadArmature(const std::string& path)
-    {
-        Armature* a = new Armature();
-        a->Load(path);
-
-        AddArmature(path, a);
-
-        idToArmaturePath[a->id] = path;
-        return a;
-    }
-
     Animation* ResourceManager::LoadAnimation(const std::string& path)
     {
         Animation* a = new Animation();
@@ -417,10 +432,36 @@ namespace Seidon
     {
         std::string& path = idToMeshPath[id];
 
+        std::ifstream in(path, std::ios::in | std::ios::binary);
+        if (!in)
+        {
+            std::cerr << "Error loading mesh file: " << path << std::endl;
+            return nullptr;
+        }
+
         Mesh* m = new Mesh();
-        m->Load(path);
+        m->Load(in);
 
         AddMesh(path, m);
+
+        return m;
+    }
+
+    SkinnedMesh* ResourceManager::LoadSkinnedMesh(UUID id)
+    {
+        std::string& path = idToSkinnedMeshPath[id];
+
+        std::ifstream in(path, std::ios::in | std::ios::binary);
+        if (!in)
+        {
+            std::cerr << "Error loading skinned mesh file: " << path << std::endl;
+            return nullptr;
+        }
+
+        SkinnedMesh* m = new SkinnedMesh();
+        m->Load(in);
+
+        AddSkinnedMesh(path, m);
 
         return m;
     }
@@ -461,18 +502,6 @@ namespace Seidon
         return c;
     }
 
-    Armature* ResourceManager::LoadArmature(UUID id)
-    {
-        std::string& path = idToArmaturePath[id];
-
-        Armature* a = new Armature();
-        a->Load(path);
-
-        AddArmature(path, a);
-
-        return a;
-    }
-
     Animation* ResourceManager::LoadAnimation(UUID id)
     {
         std::string& path = idToAnimationPath[id];
@@ -495,6 +524,11 @@ namespace Seidon
         idToMeshPath[mesh->id] = path;
     }
 
+    void ResourceManager::RegisterSkinnedMesh(SkinnedMesh* mesh, const std::string& path)
+    {
+        idToSkinnedMeshPath[mesh->id] = path;
+    }
+
     void ResourceManager::RegisterMaterial(Material* material, const std::string& path)
     {
         idToMaterialPath[material->id] = path;
@@ -508,11 +542,6 @@ namespace Seidon
     void ResourceManager::RegisterCubemap(HdrCubemap* cubemap, const std::string& path)
     {
         idToCubemapPath[cubemap->id] = path;
-    }
-
-    void ResourceManager::RegisterArmature(Armature* armature, const std::string& path)
-    {
-        idToArmaturePath[armature->id] = path;
     }
 
     void ResourceManager::RegisterAnimation(Animation* animation, const std::string& path)
@@ -532,6 +561,13 @@ namespace Seidon
         if (nameToMeshId.count(name) > 0) return meshes[nameToMeshId[name]];
 
         return LoadMesh(name);
+    }
+
+    SkinnedMesh* ResourceManager::GetOrLoadSkinnedMesh(const std::string& name)
+    {
+        if (nameToSkinnedMeshId.count(name) > 0) return skinnedMeshes[nameToSkinnedMeshId[name]];
+
+        return LoadSkinnedMesh(name);
     }
 
     Shader* ResourceManager::GetOrLoadShader(const std::string& name)
@@ -555,13 +591,6 @@ namespace Seidon
         return LoadCubemap(name);
     }
 
-    Armature* ResourceManager::GetOrLoadArmature(const std::string& name)
-    {
-        if (nameToArmatureId.count(name) > 0) return armatures[nameToArmatureId[name]];
-
-        return LoadArmature(name);
-    }
-
     Animation* ResourceManager::GetOrLoadAnimation(const std::string& name)
     {
         if (nameToAnimationId.count(name) > 0) return animations[nameToAnimationId[name]];
@@ -583,6 +612,13 @@ namespace Seidon
         return LoadMesh(id);
     }
 
+    SkinnedMesh* ResourceManager::GetOrLoadSkinnedMesh(UUID id)
+    {
+        if (skinnedMeshes.count(id) > 0) return skinnedMeshes[id];
+
+        return LoadSkinnedMesh(id);
+    }
+
     Shader* ResourceManager::GetOrLoadShader(UUID id)
     {
         if (shaders.count(id) > 0) return shaders[id];
@@ -602,13 +638,6 @@ namespace Seidon
         if (cubemaps.count(id) > 0) return cubemaps[id];
 
         return LoadCubemap(id);
-    }
-
-    Armature* ResourceManager::GetOrLoadArmature(UUID id)
-    {
-        if (armatures.count(id) > 0) return armatures[id];
-
-        return LoadArmature(id);
     }
 
     Animation* ResourceManager::GetOrLoadAnimation(UUID id)
@@ -634,6 +663,16 @@ namespace Seidon
         std::vector<Mesh*> res;
 
         for (auto& [key, mesh] : meshes)
+            res.push_back(mesh);
+
+        return res;
+    }
+
+    std::vector<SkinnedMesh*> ResourceManager::GetSkinnedMeshes()
+    {
+        std::vector<SkinnedMesh*> res;
+
+        for (auto& [key, mesh] : skinnedMeshes)
             res.push_back(mesh);
 
         return res;
@@ -669,16 +708,6 @@ namespace Seidon
         return res;
     }
 
-    std::vector<Armature*>	ResourceManager::GetArmatures()
-    {
-        std::vector<Armature*> res;
-
-        for (auto& [key, armature] : armatures)
-            res.push_back(armature);
-
-        return res;
-    }
-
     std::vector<Animation*>	ResourceManager::GetAnimations()
     {
         std::vector<Animation*> res;
@@ -701,6 +730,13 @@ namespace Seidon
         meshes[mesh->id] = mesh; 
         nameToMeshId[name] = mesh->id; 
         idToMeshPath[mesh->id] = name;
+    }
+
+    void ResourceManager::AddSkinnedMesh(const std::string& name, SkinnedMesh* mesh)
+    {
+        skinnedMeshes[mesh->id] = mesh;
+        nameToSkinnedMeshId[name] = mesh->id;
+        idToSkinnedMeshPath[mesh->id] = name;
     }
 
     void ResourceManager::AddShader(const std::string& name, Shader* shader) 
@@ -729,12 +765,5 @@ namespace Seidon
         animations[animation->id] = animation; 
         nameToAnimationId[name] = animation->id; 
         idToAnimationPath[animation->id] = name;
-    }
-
-    void ResourceManager::AddArmature(const std::string& name, Armature* armature)
-    { 
-        armatures[armature->id] = armature; 
-        nameToArmatureId[name] = armature->id; 
-        idToArmaturePath[armature->id] = name;
     }
 }

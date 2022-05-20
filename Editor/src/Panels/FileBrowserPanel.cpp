@@ -16,7 +16,7 @@ namespace Seidon
 		modelIcon = resourceManager.LoadTexture("Resources/ModelIcon.sdtex");
 		materialIcon = resourceManager.LoadTexture("Resources/MaterialIcon.sdtex");
 		animationIcon = resourceManager.LoadTexture("Resources/AnimationIcon.sdtex");
-		armatureIcon = resourceManager.LoadTexture("Resources/ArmatureIcon.sdtex"); 
+		skinnedMeshIcon = resourceManager.LoadTexture("Resources/SkinnedMeshIcon.sdtex");
 		prefabIcon = resourceManager.LoadTexture("Resources/PrefabIcon.sdtex");
 
 
@@ -202,14 +202,14 @@ namespace Seidon
 			else if (file.extension == ".sdmesh")
 				DrawMeshFile(file);
 
+			else if (file.extension == ".sdskmesh")
+				DrawSkinnedMeshFile(file);
+
 			else if (file.extension == ".sdmat")
 				DrawMaterialFile(file);
 
 			else if (file.extension == ".sdhdr")
 				DrawCubemapFile(file);
-
-			else if (file.extension == ".sdarm")
-				DrawArmatureFile(file);
 
 			else if (file.extension == ".sdanim")
 				DrawAnimationFile(file);
@@ -375,6 +375,24 @@ namespace Seidon
 		ImGui::NextColumn();
 	}
 
+	void FileBrowserPanel::DrawSkinnedMeshFile(FileEntry& file)
+	{
+		ImGui::ImageButton((ImTextureID)skinnedMeshIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+		if (ImGui::BeginDragDropSource())
+		{
+			const std::string& itemPath = file.path;
+			ImGui::SetDragDropPayload("FILE_BROWSER_SKINNED_MESH", itemPath.c_str(), itemPath.length() + 1);
+			ImGui::EndDragDropSource();
+		}
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		ImGui::TextWrapped(file.name.c_str());
+		ImGui::NextColumn();
+	}
+
 	void FileBrowserPanel::DrawMaterialFile(FileEntry& file)
 	{
 		ImGui::ImageButton((ImTextureID)materialIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
@@ -428,24 +446,6 @@ namespace Seidon
 			ImGui::EndPopup();
 		}
 		
-		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-		ImGui::TextWrapped(file.name.c_str());
-		ImGui::NextColumn();
-	}
-
-	void FileBrowserPanel::DrawArmatureFile(FileEntry& file)
-	{
-		ImGui::ImageButton((ImTextureID)armatureIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
-
-		if (ImGui::BeginDragDropSource())
-		{
-			const std::string& itemPath = file.path;
-			ImGui::SetDragDropPayload("FILE_BROWSER_ARMATURE", itemPath.c_str(), itemPath.length() + 1);
-			ImGui::EndDragDropSource();
-		}
-
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 

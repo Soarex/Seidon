@@ -23,11 +23,12 @@ namespace Seidon
 	private:
 		Assimp::Importer importer;
 
-		Scene prefabMaker;
+		Scene prefabScene;
 		std::unordered_map<std::string, Material*> importedMaterials;
 		std::unordered_map<std::string, Texture*> importedTextures;
 		std::vector<Armature> importedArmatures;
 		std::vector<Mesh*> importedMeshes;
+		std::vector<SkinnedMesh*> importedSkinnedMeshes;
 	public:
 		void ImportModelFile(const std::string& path);
 		Texture* ImportTexture(const std::string& path, bool gammaCorrection = false);
@@ -37,9 +38,14 @@ namespace Seidon
 		bool ContainsMeshes(aiNode* node);
 
 		void ImportAnimation(aiAnimation* animation, const std::string& directory);
-		void ImportMeshes(aiNode* node, const aiScene* scene, const aiMatrix4x4& transform, const std::string& directory);
+		Mesh* ImportMesh(aiNode* node, const aiScene* scene, std::vector<Material*>& materials);
+		SkinnedMesh* ImportSkinnedMesh(aiNode* node, const aiScene* scene, std::vector<Material*>& materials);
 		void ProcessBones(aiNode* node, const aiScene* scene, Armature& armature, int parentId);
-		SubMesh* ProcessSubMesh(aiMesh* mesh, Armature* armature);
+		Submesh* ProcessSubmesh(aiMesh* mesh);
+		SkinnedSubmesh* ProcessSkinnedSubmesh(aiMesh* mesh, Armature* armature);
 		Material* ImportMaterial(aiMaterial* material, const std::string& directory);
+
+		Entity ImportHierarchy(aiNode* node, const aiScene* scene, const std::string& directory);
+		void ImportChildNodes(aiNode* node, const aiScene* scene, Entity parent, const std::string& directory);
 	};
 }

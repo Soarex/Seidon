@@ -296,12 +296,16 @@ namespace Seidon
         Framebuffer conversionFramebuffer;
         conversionFramebuffer.Create();
 
+        byte shaderBufferData[500];
+        int size = MaterialToShaderData(material, shaderBufferData);
+
+        unsigned int materialBuffer;
+        glGenBuffers(1, &materialBuffer);
+        glBindBuffer(GL_UNIFORM_BUFFER, materialBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, size, shaderBufferData, GL_STATIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 1, materialBuffer);
+
         material->shader->Use();
-        material->shader->SetFloat("turbidity", material->GetProperty<float>("Turbidity"));
-        material->shader->SetFloat("azimuth", material->GetProperty<float>("Azimuth"));
-        material->shader->SetFloat("inclination", material->GetProperty<float>("Inclination"));
-        material->shader->SetFloat("intensity", material->GetProperty<float>("Intensity"));
-        
         material->shader->SetMat4("camera.projectionMatrix", projectionMatrix);
 
         GL_CHECK(glViewport(0, 0, faceSize, faceSize));
@@ -324,6 +328,8 @@ namespace Seidon
 
         GL_CHECK(glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID));
         GL_CHECK(glGenerateMipmap(GL_TEXTURE_CUBE_MAP));
+
+        glDeleteBuffers(1, &materialBuffer);
 
         GenerateIrradianceMap();
         GeneratePrefilteredMap();
@@ -660,6 +666,8 @@ namespace Seidon
              1.0f, -1.0f,  1.0f
         };
         
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
         unsigned int cubeVAO = 0;
         unsigned int cubeVBO = 0;
         GL_CHECK(glGenVertexArrays(1, &cubeVAO));
@@ -713,4 +721,46 @@ namespace Seidon
         GL_CHECK(glDeleteVertexArrays(1, &quadVAO));
     }
 
+    int HdrCubemap::MaterialToShaderData(Material* material, void* data)
+    {
+        int offset = 0;
+        byte* shaderData = (byte*)data;
+
+        for (MemberData& m : material->shader->GetBufferLayout()->members)
+            switch (m.type)
+            {
+            case Types::FLOAT_NORMALIZED: case Types::FLOAT: case Types::FLOAT_ANGLE:
+            {
+                *(float*)(shaderData + offset) = *(float*)(material->data + m.offset);
+                
+                offset += sizeof(float);
+                break;
+            }
+            case Types::VECTOR2: case Types::VECTOR2_ANGLES:
+            {
+                *(glm::vec2*)(shaderData + offset) = *(glm::vec2*)(material->data + m.offset);
+
+                offset += sizeof(glm::vec2);
+                break;
+            }
+            case Types::VECTOR3_COLOR:
+            {
+                *(glm::vec3*)(shaderData + offset) = *(glm::vec3*)(material->data + m.offset);
+
+                offset += sizeof(glm::vec4);
+                break;
+            }
+            case Types::TEXTURE:
+            {
+                Texture* t = *(Texture**)(material->data + m.offset);
+                t->MakeResident();
+                *(uint64_t*)(shaderData + offset) = t->GetRenderHandle();
+
+                offset += sizeof(uint64_t);
+                break;
+            }
+            }
+
+        return offset;
+    }
 }

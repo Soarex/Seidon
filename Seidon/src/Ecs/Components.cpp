@@ -12,8 +12,9 @@ namespace Seidon
 
 	SkinnedRenderComponent::SkinnedRenderComponent()
 	{
-		mesh = Application::Get()->GetResourceManager()->GetMesh("empty_mesh");
-		armature = Application::Get()->GetResourceManager()->GetArmature("default_armature");
+		mesh = Application::Get()->GetResourceManager()->GetSkinnedMesh("empty_skinned_mesh");
+
+		Revalidate(this);
 	}
 
 	WireframeRenderComponent::WireframeRenderComponent()
@@ -23,6 +24,13 @@ namespace Seidon
 	}
 
 	void RenderComponent::SetMesh(Mesh* mesh)
+	{
+		this->mesh = mesh;
+
+		Revalidate(this);
+	}
+
+	void SkinnedRenderComponent::SetMesh(SkinnedMesh* mesh)
 	{
 		this->mesh = mesh;
 
@@ -42,6 +50,28 @@ namespace Seidon
 		}
 	}
 
+	void SkinnedRenderComponent::Revalidate(void* component)
+	{
+		SkinnedRenderComponent& rc = *(SkinnedRenderComponent*)component;
+		int oldSize = rc.materials.size();
+
+		if (oldSize < rc.mesh->subMeshes.size())
+		{
+			rc.materials.resize(rc.mesh->subMeshes.size());
+			for (int i = oldSize; i < rc.mesh->subMeshes.size(); i++)
+				rc.materials[i] = Application::Get()->GetResourceManager()->GetMaterial("default_material");
+		}
+
+		oldSize = rc.boneTransforms.size();
+
+		if (oldSize < rc.mesh->armature.bones.size())
+		{
+			rc.boneTransforms.resize(rc.mesh->armature.bones.size());
+			for (int i = oldSize; i < rc.mesh->armature.bones.size(); i++)
+				rc.boneTransforms[i] = glm::mat4(1);
+		}
+	}
+
 	CubemapComponent::CubemapComponent()
 	{
 		cubemap = Application::Get()->GetResourceManager()->GetCubemap("default_cubemap");
@@ -55,11 +85,9 @@ namespace Seidon
 	AnimationComponent::AnimationComponent()
 	{
 		animation = Application::Get()->GetResourceManager()->GetAnimation("default_animation");
-		runtimeBoneMatrices.reserve(MAX_BONE_COUNT);
 
 		for (int i = 0; i < MAX_BONE_COUNT; i++)
 		{
-			localBoneMatrices[i] = glm::identity<glm::mat4>();
 			lastPositionKeyIndices[i] = 0;
 			lastRotationKeyIndices[i] = 0;
 			lastScalingKeyIndices[i] = 0;

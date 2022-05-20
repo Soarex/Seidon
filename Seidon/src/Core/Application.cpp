@@ -63,7 +63,7 @@ namespace Seidon
 		RegisterComponent<SkinnedRenderComponent>()
 			.AddMember("Mesh", &SkinnedRenderComponent::mesh)
 			.AddMember("Materials", &SkinnedRenderComponent::materials)
-			.AddMember("Armature", &SkinnedRenderComponent::armature);
+			.OnChange = SkinnedRenderComponent::Revalidate;
 
 		RegisterComponent<SpriteRenderComponent>()
 			.AddMember("Sprite", &SpriteRenderComponent::sprite);

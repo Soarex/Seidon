@@ -193,31 +193,21 @@ namespace Seidon
 				}
 			);
 
+			scene->Iterate
+			(
+				skinnedRenderGroup,
+				[&](EntityId id, SkinnedRenderComponent& renderComponent, TransformComponent& transform)
+				{
+					Entity e = scene->GetEntityByEntityId(id);
+
+					while (renderComponent.mesh->subMeshes.size() > ms.size())
+						ms.push_back(&m);
+
+					renderer.SubmitSkinnedMesh(renderComponent.mesh, renderComponent.boneTransforms, ms, e.GetGlobalTransformMatrix(), id);
+				}
+			);
+
 			renderer.Render();
-
-			/*
-			for (entt::entity e : skinnedRenderGroup)
-			{
-				SkinnedRenderComponent r = skinnedRenderGroup.get<SkinnedRenderComponent>(e);
-				TransformComponent t = skinnedRenderGroup.get<TransformComponent>(e);
-				glm::mat4 modelMatrix = t.GetTransformMatrix();
-				depthShader.SetMat4("modelMatrix", modelMatrix);
-
-				if (scene->GetRegistry().all_of<AnimationComponent>(e))
-				{
-					AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
-
-					for (int j = 0; j < a.runtimeBoneMatrices.size(); j++)
-						depthShader.SetMat4("boneMatrices[" + std::to_string(j) + "]", a.runtimeBoneMatrices[j]);
-				}
-				
-				for (SubMesh* subMesh : r.mesh->subMeshes)
-				{
-					GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
-					GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
-				}
-			}
-			*/
 			depthFramebuffers[i].Unbind();
 		}
 
@@ -286,6 +276,17 @@ namespace Seidon
 
 		scene->Iterate
 		(
+			skinnedRenderGroup,
+			[&](EntityId id, SkinnedRenderComponent& renderComponent, TransformComponent& transform)
+			{
+				Entity e = scene->GetEntityByEntityId(id);
+
+				renderer.SubmitSkinnedMesh(renderComponent.mesh, renderComponent.boneTransforms, renderComponent.materials, e.GetGlobalTransformMatrix(), id);
+			}
+		);
+
+		scene->Iterate
+		(
 			wireframeRenderGroup,
 			[&](EntityId id, WireframeRenderComponent& renderComponent, TransformComponent& transform)
 			{
@@ -302,49 +303,7 @@ namespace Seidon
 		renderer.End();
 
 		stats = renderer.GetRenderStats();
-		/*
-		for (entt::entity e : skinnedRenderGroup)
-		{
-			SkinnedRenderComponent& r = skinnedRenderGroup.get<SkinnedRenderComponent>(e);
-			TransformComponent& t = skinnedRenderGroup.get<TransformComponent>(e);
 
-			glm::mat4 modelMatrix = t.GetTransformMatrix();
-
-			shader->SetMat4("modelMatrix", modelMatrix);
-
-			glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
-			shader->SetMat3("normalMatrix", normalMatrix);
-
-			shader->SetInt("entityId", (int)e);
-
-			if (scene->GetRegistry().all_of<AnimationComponent>(e))
-			{
-				AnimationComponent& a = scene->GetRegistry().get<AnimationComponent>(e);
-					
-				for (int i = 0; i < a.runtimeBoneMatrices.size(); i++)
-					shader->SetMat4("boneMatrices[" + std::to_string(i) + "]", a.runtimeBoneMatrices[i]);
-			}
-
-			int i = 0;
-			for (SubMesh* subMesh : r.mesh->subMeshes)
-			{
-				if (r.materials.size() <= i) r.materials.push_back(resourceManager->GetMaterial("default_material"));
-
-				shader->SetVec3("tint", r.materials[i]->tint);
-				r.materials[i]->albedo->Bind(0);
-				r.materials[i]->roughness->Bind(1);
-				r.materials[i]->normal->Bind(2);
-				r.materials[i]->metallic->Bind(3);
-				r.materials[i]->ao->Bind(4);
-
-				GL_CHECK(glBindVertexArray(subMesh->GetVAO()));
-
-				GL_CHECK(glDrawElements(GL_TRIANGLES, subMesh->indices.size(), GL_UNSIGNED_INT, 0));
-
-				i++;
-			}
-		}
-		*/
 		ProcessMouseSelection();
 		
 		GL_CHECK(glDepthFunc(GL_LEQUAL));

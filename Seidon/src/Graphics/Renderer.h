@@ -18,6 +18,12 @@ namespace Seidon
 		uint32_t vertexBufferSize;
 		uint32_t indexCount;
 		uint32_t indexBufferSize;
+
+		uint32_t skinnedVertexCount;
+		uint32_t skinnedVertexBufferSize;
+		uint32_t skinnedIndexCount;
+		uint32_t skinnedIndexBufferSize;
+
 		uint32_t objectCount;
 		uint32_t batchCount;
 	};
@@ -42,6 +48,7 @@ namespace Seidon
 
 	struct MaterialData
 	{
+		Shader* shader;
 		uint32_t size = 0;
 		byte data[500];
 	};
@@ -55,12 +62,14 @@ namespace Seidon
 		std::vector<MaterialData> materials;
 	};
 
-	struct RiggedMeshData
+	struct SkinnedMeshBatch
 	{
-		RenderCommand command;
-		glm::mat4 transform;
+		uint32_t objectCount = 0;
 		int entityId;
-		MaterialData material;
+
+		std::vector<RenderCommand> commands;
+		std::vector<glm::mat4> transforms;
+		std::vector<MaterialData> materials;
 
 		std::vector<glm::mat4>* bones;
 	};
@@ -99,27 +108,35 @@ namespace Seidon
 	private:
 		static constexpr int CASCADE_COUNT = 4;
 		size_t maxVertexCount;
+		size_t maxSkinnedVertexCount;
 		size_t maxObjects;
 
 		int shaderBufferOffsetAlignment;
 
 		std::unordered_map <UUID, std::vector<CacheEntry>> meshCache;
+
 		std::unordered_map<Shader*, BatchData> batches;
+		std::unordered_map<UUID, SkinnedMeshBatch> skinnedMeshBatches;
 
 		Shader* wireframeShader;
 		WireframeBatchData wireframeBatch;
 		BatchData spriteObjects;
 
-		std::vector<RiggedMeshData> riggedMeshes;
 
 		RenderStats stats;
 
 		uint32_t vao;
 		uint32_t vertexBuffer;
 		uint32_t indexBuffer;
+
+		uint32_t skinnedVao;
+		uint32_t skinnedVertexBuffer;
+		uint32_t skinnedIndexBuffer;
+
 		uint32_t instanceDataBuffer;
 
-		uint32_t storageBuffers[3];
+		uint32_t transformBuffers[3];
+		uint32_t boneTransformBuffers[3];
 		uint32_t entityIdBuffers[3];
 		uint32_t materialBuffers[3];
 		uint32_t indirectBuffers[3];
@@ -128,15 +145,23 @@ namespace Seidon
 		uint32_t nextIndexPosition = 0;
 		uint32_t nextVertexPosition = 0;
 
+		uint32_t nextSkinnedIndexPosition = 0;
+		uint32_t nextSkinnedVertexPosition = 0;
+
 		uint32_t vertexBufferHeadPosition = 0;
 		uint32_t indexBufferHeadPosition = 0;
 
-		glm::mat4* storageBufferPointers[3];
+		uint32_t skinnedVertexBufferHeadPosition = 0;
+		uint32_t skinnedIndexBufferHeadPosition = 0;
+
+		glm::mat4* transformBufferPointers[3];
+		glm::mat4* boneTransformBufferPointers[3];
 		int* entityIdBufferPointers[3];
 		byte* materialBufferPointers[3];
 		RenderCommand* indirectBufferPointers[3];
 
-		glm::mat4* storageBufferHead = 0;
+		glm::mat4* transformBufferHead = 0;
+		glm::mat4* boneTransformBufferHead = 0;
 		int* entityIdBufferHead = 0;
 		byte* materialBufferHead = 0;
 		RenderCommand* indirectBufferHead = 0;
@@ -151,13 +176,13 @@ namespace Seidon
 
 		double time;
 	public:
-		Renderer(size_t maxObjects = 1000, size_t maxVertexCount = 1000000);
+		Renderer(size_t maxObjects = 1000, size_t maxVertexCount = 1000000, size_t maxSkinnedVertexCount = 100000);
 
 		void Init();
 		void Begin();
 
 		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
-		void SubmitRiggedMesh(Mesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
+		void SubmitSkinnedMesh(SkinnedMesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 
 		void SetCamera(const CameraData& camera);
@@ -173,8 +198,13 @@ namespace Seidon
 		void Destroy();
 
 	private:
+		void InitStaticMeshBuffers();
+		void InitSkinnedMeshBuffers();
+		void InitStorageBuffers();
+
+		void SetupMaterialData(Material* material, MaterialData& materialData);
 		void DrawMeshes(int& offset, int& materialOffset, int& idOffset);
-		void DrawRiggedMeshes(int& offset, int& materialOffset, int& idOffset);
+		void DrawSkinnedMeshes(int& offset, int& materialOffset, int& idOffset);
 		void DrawWireframes(int& offset, int& materialOffset, int& idOffset);
 	};
 }

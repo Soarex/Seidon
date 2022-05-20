@@ -7,10 +7,36 @@
 
 namespace Seidon
 {
-	Renderer::Renderer(size_t maxObjects, size_t maxVertexCount)
-		: maxObjects(maxObjects), maxVertexCount(maxVertexCount) {}
+	Renderer::Renderer(size_t maxObjects, size_t maxVertexCount, size_t maxSkinnedVertexCount)
+		: maxObjects(maxObjects), maxVertexCount(maxVertexCount), maxSkinnedVertexCount(maxSkinnedVertexCount) {}
 
 	void Renderer::Init()
+	{
+		GL_CHECK(glGenBuffers(1, &instanceDataBuffer));
+		GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, instanceDataBuffer));
+
+		uint32_t* ids = new uint32_t[maxObjects];
+
+		for (int i = 0; i < maxObjects; i++)
+			ids[i] = i;
+
+		GL_CHECK(glBufferData(GL_ARRAY_BUFFER, maxObjects * sizeof(uint32_t), ids, GL_STATIC_DRAW));
+
+		delete[] ids;
+
+		InitStaticMeshBuffers();
+		InitSkinnedMeshBuffers();
+		InitStorageBuffers();
+
+		locks[0] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		locks[1] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+		locks[2] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+		wireframeShader = new Shader();
+		wireframeShader->LoadFromFile("Shaders/Wireframe.sdshader");
+	}
+
+	void Renderer::InitStaticMeshBuffers()
 	{
 		GL_CHECK(glGenVertexArrays(1, &vao));
 		GL_CHECK(glBindVertexArray(vao));
@@ -27,6 +53,83 @@ namespace Seidon
 
 		stats.indexBufferSize = maxVertexCount * 3;
 
+		// vertex positions
+		GL_CHECK(glEnableVertexAttribArray(0));
+		GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0));
+
+		// vertex normals
+		GL_CHECK(glEnableVertexAttribArray(1));
+		GL_CHECK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
+
+		// vertex tangent
+		GL_CHECK(glEnableVertexAttribArray(2));
+		GL_CHECK(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent)));
+
+		// vertex texture coords
+		GL_CHECK(glEnableVertexAttribArray(3));
+		GL_CHECK(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords)));
+
+		GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, instanceDataBuffer));
+
+		GL_CHECK(glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, sizeof(uint32_t), 0));
+		GL_CHECK(glVertexAttribDivisor(6, 1));
+		GL_CHECK(glEnableVertexAttribArray(6));
+
+		GL_CHECK(glBindVertexArray(0));
+	}
+
+	void Renderer::InitSkinnedMeshBuffers()
+	{
+		GL_CHECK(glGenVertexArrays(1, &skinnedVao));
+		GL_CHECK(glBindVertexArray(skinnedVao));
+
+		GL_CHECK(glGenBuffers(1, &skinnedVertexBuffer));
+		GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, skinnedVertexBuffer));
+		GL_CHECK(glBufferData(GL_ARRAY_BUFFER, maxSkinnedVertexCount * sizeof(SkinnedVertex), nullptr, GL_STATIC_DRAW));
+
+		stats.skinnedVertexBufferSize = maxSkinnedVertexCount;
+
+		GL_CHECK(glGenBuffers(1, &skinnedIndexBuffer));
+		GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skinnedIndexBuffer));
+		GL_CHECK(glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxSkinnedVertexCount * 3 * sizeof(int), nullptr, GL_STATIC_DRAW));
+
+		stats.skinnedIndexBufferSize = maxSkinnedVertexCount * 3;
+
+		// vertex positions
+		GL_CHECK(glEnableVertexAttribArray(0));
+		GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(SkinnedVertex), (void*)0));
+
+		// vertex normals
+		GL_CHECK(glEnableVertexAttribArray(1));
+		GL_CHECK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(SkinnedVertex), (void*)offsetof(SkinnedVertex, normal)));
+
+		// vertex tangent
+		GL_CHECK(glEnableVertexAttribArray(2));
+		GL_CHECK(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(SkinnedVertex), (void*)offsetof(SkinnedVertex, tangent)));
+
+		// vertex texture coords
+		GL_CHECK(glEnableVertexAttribArray(3));
+		GL_CHECK(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(SkinnedVertex), (void*)offsetof(SkinnedVertex, texCoords)));
+
+		// vertex bone ids
+		GL_CHECK(glEnableVertexAttribArray(4));
+		GL_CHECK(glVertexAttribIPointer(4, 4, GL_INT, sizeof(SkinnedVertex), (void*)offsetof(SkinnedVertex, boneIds)));
+
+		// vertex weights
+		GL_CHECK(glEnableVertexAttribArray(5));
+		GL_CHECK(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(SkinnedVertex), (void*)offsetof(SkinnedVertex, weights)));
+
+		GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, instanceDataBuffer));
+
+		GL_CHECK(glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, sizeof(uint32_t), 0));
+		GL_CHECK(glVertexAttribDivisor(6, 1));
+		GL_CHECK(glEnableVertexAttribArray(6));
+
+		GL_CHECK(glBindVertexArray(0));
+	}
+
+	void Renderer::InitStorageBuffers()
+	{
 		int flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 
 		GL_CHECK(glGenBuffers(3, indirectBuffers));
@@ -37,12 +140,20 @@ namespace Seidon
 			indirectBufferPointers[i] = (RenderCommand*)glMapBufferRange(GL_DRAW_INDIRECT_BUFFER, 0, maxObjects * sizeof(RenderCommand), flags);
 		}
 
-		GL_CHECK(glGenBuffers(3, storageBuffers));
+		GL_CHECK(glGenBuffers(3, transformBuffers));
 		for (int i = 0; i < 3; i++)
 		{
-			GL_CHECK(glBindBuffer(GL_SHADER_STORAGE_BUFFER, storageBuffers[i]));
+			GL_CHECK(glBindBuffer(GL_SHADER_STORAGE_BUFFER, transformBuffers[i]));
 			GL_CHECK(glBufferStorage(GL_SHADER_STORAGE_BUFFER, maxObjects * sizeof(glm::mat4), nullptr, flags));
-			storageBufferPointers[i] = (glm::mat4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, maxObjects * sizeof(glm::mat4), flags);
+			transformBufferPointers[i] = (glm::mat4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, maxObjects * sizeof(glm::mat4), flags);
+		}
+
+		GL_CHECK(glGenBuffers(3, boneTransformBuffers));
+		for (int i = 0; i < 3; i++)
+		{
+			GL_CHECK(glBindBuffer(GL_SHADER_STORAGE_BUFFER, boneTransformBuffers[i]));
+			GL_CHECK(glBufferStorage(GL_SHADER_STORAGE_BUFFER, MAX_BONE_COUNT * sizeof(glm::mat4), nullptr, flags));
+			boneTransformBufferPointers[i] = (glm::mat4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, MAX_BONE_COUNT * sizeof(glm::mat4), flags);
 		}
 
 		GL_CHECK(glGenBuffers(3, entityIdBuffers));
@@ -61,56 +172,7 @@ namespace Seidon
 			materialBufferPointers[i] = (byte*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, maxObjects * 500, flags);
 		}
 
-		// vertex positions
-		GL_CHECK(glEnableVertexAttribArray(0));
-		GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0));
-
-		// vertex normals
-		GL_CHECK(glEnableVertexAttribArray(1));
-		GL_CHECK(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal)));
-
-		// vertex tangent
-		GL_CHECK(glEnableVertexAttribArray(2));
-		GL_CHECK(glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent)));
-
-		// vertex texture coords
-		GL_CHECK(glEnableVertexAttribArray(3));
-		GL_CHECK(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords)));
-
-		// vertex bone ids
-		GL_CHECK(glEnableVertexAttribArray(4));
-		GL_CHECK(glVertexAttribIPointer(4, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneIds)));
-
-		// vertex weights
-		GL_CHECK(glEnableVertexAttribArray(5));
-		GL_CHECK(glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, weights)));
-
-		GL_CHECK(glGenBuffers(1, &instanceDataBuffer));
-		GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, instanceDataBuffer));
-
-		uint32_t* ids = new uint32_t[maxObjects];
-
-		for (int i = 0; i < maxObjects; i++)
-			ids[i] = i;
-		
-		GL_CHECK(glBufferData(GL_ARRAY_BUFFER, maxObjects * sizeof(uint32_t), ids, GL_STATIC_DRAW));
-
-		delete[] ids;
-
-		GL_CHECK(glVertexAttribIPointer(6, 1, GL_UNSIGNED_INT, sizeof(uint32_t), 0));
-		GL_CHECK(glVertexAttribDivisor(6, 1));
-		GL_CHECK(glEnableVertexAttribArray(6));
-
-		GL_CHECK(glBindVertexArray(0));
-
 		glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, &shaderBufferOffsetAlignment);
-
-		locks[0] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-		locks[1] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-		locks[2] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-
-		wireframeShader = new Shader();
-		wireframeShader->LoadFromFile("Shaders/Wireframe.sdshader");
 	}
 
 	void Renderer::Begin()
@@ -136,11 +198,13 @@ namespace Seidon
 			waitDuration = oneSecondInNanoSeconds;
 		}
 
-		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, storageBuffers[tripleBufferStage]));
+		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage]));
 		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialBuffers[tripleBufferStage]));
 		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage]));
+		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, boneTransformBuffers[tripleBufferStage]));
 
-		storageBufferHead = storageBufferPointers[tripleBufferStage];
+		transformBufferHead = transformBufferPointers[tripleBufferStage];
+		boneTransformBufferHead = boneTransformBufferPointers[tripleBufferStage];
 		entityIdBufferHead = entityIdBufferPointers[tripleBufferStage];
 		materialBufferHead = materialBufferPointers[tripleBufferStage];
 		indirectBufferHead = indirectBufferPointers[tripleBufferStage];
@@ -172,44 +236,7 @@ namespace Seidon
 				stats.objectCount++;
 
 				MaterialData material;
-				int offset = 0;
-				int alignment = 0;
-
-				for (MemberData& m : materials[i]->shader->GetBufferLayout()->members)
-					switch (m.type)
-					{
-					case Types::FLOAT_NORMALIZED: case Types::FLOAT:
-					{
-						*(float*)(material.data + offset) = *(float*)(materials[i]->data + m.offset);
-
-						offset += sizeof(float);
-						alignment = std::max<int>(alignment, sizeof(float));
-						break;
-					}
-					case Types::VECTOR3_COLOR:
-					{
-						*(glm::vec3*)(material.data + offset) = *(glm::vec3*)(materials[i]->data + m.offset);
-
-						offset += sizeof(glm::vec4);
-						alignment = std::max<int>(alignment, sizeof(glm::vec4));
-						break;
-					}
-					case Types::TEXTURE:
-					{
-						Texture* t = *(Texture**)(materials[i]->data + m.offset);
-						t->MakeResident();
-						*(uint64_t*)(material.data + offset) = t->GetRenderHandle();
-
-						offset += sizeof(uint64_t);
-						alignment = std::max<int>(alignment, sizeof(uint64_t));
-						break;
-					}
-					}
-
-				if (alignment != 0 && offset % alignment != 0)
-					material.size = offset + alignment - (offset % alignment);
-				else
-					material.size = offset;
+				SetupMaterialData(materials[i], material);
 
 				batch.objectCount++;
 				batch.transforms.push_back(transform);
@@ -226,7 +253,7 @@ namespace Seidon
 		std::vector<CacheEntry> cache;
 		cache.reserve(mesh->subMeshes.size());
 		int i = 0;
-		for (SubMesh* s : mesh->subMeshes)
+		for (Submesh* s : mesh->subMeshes)
 		{
 			BatchData& batch = batches[materials[i]->shader];
 
@@ -254,6 +281,7 @@ namespace Seidon
 			stats.vertexCount += s->vertices.size();
 			stats.indexCount += s->indices.size();
 
+			glBindVertexArray(vao);
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 			glBufferSubData(GL_ARRAY_BUFFER, vertexBufferHeadPosition, s->vertices.size() * sizeof(Vertex), (void*)&s->vertices[0]);
 			vertexBufferHeadPosition += s->vertices.size() * sizeof(Vertex);
@@ -261,46 +289,10 @@ namespace Seidon
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexBufferHeadPosition, s->indices.size() * sizeof(uint32_t), (void*)&s->indices[0]);
 			indexBufferHeadPosition += s->indices.size() * sizeof(uint32_t);
+			glBindVertexArray(0);
 
 			MaterialData material;
-			int offset = 0;
-			int alignment = 0;
-
-			for (MemberData& m : materials[i]->shader->GetBufferLayout()->members)
-				switch (m.type)
-				{
-				case Types::FLOAT_NORMALIZED: case Types::FLOAT:
-				{
-					*(float*)(material.data + offset) = *(float*)(materials[i]->data + m.offset);
-
-					offset += sizeof(float);
-					alignment = std::max<int>(alignment, sizeof(float));
-					break;
-				}
-				case Types::VECTOR3_COLOR:
-				{
-					*(glm::vec3*)(material.data + offset) = *(glm::vec3*)(materials[i]->data + m.offset);
-
-					offset += sizeof(glm::vec4);
-					alignment = std::max<int>(alignment, sizeof(glm::vec4));
-					break;
-				}
-				case Types::TEXTURE:
-				{
-					Texture* t = *(Texture**)(materials[i]->data + m.offset);
-					t->MakeResident();
-					*(uint64_t*)(material.data + offset) = t->GetRenderHandle();
-
-					offset += sizeof(uint64_t);
-					alignment = std::max<int>(alignment, sizeof(uint64_t));
-					break;
-				}
-				}
-
-			if (alignment != 0 && offset % alignment != 0)
-				material.size = offset + alignment - (offset % alignment);
-			else
-				material.size = offset;
+			SetupMaterialData(materials[i], material);
 
 			batch.objectCount++;
 			batch.transforms.push_back(transform);
@@ -313,8 +305,8 @@ namespace Seidon
 
 		meshCache[mesh->id] = cache;
 	}
-
-	void Renderer::SubmitRiggedMesh(Mesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId)
+	
+	void Renderer::SubmitSkinnedMesh(SkinnedMesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId)
 	{
 		if (meshCache.count(mesh->id) > 0)
 		{
@@ -323,7 +315,7 @@ namespace Seidon
 			int i = 0;
 			for (CacheEntry& entry : cachedSubmeshes)
 			{
-				RiggedMeshData data;
+				SkinnedMeshBatch& batch = skinnedMeshBatches[mesh->id];
 
 				RenderCommand command;
 
@@ -337,50 +329,14 @@ namespace Seidon
 				stats.objectCount++;
 
 				MaterialData material;
-				int offset = 0;
-				int alignment = 0;
+				SetupMaterialData(materials[i], material);
 
-				for (MemberData& m : materials[i]->shader->GetBufferLayout()->members)
-					switch (m.type)
-					{
-					case Types::FLOAT_NORMALIZED: case Types::FLOAT:
-					{
-						*(float*)(material.data + offset) = *(float*)(materials[i]->data + m.offset);
-
-						offset += sizeof(float);
-						alignment = std::max<int>(alignment, sizeof(float));
-						break;
-					}
-					case Types::VECTOR3_COLOR:
-					{
-						*(glm::vec3*)(material.data + offset) = *(glm::vec3*)(materials[i]->data + m.offset);
-
-						offset += sizeof(glm::vec4);
-						alignment = std::max<int>(alignment, sizeof(glm::vec4));
-						break;
-					}
-					case Types::TEXTURE:
-					{
-						Texture* t = *(Texture**)(materials[i]->data + m.offset);
-						t->MakeResident();
-						*(uint64_t*)(material.data + offset) = t->GetRenderHandle();
-
-						offset += sizeof(uint64_t);
-						alignment = std::max<int>(alignment, sizeof(uint64_t));
-						break;
-					}
-					}
-
-				if (alignment != 0 && offset % alignment != 0)
-					material.size = offset + alignment - (offset % alignment);
-				else
-					material.size = offset;
-
-				data.transform = transform;
-				data.command = command;
-				data.material = material;
-				data.entityId = (int)owningEntityId;
-				data.bones = &bones;
+				batch.objectCount++;
+				batch.transforms.push_back(transform);
+				batch.commands.push_back(command);
+				batch.materials.push_back(material);
+				batch.entityId = (int)owningEntityId;
+				batch.bones = &bones;
 
 				i++;
 			}
@@ -391,94 +347,59 @@ namespace Seidon
 		std::vector<CacheEntry> cache;
 		cache.reserve(mesh->subMeshes.size());
 		int i = 0;
-		for (SubMesh* s : mesh->subMeshes)
+		for (SkinnedSubmesh* s : mesh->subMeshes)
 		{
-			RiggedMeshData data;
+			SkinnedMeshBatch& batch = skinnedMeshBatches[mesh->id];
 
 			RenderCommand command;
 			command.count = s->indices.size();
 			command.instanceCount = 1;
-			command.firstIndex = nextIndexPosition;
-			command.baseVertex = nextVertexPosition;
+			command.firstIndex = nextSkinnedIndexPosition;
+			command.baseVertex = nextSkinnedVertexPosition;
 			command.baseInstance = 0;
 
 			objectCount++;
 			stats.objectCount++;
 			CacheEntry entry;
 
-			entry.vertexBufferBegin = nextVertexPosition;
+			entry.vertexBufferBegin = nextSkinnedVertexPosition;
 			entry.vertexBufferSize = s->vertices.size();
-			nextVertexPosition += s->vertices.size();
+			nextSkinnedVertexPosition += s->vertices.size();
 
-			entry.indexBufferBegin = nextIndexPosition;
+			entry.indexBufferBegin = nextSkinnedIndexPosition;
 			entry.indexBufferSize = s->indices.size();
-			nextIndexPosition += s->indices.size();
+			nextSkinnedIndexPosition += s->indices.size();
 
 			cache.push_back(entry);
 
-			stats.vertexCount += s->vertices.size();
-			stats.indexCount += s->indices.size();
+			stats.skinnedVertexCount += s->vertices.size();
+			stats.skinnedIndexCount += s->indices.size();
 
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-			glBufferSubData(GL_ARRAY_BUFFER, vertexBufferHeadPosition, s->vertices.size() * sizeof(Vertex), (void*)&s->vertices[0]);
-			vertexBufferHeadPosition += s->vertices.size() * sizeof(Vertex);
+			glBindVertexArray(skinnedVao);
+			glBindBuffer(GL_ARRAY_BUFFER, skinnedVertexBuffer);
+			glBufferSubData(GL_ARRAY_BUFFER, skinnedVertexBufferHeadPosition, s->vertices.size() * sizeof(SkinnedVertex), (void*)&s->vertices[0]);
+			skinnedVertexBufferHeadPosition += s->vertices.size() * sizeof(SkinnedVertex);
 
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexBufferHeadPosition, s->indices.size() * sizeof(uint32_t), (void*)&s->indices[0]);
-			indexBufferHeadPosition += s->indices.size() * sizeof(uint32_t);
-
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, skinnedIndexBufferHeadPosition, s->indices.size() * sizeof(uint32_t), (void*)&s->indices[0]);
+			skinnedIndexBufferHeadPosition += s->indices.size() * sizeof(uint32_t);
+			glBindVertexArray(0);
 			MaterialData material;
-			int offset = 0;
-			int alignment = 0;
+			SetupMaterialData(materials[i], material);
 
-			for (MemberData& m : materials[i]->shader->GetBufferLayout()->members)
-				switch (m.type)
-				{
-				case Types::FLOAT_NORMALIZED: case Types::FLOAT:
-				{
-					*(float*)(material.data + offset) = *(float*)(materials[i]->data + m.offset);
-
-					offset += sizeof(float);
-					alignment = std::max<int>(alignment, sizeof(float));
-					break;
-				}
-				case Types::VECTOR3_COLOR:
-				{
-					*(glm::vec3*)(material.data + offset) = *(glm::vec3*)(materials[i]->data + m.offset);
-
-					offset += sizeof(glm::vec4);
-					alignment = std::max<int>(alignment, sizeof(glm::vec4));
-					break;
-				}
-				case Types::TEXTURE:
-				{
-					Texture* t = *(Texture**)(materials[i]->data + m.offset);
-					t->MakeResident();
-					*(uint64_t*)(material.data + offset) = t->GetRenderHandle();
-
-					offset += sizeof(uint64_t);
-					alignment = std::max<int>(alignment, sizeof(uint64_t));
-					break;
-				}
-				}
-
-			if (alignment != 0 && offset % alignment != 0)
-				material.size = offset + alignment - (offset % alignment);
-			else
-				material.size = offset;
-
-			data.transform = transform;
-			data.command = command;
-			data.material = material;
-			data.entityId = (int)owningEntityId;
-			data.bones = &bones;
+			batch.objectCount++;
+			batch.transforms.push_back(transform);
+			batch.commands.push_back(command);
+			batch.materials.push_back(material);
+			batch.entityId = (int)owningEntityId;
+			batch.bones = &bones;
 
 			i++;
 		}
 
 		meshCache[mesh->id] = cache;
 	}
-
+	
 	void Renderer::SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId)
 	{
 		if (meshCache.count(mesh->id) > 0)
@@ -511,7 +432,7 @@ namespace Seidon
 
 		std::vector<CacheEntry> cache;
 		cache.reserve(mesh->subMeshes.size());
-		for (SubMesh* s : mesh->subMeshes)
+		for (Submesh* s : mesh->subMeshes)
 		{
 			RenderCommand command;
 			command.count = s->indices.size();
@@ -537,6 +458,7 @@ namespace Seidon
 			stats.vertexCount += s->vertices.size();
 			stats.indexCount += s->indices.size();
 
+			glBindVertexArray(vao);
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 			glBufferSubData(GL_ARRAY_BUFFER, vertexBufferHeadPosition, s->vertices.size() * sizeof(Vertex), (void*)&s->vertices[0]);
 			vertexBufferHeadPosition += s->vertices.size() * sizeof(Vertex);
@@ -544,6 +466,7 @@ namespace Seidon
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexBufferHeadPosition, s->indices.size() * sizeof(uint32_t), (void*)&s->indices[0]);
 			indexBufferHeadPosition += s->indices.size() * sizeof(uint32_t);
+			glBindVertexArray(0);
 
 			wireframeBatch.objectCount++;
 			wireframeBatch.transforms.push_back(transform);
@@ -584,7 +507,6 @@ namespace Seidon
 	{
 		if (objectCount == 0) return;
 
-		GL_CHECK(glBindVertexArray(vao));
 		GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffers[tripleBufferStage]));
 
 		int offset = 0;
@@ -593,10 +515,9 @@ namespace Seidon
 
 		DrawMeshes(offset, materialOffset, idOffset);
 		DrawWireframes(offset, materialOffset, idOffset);
+		DrawSkinnedMeshes(offset, materialOffset, idOffset);
 
 		GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
-
-		GL_CHECK(glBindVertexArray(0));
 
 		objectCount = 0;
 	}
@@ -612,27 +533,33 @@ namespace Seidon
 	{
 		for(int i = 0; i < 3; i++)
 		{
-			glUnmapNamedBuffer(storageBuffers[i]);
+			glUnmapNamedBuffer(transformBuffers[i]);
+			glUnmapNamedBuffer(boneTransformBuffers[i]);
 			glUnmapNamedBuffer(materialBuffers[i]);
 			glUnmapNamedBuffer(indirectBuffers[i]);
 			glDeleteSync(locks[i]);
 		}
 
-		glDeleteBuffers(3, storageBuffers);
+		glDeleteBuffers(3, transformBuffers);
+		glDeleteBuffers(3, boneTransformBuffers);
 		glDeleteBuffers(3, materialBuffers);
 		glDeleteBuffers(3, indirectBuffers);
 
 		glDeleteBuffers(1, &indexBuffer);
 		glDeleteBuffers(1, &vertexBuffer);
+		glDeleteBuffers(1, &skinnedIndexBuffer);
+		glDeleteBuffers(1, &skinnedVertexBuffer);
 		glDeleteBuffers(1, &instanceDataBuffer);
 
 		glDeleteVertexArrays(1, &vao);
+		glDeleteVertexArrays(1, &skinnedVao);
 
 		delete wireframeShader;
 	}
 
 	void Renderer::DrawMeshes(int& offset, int& materialOffset, int& idOffset)
 	{
+		glBindVertexArray(vao);
 		for (auto& [shader, batch] : batches)
 		{
 			shader->Use();
@@ -665,8 +592,8 @@ namespace Seidon
 			memcpy(indirectBufferHead, &batch.commands[0], batch.commands.size() * sizeof(RenderCommand));
 			indirectBufferHead += batch.commands.size();
 
-			memcpy(storageBufferHead, &batch.transforms[0], batch.transforms.size() * sizeof(glm::mat4));
-			storageBufferHead += batch.transforms.size();
+			memcpy(transformBufferHead, &batch.transforms[0], batch.transforms.size() * sizeof(glm::mat4));
+			transformBufferHead += batch.transforms.size();
 
 			memcpy(entityIdBufferHead, &batch.entityIds[0], batch.entityIds.size() * sizeof(int));
 			entityIdBufferHead += batch.entityIds.size();
@@ -679,7 +606,7 @@ namespace Seidon
 				materialSize += m.size;
 			}
 
-			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, storageBuffers[tripleBufferStage], offset * sizeof(glm::mat4), batch.transforms.size() * sizeof(glm::mat4));
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage], offset * sizeof(glm::mat4), batch.transforms.size() * sizeof(glm::mat4));
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage], idOffset, batch.entityIds.size() * sizeof(int));
 
 			if (materialSize != 0)
@@ -696,19 +623,92 @@ namespace Seidon
 
 			stats.batchCount++;
 		}
-		
+		GL_CHECK(glBindVertexArray(0));
 		batches.clear();
 	}
 
-	void Renderer::DrawRiggedMeshes(int& offset, int& materialOffset, int& idOffset)
+	void Renderer::DrawSkinnedMeshes(int& offset, int& materialOffset, int& idOffset)
 	{
+		glBindVertexArray(skinnedVao);
 
+		for (auto& [id, batch] : skinnedMeshBatches)
+		{
+			Shader* shader = batch.materials[0].shader;
+			shader->Use();
+
+			shader->SetMat4("camera.viewMatrix", camera.viewMatrix);
+			shader->SetMat4("camera.projectionMatrix", camera.projectionMatrix);
+			shader->SetVec3("camera.position", camera.position);
+
+			shader->SetVec3("directionalLight.direction", directionalLight.direction);
+			shader->SetVec3("directionalLight.color", directionalLight.color);
+
+			if (shadowMaps.lightSpaceMatrices)
+				for (int i = 0; i < CASCADE_COUNT; i++)
+				{
+					shader->SetMat4("lightSpaceMatrices[" + std::to_string(i) + "]", shadowMaps.lightSpaceMatrices[i]);
+					shader->SetFloat("shadowMappingData.cascadeFarPlaneDistances[" + std::to_string(i) + "]", shadowMaps.cascadeFarPlaneDistances[i]);
+					shader->SetInt("shadowMappingData.cascadeCount", CASCADE_COUNT);
+					shadowMaps.shadowMaps[i].Bind(8 + i);
+				}
+
+			shader->SetDouble("time", time);
+
+			if (ibl)
+			{
+				ibl->BindIrradianceMap(5);
+				ibl->BindPrefilteredMap(6);
+				ibl->BindBRDFLookupMap(7);
+			}
+
+			memcpy(indirectBufferHead, &batch.commands[0], batch.commands.size() * sizeof(RenderCommand));
+			indirectBufferHead += batch.commands.size();
+
+			memcpy(transformBufferHead, &batch.transforms[0], batch.transforms.size() * sizeof(glm::mat4));
+			transformBufferHead += batch.transforms.size();
+
+			memcpy(boneTransformBufferHead, &(*batch.bones)[0], batch.bones->size() * sizeof(glm::mat4));
+			//boneTransformBufferHead += batch.bones->size();
+
+			*entityIdBufferHead = batch.entityId;
+			entityIdBufferHead++;
+
+			int materialSize = 0;
+			for (MaterialData& m : batch.materials)
+			{
+				memcpy(materialBufferHead, m.data, m.size);
+				materialBufferHead += m.size;
+				materialSize += m.size;
+			}
+
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage], offset * sizeof(glm::mat4), batch.transforms.size() * sizeof(glm::mat4));
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 3, boneTransformBuffers[tripleBufferStage], 0, batch.bones->size() * sizeof(glm::mat4));
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage], idOffset, sizeof(int));
+
+			if (materialSize != 0)
+				glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, materialBuffers[tripleBufferStage], materialOffset, materialSize);
+
+			GL_CHECK(glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)(offset * sizeof(RenderCommand)), batch.objectCount, 0));
+
+			offset += batch.objectCount;
+			materialOffset += materialSize;
+			idOffset += batch.objectCount * sizeof(int);
+
+			if (idOffset % shaderBufferOffsetAlignment != 0)
+				idOffset = idOffset + shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);
+
+			stats.batchCount++;
+		}
+
+		skinnedMeshBatches.clear();
+		GL_CHECK(glBindVertexArray(0));
 	}
 
 	void Renderer::DrawWireframes(int& offset, int& materialOffset, int& idOffset)
 	{
 		if (wireframeBatch.objectCount == 0) return;
 
+		glBindVertexArray(vao);
 		wireframeShader->Use();
 
 		wireframeShader->SetMat4("camera.viewMatrix", camera.viewMatrix);
@@ -718,8 +718,8 @@ namespace Seidon
 		memcpy(indirectBufferHead, &wireframeBatch.commands[0], wireframeBatch.commands.size() * sizeof(RenderCommand));
 		indirectBufferHead += wireframeBatch.commands.size();
 
-		memcpy(storageBufferHead, &wireframeBatch.transforms[0], wireframeBatch.transforms.size() * sizeof(glm::mat4));
-		storageBufferHead += wireframeBatch.transforms.size();
+		memcpy(transformBufferHead, &wireframeBatch.transforms[0], wireframeBatch.transforms.size() * sizeof(glm::mat4));
+		transformBufferHead += wireframeBatch.transforms.size();
 
 		memcpy(entityIdBufferHead, &wireframeBatch.entityIds[0], wireframeBatch.entityIds.size() * sizeof(int));
 		entityIdBufferHead += wireframeBatch.entityIds.size();
@@ -727,7 +727,7 @@ namespace Seidon
 		memcpy(materialBufferHead, &wireframeBatch.colors[0], wireframeBatch.colors.size() * sizeof(glm::vec4));
 		materialBufferHead += wireframeBatch.colors.size() * sizeof(glm::vec4);
 		
-		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, storageBuffers[tripleBufferStage], offset * sizeof(glm::mat4), wireframeBatch.transforms.size() * sizeof(glm::mat4));
+		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage], offset * sizeof(glm::mat4), wireframeBatch.transforms.size() * sizeof(glm::mat4));
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage], idOffset, wireframeBatch.entityIds.size() * sizeof(int));
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, materialBuffers[tripleBufferStage], materialOffset, wireframeBatch.colors.size() * sizeof(glm::vec4));
 
@@ -751,5 +751,59 @@ namespace Seidon
 		wireframeBatch.transforms.clear();
 		wireframeBatch.entityIds.clear();
 		wireframeBatch.objectCount = 0;
+
+		GL_CHECK(glBindVertexArray(0));
+	}
+
+	void Renderer::SetupMaterialData(Material* material, MaterialData& materialData)
+	{
+		int offset = 0;
+		int alignment = 0;
+		materialData.shader = material->shader;
+		byte* shaderData = materialData.data;
+
+		for (MemberData& m : material->shader->GetBufferLayout()->members)
+			switch (m.type)
+			{
+			case Types::FLOAT_NORMALIZED: case Types::FLOAT: case Types::FLOAT_ANGLE:
+			{
+				*(float*)(shaderData + offset) = *(float*)(material->data + m.offset);
+
+				offset += sizeof(float);
+				alignment = std::max<int>(alignment, sizeof(float));
+				break;
+			}
+			case Types::VECTOR2: case Types::VECTOR2_ANGLES:
+			{
+				*(glm::vec2*)(shaderData + offset) = *(glm::vec2*)(material->data + m.offset);
+
+				offset += sizeof(glm::vec2);
+				alignment = std::max<int>(alignment, sizeof(glm::vec2));
+				break;
+			}
+			case Types::VECTOR3_COLOR: case Types::VECTOR3: case Types::VECTOR3_ANGLES:
+			{
+				*(glm::vec3*)(shaderData + offset) = *(glm::vec3*)(material->data + m.offset);
+
+				offset += sizeof(glm::vec4);
+				alignment = std::max<int>(alignment, sizeof(glm::vec4));
+				break;
+			}
+			case Types::TEXTURE:
+			{
+				Texture* t = *(Texture**)(material->data + m.offset);
+				t->MakeResident();
+				*(uint64_t*)(shaderData + offset) = t->GetRenderHandle();
+
+				offset += sizeof(uint64_t);
+				alignment = std::max<int>(alignment, sizeof(uint64_t));
+				break;
+			}
+			}
+
+		if (alignment != 0 && offset % alignment != 0)
+			materialData.size = offset + alignment - (offset % alignment);
+		else
+			materialData.size = offset;
 	}
 }

@@ -11,10 +11,8 @@ namespace Seidon
 
     }
 
-	void Armature::Save(const std::string& path)
+	void Armature::Save(std::ofstream& out)
 	{
-        std::ofstream out(path, std::ios::out | std::ios::binary);
-
         out.write((char*)&id, sizeof(id));
 
         size_t size = name.length() + 1;
@@ -37,16 +35,8 @@ namespace Seidon
         }
 	}
 
-    void Armature::Load(const std::string& path)
+    void Armature::Load(std::ifstream& in)
     {
-        std::ifstream in(path, std::ios::in | std::ios::binary);
-
-        if (!in)
-        {
-            std::cerr << "Error opening armature file: " << path << std::endl;
-            return;
-        }
-
         char buffer[2048];
         in.read((char*)&id, sizeof(id));
 

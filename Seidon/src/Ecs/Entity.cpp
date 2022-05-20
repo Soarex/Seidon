@@ -13,6 +13,11 @@ namespace Seidon
 		return GetComponent<NameComponent>().name;
 	}
 
+	const void Entity::SetName(const std::string& name)
+	{
+		GetComponent<NameComponent>().name = name;
+	}
+
 	UUID Entity::GetId()
 	{
 		return GetComponent<IDComponent>().ID;

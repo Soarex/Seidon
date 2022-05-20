@@ -3,7 +3,6 @@
 #include "../Graphics/Texture.h"
 #include "../Graphics/HdrCubemap.h"
 #include "../Graphics/Mesh.h"
-#include "../Graphics/Sprite.h"
 #include "../Graphics/Armature.h"
 #include "../Graphics/Shader.h"
 
@@ -36,6 +35,7 @@ namespace Seidon
 		ID,
 		ID_VECTOR,
 		VECTOR2,
+		VECTOR2_ANGLES,
 		VECTOR3,
 		VECTOR3_COLOR,
 		VECTOR3_ANGLES,
@@ -43,15 +43,15 @@ namespace Seidon
 		VECTOR4_COLOR,
 		MESH,
 		MESH_VECTOR,
+		SKINNED_MESH,
+		SKINNED_MESH_VECTOR,
 		TEXTURE,
 		TEXTURE_VECTOR,
 		MATERIAL,
 		MATERIAL_VECTOR,
 		CUBEMAP,
-		ARMATURE,
 		ANIMATION,
 		SHADER,
-		SPRITE
 	};
 
 	template<typename T, typename U> 
@@ -127,6 +127,9 @@ namespace Seidon
 			if (typeid(U).hash_code() == typeid(std::vector<Mesh*>).hash_code())
 				data.type = Types::MESH_VECTOR;
 
+			if (typeid(U).hash_code() == typeid(std::vector<SkinnedMesh*>).hash_code())
+				data.type = Types::SKINNED_MESH_VECTOR;
+
 			if (typeid(U).hash_code() == typeid(std::vector<Material*>).hash_code())
 				data.type = Types::MATERIAL_VECTOR;
 
@@ -142,20 +145,17 @@ namespace Seidon
 			if (typeid(U).hash_code() == typeid(Mesh*).hash_code())
 				data.type = Types::MESH;
 
+			if (typeid(U).hash_code() == typeid(SkinnedMesh*).hash_code())
+				data.type = Types::SKINNED_MESH;
+
 			if (typeid(U).hash_code() == typeid(Material*).hash_code())
 				data.type = Types::MATERIAL;
 
 			if (typeid(U).hash_code() == typeid(Animation*).hash_code())
 				data.type = Types::ANIMATION;
 
-			if (typeid(U).hash_code() == typeid(Armature*).hash_code())
-				data.type = Types::ARMATURE;
-
 			if (typeid(U).hash_code() == typeid(Shader*).hash_code())
 				data.type = Types::SHADER;
-
-			if (typeid(U).hash_code() == typeid(Sprite*).hash_code())
-				data.type = Types::SPRITE;
 
 			members.push_back(data);
 			nameToMember[data.name] = data;

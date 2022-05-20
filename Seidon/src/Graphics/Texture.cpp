@@ -363,7 +363,7 @@ namespace Seidon
         );
     }
 
-    void Texture::Import(const std::string& path, bool gammaCorrection)
+    bool Texture::Import(const std::string& path, bool gammaCorrection)
     {
         SD_ASSERT(!initialized, "Texture already initialized");
 
@@ -396,7 +396,10 @@ namespace Seidon
         else
         {
             std::cout << "Failed to load texture " << path << std::endl;
+            return false;
         }
+
+        return true;
     }
 
     void Texture::ImportAsync(const std::string& path, bool gammaCorrection)

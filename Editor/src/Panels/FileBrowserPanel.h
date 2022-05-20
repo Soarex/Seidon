@@ -30,7 +30,7 @@ namespace Seidon
 		Texture* modelIcon;
 		Texture* materialIcon;
 		Texture* animationIcon;
-		Texture* armatureIcon;
+		Texture* skinnedMeshIcon;
 		Texture* prefabIcon;
 		Texture* backIcon;
 
@@ -58,8 +58,8 @@ namespace Seidon
 		
 		void DrawTextureFile(FileEntry& file);
 		void DrawMeshFile(FileEntry& file);
+		void DrawSkinnedMeshFile(FileEntry& file);
 		void DrawMaterialFile(FileEntry& file);
-		void DrawArmatureFile(FileEntry& file);
 		void DrawAnimationFile(FileEntry& file);
 		void DrawCubemapFile(FileEntry& file);
 		void DrawSceneFile(FileEntry& file);

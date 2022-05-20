@@ -74,6 +74,7 @@ namespace Seidon
 		void GenerateBRDFLookupMap();
 		void DrawCaptureCube();
 		void DrawCaptureQuad();
+		int MaterialToShaderData(Material* material, void* shaderData);
 
 		friend class ResourceManager;
 		friend class AssetImporter;

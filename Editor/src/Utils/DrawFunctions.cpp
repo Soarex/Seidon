@@ -414,6 +414,44 @@ namespace Seidon
 		return changed;
 	}
 
+	bool DrawSkinnedMeshControl(const std::string& label, SkinnedMesh** mesh, float size)
+	{
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		bool changed = false;
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/SkinnedMeshIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_SKINNED_MESH"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				*mesh = resourceManager.GetOrLoadSkinnedMesh(path);
+
+				changed = true;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::NextColumn();
+
+		ImGui::Text((*mesh)->name.c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+
+		return changed;
+	}
+
 	bool DrawMaterialControl(const std::string& label, Material** material, float size)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
@@ -497,44 +535,6 @@ namespace Seidon
 			ImGui::End();
 
 			return changed;
-	}
-
-	bool DrawArmatureControl(const std::string& label, Armature** armature, float size)
-	{
-		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
-		bool changed = false;
-
-		ImGui::PushID(label.c_str());
-
-		ImGui::AlignTextToFramePadding();
-		ImGui::Text(label.c_str());
-
-		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/ArmatureIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_ARMATURE"))
-			{
-				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
-				std::string path = (const char*)payload->Data;
-
-				*armature = resourceManager.GetOrLoadArmature(path);
-
-				changed = true;
-			}
-
-			ImGui::EndDragDropTarget();
-		}
-
-		ImGui::NextColumn();
-
-		ImGui::Text((*armature)->name.c_str());
-
-		ImGui::Columns(1);
-		ImGui::PopID();
-
-		return changed;
 	}
 
 	bool DrawAnimationControl(const std::string& label, Animation** animation, float size)
@@ -664,6 +664,12 @@ namespace Seidon
 			changed = DrawMeshControl(member.name.c_str(), m);
 		}
 
+		if (member.type == Types::SKINNED_MESH)
+		{
+			SkinnedMesh** m = (SkinnedMesh**)(obj + member.offset);
+			changed = DrawSkinnedMeshControl(member.name.c_str(), m);
+		}
+
 		if (member.type == Types::MATERIAL)
 		{
 			Material** m = (Material**)(obj + member.offset);
@@ -703,12 +709,6 @@ namespace Seidon
 		{
 			HdrCubemap** c = (HdrCubemap**)(obj + member.offset);
 			changed = DrawCubemapControl(member.name.c_str(), c);
-		}
-
-		if (member.type == Types::ARMATURE)
-		{
-			Armature** a = (Armature**)(obj + member.offset);
-			changed = DrawArmatureControl(member.name.c_str(), a);
 		}
 
 		if (member.type == Types::ANIMATION)

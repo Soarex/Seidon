@@ -24,9 +24,9 @@ namespace Seidon
 
 		Armature(UUID id = UUID());
 
-		void Save(const std::string& path);
-		void SaveAsync(const std::string& path);
-		void Load(const std::string& path);
-		void LoadAsync(const std::string& path);
+		void Save(std::ofstream& out);
+		void SaveAsync(std::ofstream& out);
+		void Load(std::ifstream& in);
+		void LoadAsync(std::ifstream& in);
 	};
 }

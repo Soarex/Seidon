@@ -159,7 +159,6 @@
     <ClCompile Include="src\Dockspace.cpp" />
     <ClCompile Include="src\Editor.cpp" />
     <ClCompile Include="src\EditorCameraControlSystem.cpp" />
-    <ClCompile Include="src\Panels\AssetBrowserPanel.cpp" />
     <ClCompile Include="src\Panels\FileBrowserPanel.cpp" />
     <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\Panels\InspectorPanel.cpp" />
@@ -177,7 +176,6 @@
     <ClInclude Include="src\Editor.h" />
     <ClInclude Include="src\EditorCameraControlSystem.h" />
     <ClInclude Include="src\Extensions\Extension.h" />
-    <ClInclude Include="src\Panels\AssetBrowserPanel.h" />
     <ClInclude Include="src\Panels\FileBrowserPanel.h" />
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />

@@ -15,9 +15,9 @@ namespace Seidon
 	bool DrawTextureControl(const std::string& label, Texture** texture, float size = 64);
 	bool DrawCubemapControl(const std::string& label, HdrCubemap** texture, float size = 64);
 	bool DrawMeshControl(const std::string& label, Mesh** mesh, float size = 64);
+	bool DrawSkinnedMeshControl(const std::string& label, SkinnedMesh** mesh, float size = 64);
 	bool DrawMaterialControl(const std::string& label, Material** material, float size = 64);
 	bool DrawMaterialEditor(const std::string& label, Material* material, bool* open = 0);
-	bool DrawArmatureControl(const std::string& label, Armature** armature, float size = 64);
 	bool DrawAnimationControl(const std::string& label, Animation** animation, float size = 64);
 	bool DrawShaderControl(const std::string& label, Shader** shader, float size = 64);
 

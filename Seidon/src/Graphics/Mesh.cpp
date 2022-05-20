@@ -1,30 +1,14 @@
 #include "Mesh.h"
+/*
 #include "../Core/Application.h"
 #include "../Debug/Debug.h"
 
 #include <iostream>
 #include <fstream>
-
 namespace Seidon
 {
-    void SubMesh::Create(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::string& name)
-    {
-        this->vertices = vertices;
-        this->indices = indices;
-        this->name = name;
-    }
-
-    Mesh::Mesh(UUID id)
-        : id(id)
-    {
-
-    }
-
-    Mesh::~Mesh()
-    {
-    }
-
-    void Mesh::Save(const std::string& path)
+    template <typename T>
+    void BaseMesh<T>::Save(const std::string& path)
     {
         std::ofstream out(path, std::ios::out | std::ios::binary);
 
@@ -38,7 +22,7 @@ namespace Seidon
         size = subMeshes.size();
         out.write((char*)&size, sizeof(size_t));
 
-        for (SubMesh* submesh : subMeshes)
+        for (T* submesh : subMeshes)
         {
             size = submesh->name.length() + 1;
             out.write((char*)&size, sizeof(size_t));
@@ -47,8 +31,8 @@ namespace Seidon
             size = submesh->vertices.size();
             out.write((char*)&size, sizeof(size_t));
 
-            for (Vertex& v : submesh->vertices)
-                out.write((char*)&v, sizeof(Vertex));
+            for (auto& v : submesh->vertices)
+                out.write((char*)&v, sizeof(decltype(submesh->vertexType)));
 
             size = submesh->indices.size();
             out.write((char*)&size, sizeof(size_t));
@@ -58,7 +42,8 @@ namespace Seidon
         }
     }
 
-    void Mesh::SaveAsync(const std::string& path)
+    template <typename T>
+    void BaseMesh<T>::SaveAsync(const std::string& path)
     {
         Application::Get()->GetWorkManager()->Execute([&]()
             {
@@ -67,7 +52,8 @@ namespace Seidon
         );
     }
 
-    void Mesh::Load(const std::string& path)
+    template <typename T>
+    void BaseMesh<T>::Load(const std::string& path)
     {
         std::ifstream in(path, std::ios::in | std::ios::binary);
 
@@ -90,7 +76,7 @@ namespace Seidon
         subMeshes.resize(size);
         for (int i = 0; i < size; i++)
         {
-            SubMesh* submesh = new SubMesh();
+            T* submesh = new T();
 
             size_t size2 = 0;
 
@@ -103,7 +89,7 @@ namespace Seidon
             submesh->vertices.resize(size2);
 
             for (int j = 0; j < size2; j++)
-                in.read((char*)&submesh->vertices[j], sizeof(Vertex));
+                in.read((char*)&submesh->vertices[j], sizeof(decltype(submesh->vertexType)));
 
 
             in.read((char*)&size2, sizeof(size_t));
@@ -115,51 +101,5 @@ namespace Seidon
             subMeshes[i] = submesh;
         }
     }
-
-    void Mesh::LoadAsync(const std::string& path)
-    {
-        Application::Get()->GetWorkManager()->Execute([&]()
-            {
-                std::ifstream in(path, std::ios::in | std::ios::binary);
-
-                char buffer[2048];
-                in.read((char*)&id, sizeof(id));
-
-                size_t size = 0;
-                in.read((char*)&size, sizeof(size_t));
-
-                in.read(buffer, size * sizeof(char));
-                name = buffer;
-
-                in.read((char*)&size, sizeof(size_t));
-                subMeshes.resize(size);
-                for (int i = 0; i < size; i++)
-                {
-                    SubMesh* submesh = new SubMesh();
-
-                    size_t size2 = 0;
-
-                    in.read((char*)&size2, sizeof(size_t));
-                    in.read(buffer, size2 * sizeof(char));
-                    submesh->name = buffer;
-
-                    in.read((char*)&size2, sizeof(size_t));
-
-                    submesh->vertices.resize(size2);
-
-                    for (int j = 0; j < size2; j++)
-                        in.read((char*)&submesh->vertices[j], sizeof(Vertex));
-
-
-                    in.read((char*)&size2, sizeof(size_t));
-
-                    submesh->indices.resize(size2);
-                    for (int j = 0; j < size2; j++)
-                        in.read((char*)&submesh->indices[j], sizeof(unsigned int));
-
-                    subMeshes[i] = submesh;
-                }
-            }
-        );
-    }
 }
+*/
