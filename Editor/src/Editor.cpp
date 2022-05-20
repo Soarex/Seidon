@@ -12,11 +12,9 @@
 
 namespace Seidon
 {
-    struct Test
-    {
-        int a;
-        float b;
-    };
+    Editor::Editor()
+        : hierarchyPanel(selectedItem), inspectorPanel(selectedItem), fileBrowserPanel(selectedItem) {}
+
     void Editor::Init()
 	{
         int width, height, channelCount;
@@ -66,12 +64,6 @@ namespace Seidon
         sceneManager->SetActiveScene(scene);
 
         rs.AddMainRenderPassFunction(drawColliders);
-
-        selectedEntity = { NullEntityId, nullptr };
-        hierarchyPanel.AddSelectionCallback([&](Entity& entity)
-            {
-                selectedEntity = entity;
-            });
 
         ImGuiIO& io = ImGui::GetIO();
         io.Fonts->AddFontFromFileTTF("Resources/Roboto-Regular.ttf", 18);
@@ -138,7 +130,7 @@ namespace Seidon
                         scene->AddSystem<RenderSystem>().AddMainRenderPassFunction(drawColliders);
                         scene->AddSystem<EditorCameraControlSystem>();
                         
-                        selectedEntity = { NullEntityId, nullptr };
+                        selectedItem.type = SelectedItemType::NONE;
                     }
                 }
 
@@ -190,7 +182,7 @@ namespace Seidon
                 runtimeSystems.CopySystems(runtimeScene);
 
                 sceneManager->SetActiveScene(runtimeScene);
-                selectedEntity = { NullEntityId, nullptr };
+                selectedItem.type = SelectedItemType::NONE;
                 isPlaying = true;
             }
 
@@ -208,7 +200,7 @@ namespace Seidon
             {
                 sceneManager->SetActiveScene(scene);
                 delete runtimeScene;
-                selectedEntity = { NullEntityId, nullptr };
+                selectedItem.type = SelectedItemType::NONE;
                 isPlaying = false;
             }
             ImGui::PopStyleVar();
@@ -247,7 +239,11 @@ namespace Seidon
             {
                 auto& selection = sceneManager->GetActiveScene()->GetRegistry().get<MouseSelectionComponent>(e);
 
-                if (selection.status == SelectionStatus::CLICKED && !ImGuizmo::IsUsing()) selectedEntity = Entity(e, sceneManager->GetActiveScene());
+                if (selection.status == SelectionStatus::CLICKED && !ImGuizmo::IsUsing())
+                {
+                    selectedItem.type = SelectedItemType::ENTITY;
+                    selectedItem.entity = Entity(e, sceneManager->GetActiveScene());
+                }
             }
             //else
             //    if (inputManager->GetMouseButtonPressed(MouseButton::LEFT) && !ImGuizmo::IsUsing()) selectedEntity = { NullEntityId, nullptr };
@@ -277,7 +273,7 @@ namespace Seidon
                 scene->AddSystem<RenderSystem>().AddMainRenderPassFunction(drawColliders);
                 scene->AddSystem<EditorCameraControlSystem>();
 
-                selectedEntity = { NullEntityId, nullptr };
+                selectedItem.type = SelectedItemType::NONE;
             }
 
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_PREFAB"))
@@ -287,13 +283,14 @@ namespace Seidon
                 Prefab p;
                 p.Load(path);
                 
-                selectedEntity = scene->InstantiatePrefab(p);
+                selectedItem.type = SelectedItemType::ENTITY;
+                selectedItem.entity = scene->InstantiatePrefab(p);
             }
 
             ImGui::EndDragDropTarget();
         }
 
-        if (!isPlaying && selectedEntity.ID != NullEntityId && guizmoOperation != -1)
+        if (!isPlaying && (selectedItem.type == SelectedItemType::ENTITY && selectedItem.entity.IsValid()) && guizmoOperation != -1)
         {
             entt::basic_group cameras = scene->GetRegistry().group<CameraComponent, TransformComponent>();
 
@@ -311,8 +308,8 @@ namespace Seidon
                 glm::mat4 cameraProjection = cameraComponent.GetProjectionMatrix();
                 glm::mat4 cameraView = cameraComponent.GetViewMatrix(cameraTransform);
 
-                TransformComponent& entityTransform = selectedEntity.GetComponent<TransformComponent>();
-                glm::mat4 transform = selectedEntity.GetGlobalTransformMatrix();
+                TransformComponent& entityTransform = selectedItem.entity.GetComponent<TransformComponent>();
+                glm::mat4 transform = selectedItem.entity.GetGlobalTransformMatrix();
 
                 ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
                     (ImGuizmo::OPERATION)guizmoOperation, local ? ImGuizmo::LOCAL : ImGuizmo::WORLD, glm::value_ptr(transform),
@@ -321,8 +318,8 @@ namespace Seidon
                 if (ImGuizmo::IsUsing())
                 {
                     glm::vec3 position, rotation, scale;
-                    if (selectedEntity.HasParent())
-                        DecomposeTransform(glm::inverse(selectedEntity.GetParent().GetGlobalTransformMatrix()) * transform, position, rotation, scale);
+                    if (selectedItem.entity.HasParent())
+                        DecomposeTransform(glm::inverse(selectedItem.entity.GetParent().GetGlobalTransformMatrix()) * transform, position, rotation, scale);
                     else
                         DecomposeTransform(transform, position, rotation, scale);
 
@@ -336,7 +333,6 @@ namespace Seidon
         ImGui::End();
 
         systemsPanel.Draw();
-        inspectorPanel.SetSelectedEntity(selectedEntity);
         inspectorPanel.Draw();
         hierarchyPanel.Draw();
        

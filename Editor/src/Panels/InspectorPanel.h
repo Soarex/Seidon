@@ -1,5 +1,6 @@
 #pragma once
 #include <Seidon.h>
+#include "../SelectedItem.h"
 #include "Utils/DrawFunctions.h"
 
 namespace Seidon
@@ -7,13 +8,16 @@ namespace Seidon
 	class InspectorPanel
 	{
 	private:
-		Entity selectedEntity;
+		SelectedItem& selectedItem;
 	public:
-		InspectorPanel() = default;
+		InspectorPanel(SelectedItem& selectedItem) : selectedItem(selectedItem) {}
 
 		void Init();
 		void Draw();
-		void SetSelectedEntity(Entity& entity);
-		void DrawComponents();
+
+	private:
+		void DrawEntity(Entity e);
+		void DrawMaterial(Material* m);
+		void DrawBone(BoneSelectionData& boneData);
 	};
 }

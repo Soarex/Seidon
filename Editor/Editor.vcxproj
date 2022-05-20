@@ -180,6 +180,7 @@
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />
     <ClInclude Include="src\Panels\SystemsPanel.h" />
+    <ClInclude Include="src\SelectedItem.h" />
     <ClInclude Include="src\Utils\Dialogs.h" />
     <ClInclude Include="src\Utils\DrawFunctions.h" />
   </ItemGroup>

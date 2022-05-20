@@ -1,16 +1,18 @@
 #pragma once
 #include <Seidon.h>
+#include "../SelectedItem.h"
 
 namespace Seidon
 {
 	class HierarchyPanel
 	{
 	private:
-		Entity selectedEntity;
+		SelectedItem& selectedItem;
+
 		std::vector<std::function<void(Entity&)>> onEntitySelectionCallbacks;
 
 	public:
-		HierarchyPanel() = default;
+		HierarchyPanel(SelectedItem& selectedItem) : selectedItem(selectedItem) {}
 
 		void Init();
 		void Draw();
@@ -19,5 +21,6 @@ namespace Seidon
 
 	private:
 		void DrawEntityNode(Entity& entity);
+		void DrawBoneNode(Armature& armature, std::vector<glm::mat4>& boneTransforms, int index);
 	};
 }

@@ -395,7 +395,15 @@ namespace Seidon
 
 	void FileBrowserPanel::DrawMaterialFile(FileEntry& file)
 	{
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+
 		ImGui::ImageButton((ImTextureID)materialIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+		if (ImGui::IsItemClicked())
+		{
+			selectedItem.type = SelectedItemType::MATERIAL;
+			selectedItem.material = resourceManager.GetOrLoadMaterial(file.path);
+		}
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			ImGui::OpenPopup("Rename");

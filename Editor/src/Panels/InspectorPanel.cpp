@@ -14,24 +14,46 @@ namespace Seidon
             return;
         }
 
-		if (selectedEntity.ID == entt::null)
-		{
-			ImGui::End();
-			return;
-		}
+		if (selectedItem.type == SelectedItemType::ENTITY)
+            DrawEntity(selectedItem.entity);
 
-		DrawComponents();
+        if (selectedItem.type == SelectedItemType::BONE)
+            DrawBone(selectedItem.boneData);
+
+        if (selectedItem.type == SelectedItemType::MATERIAL)
+            DrawMaterial(selectedItem.material);
+		
 		ImGui::End();
 	}
 
-	void InspectorPanel::SetSelectedEntity(Entity& entity)
-	{
-		selectedEntity = entity;
-	}
-
-    void InspectorPanel::DrawComponents()
+    void InspectorPanel::DrawMaterial(Material* m)
     {
-        auto& name = selectedEntity.GetComponent<NameComponent>().name;
+        DrawMaterialEditor("Material Editor", m);
+    }
+
+    void InspectorPanel::DrawBone(BoneSelectionData& boneData)
+    {
+        char buffer[256];
+        std::strncpy(buffer, boneData.bone->name.c_str(), sizeof(buffer));
+
+        ImGui::PushItemWidth(-1);
+        ImGui::InputText("##Name", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopItemWidth();
+        
+        TransformComponent t;
+        t.SetFromMatrix(*boneData.transform);
+
+        MetaType type = Application::Get()->GetComponentMetaType<TransformComponent>();
+
+        if(ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+            DrawMetaType(&t, type);
+
+        *boneData.transform = t.GetTransformMatrix();
+    }
+
+    void InspectorPanel::DrawEntity(Entity e)
+    {
+        auto& name = e.GetComponent<NameComponent>().name;
 
         char buffer[256];
         std::strncpy(buffer, name.c_str(), sizeof(buffer));
@@ -48,21 +70,21 @@ namespace Seidon
             if (metaType.name == typeid(IDComponent).name() || metaType.name == typeid(NameComponent).name() 
                 || metaType.name == typeid(MouseSelectionComponent).name()) continue;
 
-            if (!metaType.Has(selectedEntity)) continue;
+            if (!metaType.Has(e)) continue;
             
             bool open = ImGui::CollapsingHeader(metaType.name.c_str() + 7, ImGuiTreeNodeFlags_DefaultOpen);
             
             if (metaType.name != typeid(TransformComponent).name() && ImGui::BeginPopupContextItem())
             {
                 if (ImGui::MenuItem("Remove Component"))
-                    metaType.Remove(selectedEntity);
+                    metaType.Remove(e);
 
                 ImGui::EndPopup();
                 continue;
             }
 
-            if (metaType.Has(selectedEntity) && open)
-                DrawMetaType(metaType.Get(selectedEntity), metaType);
+            if (metaType.Has(e) && open)
+                DrawMetaType(metaType.Get(e), metaType);
 
         }
 
@@ -87,10 +109,10 @@ namespace Seidon
         {
             for (auto& metaType : components)
             {
-                bool hasComponent = metaType.Has(selectedEntity);
+                bool hasComponent = metaType.Has(e);
 
                 if (!hasComponent && ImGui::MenuItem(metaType.name.c_str() + 7))
-                    metaType.Add(selectedEntity);
+                    metaType.Add(e);
             }
 
             ImGui::EndPopup();
@@ -113,7 +135,7 @@ namespace Seidon
             if (ImGui::Button("Save"))
             {
                 Prefab p;
-                p.MakeFromEntity(selectedEntity);
+                p.MakeFromEntity(e);
 
                 p.Save("Assets\\" + std::string(buffer) + ".sdpref");
                 ImGui::CloseCurrentPopup();

@@ -14,6 +14,14 @@ namespace Seidon
 		int id;
 		int parentId;
 		glm::mat4 inverseBindPoseMatrix;
+
+		bool operator==(const BoneData& other)
+		{
+			return
+				name == other.name &&
+				id == other.id &&
+				parentId == other.parentId;
+		}
 	};
 
 	struct Armature

@@ -4,7 +4,6 @@ namespace Seidon
 {
 	void HierarchyPanel::Init()
 	{
-		selectedEntity = { entt::null, nullptr };
 	}
 
 	void HierarchyPanel::Draw()
@@ -63,35 +62,29 @@ namespace Seidon
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				Entity entity = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
 
-				selectedEntity = entity;
-
-				for (auto& callback : onEntitySelectionCallbacks)
-					callback(entity);
+				selectedItem.type = SelectedItemType::ENTITY;
+				selectedItem.entity = e;
 			}
 
 			if (ImGui::MenuItem("Create Mesh Entity"))
 			{
-				Entity entity = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
-				entity.AddComponent<RenderComponent>();
+				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				e.AddComponent<RenderComponent>();
 
-				selectedEntity = entity;
-
-				for (auto& callback : onEntitySelectionCallbacks)
-					callback(entity);
+				selectedItem.type = SelectedItemType::ENTITY;
+				selectedItem.entity = e;
 			}
 
 			if (ImGui::MenuItem("Create Animated Mesh Entity"))
 			{
-				Entity entity = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
-				entity.AddComponent<SkinnedRenderComponent>();
-				entity.AddComponent<AnimationComponent>();
+				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				e.AddComponent<SkinnedRenderComponent>();
+				e.AddComponent<AnimationComponent>();
 
-				selectedEntity = entity;
-
-				for (auto& callback : onEntitySelectionCallbacks)
-					callback(entity);
+				selectedItem.type = SelectedItemType::ENTITY;
+				selectedItem.entity = e;
 			}
 
 			ImGui::EndPopup();
@@ -106,8 +99,10 @@ namespace Seidon
 		std::string& name = entity.GetComponent<NameComponent>().name;
 		UUID id = entity.GetComponent<IDComponent>().ID;
 
-		ImGuiTreeNodeFlags flags = ((selectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth;
+		
+		if (selectedItem.type == SelectedItemType::ENTITY && selectedItem.entity == entity)
+			flags |= ImGuiTreeNodeFlags_Selected;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 		bool open = ImGui::TreeNodeEx((void*)(long long)id, flags, name.c_str());
@@ -125,12 +120,8 @@ namespace Seidon
 				Entity& e = *(Entity*)payload->Data;
 
 				if (!e.IsAncestorOf(entity))
-				{
 					e.SetParent(entity);
 
-					//glm::mat4 localTransformToParent = glm::inverse(entity.GetComponent<TransformComponent>().GetTransformMatrix()) * e.GetComponent<TransformComponent>().GetTransformMatrix();
-					//e.GetComponent<TransformComponent>().SetFromMatrix(localTransformToParent);
-				}
 			}
 
 			ImGui::EndDragDropTarget();
@@ -138,10 +129,8 @@ namespace Seidon
 
 		if (ImGui::IsItemClicked())
 		{
-			selectedEntity = entity;
-
-			for (auto& callback : onEntitySelectionCallbacks)
-				callback(entity);
+			selectedItem.type = SelectedItemType::ENTITY;
+			selectedItem.entity = entity;
 		}
 
 		ImGui::PopStyleVar();
@@ -157,6 +146,12 @@ namespace Seidon
 
 		if(open)
 		{
+			if (entity.HasComponent<SkinnedRenderComponent>())
+			{
+				SkinnedRenderComponent& r = entity.GetComponent<SkinnedRenderComponent>();
+				DrawBoneNode(r.mesh->armature, r.boneTransforms, 0);
+			}
+
 			TransformComponent& t = entity.GetComponent<TransformComponent>();
 
 			for (UUID i : t.children)
@@ -169,12 +164,8 @@ namespace Seidon
 
 		if (entityDeleted)
 		{
-			if (selectedEntity == entity || selectedEntity.IsDescendantOf(entity))
-			{
-				selectedEntity = { NullEntityId, nullptr };
-				for (auto& callback : onEntitySelectionCallbacks)
-					callback(selectedEntity);
-			}
+			if (selectedItem.type == SelectedItemType::ENTITY && (selectedItem.entity == entity || selectedItem.entity.IsDescendantOf(entity)))
+				selectedItem.type = SelectedItemType::NONE;
 
 			Application::Get()->GetSceneManager()->GetActiveScene()->DestroyEntity(entity);
 		}
@@ -182,13 +173,35 @@ namespace Seidon
 		ImGui::PopStyleVar();
 	}
 
-	void HierarchyPanel::AddSelectionCallback(const std::function<void(Entity&)>& callback)
+	void HierarchyPanel::DrawBoneNode(Armature& armature, std::vector<glm::mat4>& boneTransforms, int index)
 	{
-		onEntitySelectionCallbacks.push_back(callback);
-	}
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-	void HierarchyPanel::SetSelectedEntity(Entity& entity)
-	{
-		selectedEntity = entity;
+		if (selectedItem.type == SelectedItemType::BONE && *selectedItem.boneData.bone == armature.bones[index])
+			flags |= ImGuiTreeNodeFlags_Selected;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+		ImGui::PushStyleColor(ImGuiCol_Text, {1.0f, 1.0f, 0.0, 0.7f});
+
+		bool open = ImGui::TreeNodeEx(armature.bones[index].name.c_str(), flags, armature.bones[index].name.c_str());
+
+		if (ImGui::IsItemClicked())
+		{
+			selectedItem.type = SelectedItemType::BONE;
+			selectedItem.boneData.bone = &armature.bones[index];
+			selectedItem.boneData.transform = &boneTransforms[index];
+		}
+
+		if (open)
+		{
+			for (int i = index + 1; i < armature.bones.size(); i++)
+				if(armature.bones[i].parentId == index)
+					DrawBoneNode(armature, boneTransforms, i);
+
+			ImGui::TreePop();
+		}
+
+		ImGui::PopStyleColor();
+		ImGui::PopStyleVar();
 	}
 }

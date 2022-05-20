@@ -5,6 +5,7 @@
 #include "Panels/HierarchyPanel.h"
 #include "Panels/SystemsPanel.h"
 #include "Panels/FileBrowserPanel.h"
+#include "SelectedItem.h"
 #include "Dockspace.h"
 
 #include <ImGuizmo/ImGuizmo.h>
@@ -17,7 +18,8 @@ namespace Seidon
         ResourceManager editorResourceManager;
         Scene* scene;
         Scene* runtimeScene;
-        Entity selectedEntity;
+
+        SelectedItem selectedItem;
 
         Scene editorSystems;
         Scene runtimeSystems;
@@ -37,6 +39,8 @@ namespace Seidon
 
         bool isPlaying = false;
     public:
+        Editor();
+
         void Init() override;
         void Update() override;
         void Destroy() override;
