@@ -13,8 +13,10 @@ namespace Seidon
 
 	struct BoneSelectionData
 	{
-		BoneData* bone;
-		glm::mat4* transform;
+		int id;
+		Entity owningEntity;
+		Armature* armature;
+		std::vector<glm::mat4>* transforms;
 	};
 
 	struct SelectedItem

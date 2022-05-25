@@ -399,7 +399,7 @@ namespace Seidon
 
 		ImGui::ImageButton((ImTextureID)materialIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
-		if (ImGui::IsItemClicked())
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 		{
 			selectedItem.type = SelectedItemType::MATERIAL;
 			selectedItem.material = resourceManager.GetOrLoadMaterial(file.path);

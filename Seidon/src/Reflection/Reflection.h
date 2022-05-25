@@ -195,6 +195,22 @@ namespace Seidon
 			return *(T*)((byte*)(data) + memberData.offset);
 		}
 
+		void ModifyMemberV(const std::string& memberName, void* data, void* newValue)
+		{
+			MemberData& memberData = nameToMember.at(memberName);
+
+			memcpy((byte*)(data)+memberData.offset, newValue, memberData.size);
+
+			if (OnChange) OnChange(data);
+		}
+
+		void* GetMemberV(const std::string& memberName, void* data)
+		{
+			MemberData& memberData = nameToMember.at(memberName);
+
+			return (byte*)(data)+memberData.offset;
+		}
+
 		void CopyMember(const std::string& memberName, void* srcData, void* dstData);
 		void CopyMembers(void* srcData, void* dstData);
 		

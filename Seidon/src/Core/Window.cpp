@@ -1,6 +1,8 @@
 #include "Window.h"
 #include "../Debug/Debug.h"
 
+#include <ImGui/imgui_neo_sequencer.h>
+
 namespace Seidon
 {
     Window* instance;
@@ -280,5 +282,21 @@ namespace Seidon
         ImGui::PushStyleColor(ImGuiCol_CheckMark, accentColor);
         ImGui::PushStyleColor(ImGuiCol_TextSelectedBg, accentColor);
         ImGui::PushStyleColor(ImGuiCol_DragDropTarget, accentColor);
+
+        ImGuiNeoSequencerStyle& sequencerStyle = ImGui::GetNeoSequencerStyle();
+
+        sequencerStyle.SequencerRounding = 0;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_Bg] = backgroundColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_TopBarBg] = backgroundColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_SelectedTimeline] = activeBackgroundColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_Keyframe] = accentColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_KeyframeHovered] = highlightColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_KeyframePressed] = accentColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_FramePointer] = accentColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_FramePointerHovered] = highlightColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_FramePointerPressed] = accentColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_ZoomBarBg] = backgroundColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_ZoomBarSlider] = backgroundColor;
+        sequencerStyle.Colors[ImGuiNeoSequencerCol_ZoomBarSliderHovered] = activeBackgroundColor;
     }
 }

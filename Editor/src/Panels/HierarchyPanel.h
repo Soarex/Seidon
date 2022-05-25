@@ -6,21 +6,17 @@ namespace Seidon
 {
 	class HierarchyPanel
 	{
-	private:
-		SelectedItem& selectedItem;
-
-		std::vector<std::function<void(Entity&)>> onEntitySelectionCallbacks;
-
 	public:
 		HierarchyPanel(SelectedItem& selectedItem) : selectedItem(selectedItem) {}
 
 		void Init();
 		void Draw();
-		void AddSelectionCallback(const std::function<void(Entity&)>& callback);
-		void SetSelectedEntity(Entity& entity);
 
 	private:
+		SelectedItem& selectedItem;
+	
+	private:
 		void DrawEntityNode(Entity& entity);
-		void DrawBoneNode(Armature& armature, std::vector<glm::mat4>& boneTransforms, int index);
+		void DrawBoneNode(Entity& owningEntity, Armature& armature, std::vector<glm::mat4>& boneTransforms, int index);
 	};
 }

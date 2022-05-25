@@ -156,16 +156,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Dockspace.cpp" />
-    <ClCompile Include="src\Editor.cpp" />
-    <ClCompile Include="src\EditorCameraControlSystem.cpp" />
-    <ClCompile Include="src\Panels\FileBrowserPanel.cpp" />
-    <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
-    <ClCompile Include="src\Panels\InspectorPanel.cpp" />
-    <ClCompile Include="src\Panels\SystemsPanel.cpp" />
-    <ClCompile Include="src\Utils\DrawFunctions.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Seidon\Seidon.vcxproj">
       <Project>{b59ab61a-3111-42ee-b392-b5f4cecd2ff8}</Project>
     </ProjectReference>
@@ -174,8 +164,10 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\Dockspace.h" />
     <ClInclude Include="src\Editor.h" />
+    <ClInclude Include="src\EditorAction.h" />
     <ClInclude Include="src\EditorCameraControlSystem.h" />
     <ClInclude Include="src\Extensions\Extension.h" />
+    <ClInclude Include="src\Panels\AnimationPanel.h" />
     <ClInclude Include="src\Panels\FileBrowserPanel.h" />
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />
@@ -189,6 +181,19 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon1.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Dockspace.cpp" />
+    <ClCompile Include="src\Editor.cpp" />
+    <ClCompile Include="src\EditorAction.cpp" />
+    <ClCompile Include="src\EditorCameraControlSystem.cpp" />
+    <ClCompile Include="src\Panels\AnimationPanel.cpp" />
+    <ClCompile Include="src\Panels\FileBrowserPanel.cpp" />
+    <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
+    <ClCompile Include="src\Panels\InspectorPanel.cpp" />
+    <ClCompile Include="src\Panels\SystemsPanel.cpp" />
+    <ClCompile Include="src\Utils\Dialogs.cpp" />
+    <ClCompile Include="src\Utils\DrawFunctions.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

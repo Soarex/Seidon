@@ -1,4 +1,5 @@
 #include "InspectorPanel.h"
+#include "../Editor.h"
 
 namespace Seidon
 {
@@ -33,22 +34,23 @@ namespace Seidon
 
     void InspectorPanel::DrawBone(BoneSelectionData& boneData)
     {
-        char buffer[256];
-        std::strncpy(buffer, boneData.bone->name.c_str(), sizeof(buffer));
+        BoneData& bone = boneData.armature->bones[boneData.id];
 
+        char buffer[256];
+        std::strncpy(buffer,bone.name.c_str(), sizeof(buffer));
         ImGui::PushItemWidth(-1);
         ImGui::InputText("##Name", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
         ImGui::PopItemWidth();
         
         TransformComponent t;
-        t.SetFromMatrix(*boneData.transform);
+        t.SetFromMatrix((*boneData.transforms)[boneData.id]);
 
         MetaType type = Application::Get()->GetComponentMetaType<TransformComponent>();
 
         if(ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             DrawMetaType(&t, type);
 
-        *boneData.transform = t.GetTransformMatrix();
+        (*boneData.transforms)[boneData.id] = t.GetTransformMatrix();
     }
 
     void InspectorPanel::DrawEntity(Entity e)
@@ -84,7 +86,30 @@ namespace Seidon
             }
 
             if (metaType.Has(e) && open)
-                DrawMetaType(metaType.Get(e), metaType);
+            {
+                ChangeData change = DrawMetaType(metaType.Get(e), metaType);
+
+                if (change.status == ChangeStatus::CHANGED)
+                {
+                    EditorComponentAction* action = new EditorComponentAction();
+                    action->modifiedEntity = e;
+                    action->modifiedMetaType = metaType;
+                    action->modifiedMemberName = change.modifiedMember.name;
+
+                    memcpy(action->oldValue, change.oldValue, sizeof(action->oldValue));
+                    memcpy(action->newValue, change.newValue, sizeof(action->newValue));
+
+                    Editor& editor = *(Editor*)Application::Get();
+                    editor.OnEditorAction(action);
+
+                    //glm::vec3 oldValue = *(glm::vec3*)action->oldValue;
+                    //glm::vec3 newValue = *(glm::vec3*)action->newValue;
+
+                    //std::cout << metaType.name << ": " << change.modifiedMember.name << std::endl;
+                    //std::cout << oldValue.x << " ," << oldValue.y << " ," << oldValue.z << std::endl;
+                    //std::cout << newValue.x << " ," << newValue.y << " ," << newValue.z << std::endl << std::endl;
+                }
+            }
 
         }
 

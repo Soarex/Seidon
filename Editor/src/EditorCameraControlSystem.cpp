@@ -59,7 +59,11 @@ namespace Seidon
 
 				glm::vec3 direction = forward * input.z + right * input.x;
 
-				cameraTransform.position += direction * movementSpeed * deltaTime;
+				float speedMultiplier = 1;
+				if (inputManager->GetKey(GET_KEYCODE(LEFT_SHIFT)))
+					speedMultiplier = 2.5f;
+
+				cameraTransform.position += direction * movementSpeed * speedMultiplier * deltaTime;
 			}
 
 

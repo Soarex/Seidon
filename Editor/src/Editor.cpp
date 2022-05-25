@@ -13,7 +13,7 @@
 namespace Seidon
 {
     Editor::Editor()
-        : hierarchyPanel(selectedItem), inspectorPanel(selectedItem), fileBrowserPanel(selectedItem) {}
+        : hierarchyPanel(selectedItem), inspectorPanel(selectedItem), fileBrowserPanel(selectedItem), animationPanel(selectedItem) {}
 
     void Editor::Init()
 	{
@@ -51,7 +51,6 @@ namespace Seidon
 
         hierarchyPanel.Init();           
         inspectorPanel.Init();           
-        //assetBrowserPanel.Init();
         fileBrowserPanel.Init();
         
 		window->SetName("Seidon Editor");
@@ -100,6 +99,16 @@ namespace Seidon
 
             if (inputManager->GetKeyPressed(GET_KEYCODE(TAB)))
                 local = !local;
+
+            if (inputManager->GetKeyDown(GET_KEYCODE(LEFT_CONTROL)) && inputManager->GetKeyPressed(GET_KEYCODE(Z)))
+                if (auto action = actions.Pop())
+                {
+                    action->Undo();
+                    delete action;
+                }
+
+            //if (inputManager->GetKeyPressed(GET_KEYCODE(LEFT_CONTROL)) && inputManager->GetKeyPressed(GET_KEYCODE(Z)) && inputManager->GetKeyPressed(GET_KEYCODE(LEFT_SHIFT)))
+            //    if (auto action = actions.Pop()) action->Do();
         }
 
         dockspace.Begin();
@@ -245,8 +254,6 @@ namespace Seidon
                     selectedItem.entity = Entity(e, sceneManager->GetActiveScene());
                 }
             }
-            //else
-            //    if (inputManager->GetMouseButtonPressed(MouseButton::LEFT) && !ImGuizmo::IsUsing()) selectedEntity = { NullEntityId, nullptr };
         }
         else
         {
@@ -290,53 +297,13 @@ namespace Seidon
             ImGui::EndDragDropTarget();
         }
 
-        if (!isPlaying && (selectedItem.type == SelectedItemType::ENTITY && selectedItem.entity.IsValid()) && guizmoOperation != -1)
-        {
-            entt::basic_group cameras = scene->GetRegistry().group<CameraComponent, TransformComponent>();
-
-            for (entt::entity e : cameras)
-            {
-                Entity camera = { e, scene};
-
-                ImGuizmo::SetOrthographic(false);
-                ImGuizmo::SetDrawlist();
-
-                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
-
-                TransformComponent& cameraTransform = camera.GetComponent<TransformComponent>();
-                CameraComponent& cameraComponent = camera.GetComponent<CameraComponent>();
-                glm::mat4 cameraProjection = cameraComponent.GetProjectionMatrix();
-                glm::mat4 cameraView = cameraComponent.GetViewMatrix(cameraTransform);
-
-                TransformComponent& entityTransform = selectedItem.entity.GetComponent<TransformComponent>();
-                glm::mat4 transform = selectedItem.entity.GetGlobalTransformMatrix();
-
-                ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-                    (ImGuizmo::OPERATION)guizmoOperation, local ? ImGuizmo::LOCAL : ImGuizmo::WORLD, glm::value_ptr(transform),
-                    nullptr, nullptr);
-
-                if (ImGuizmo::IsUsing())
-                {
-                    glm::vec3 position, rotation, scale;
-                    if (selectedItem.entity.HasParent())
-                        DecomposeTransform(glm::inverse(selectedItem.entity.GetParent().GetGlobalTransformMatrix()) * transform, position, rotation, scale);
-                    else
-                        DecomposeTransform(transform, position, rotation, scale);
-
-                    glm::vec3 deltaRotation = rotation - entityTransform.rotation;
-                    entityTransform.position = position;
-                    entityTransform.rotation += deltaRotation;
-                    entityTransform.scale = scale;
-                }
-            }
-        }
+        DrawTransformGuizmos();
         ImGui::End();
 
         systemsPanel.Draw();
         inspectorPanel.Draw();
         hierarchyPanel.Draw();
-       
-        //assetBrowserPanel.Draw();
+        animationPanel.Draw();
 
         ImGui::Begin("Stats"); 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -462,6 +429,104 @@ namespace Seidon
         );
     }
 
+    void Editor::DrawGuizmos(Renderer& renderer)
+    {
+        DrawTransformGuizmos();
+    }
+
+    void Editor::DrawTransformGuizmos()
+    {
+        if (isPlaying || guizmoOperation == -1) return;
+
+        auto cameras = scene->CreateComponentView<CameraComponent>();
+
+        if (cameras.empty()) return;
+
+        Entity camera = { cameras.front(), scene };
+
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
+
+        TransformComponent& cameraTransform = camera.GetComponent<TransformComponent>();
+        CameraComponent& cameraComponent = camera.GetComponent<CameraComponent>();
+        glm::mat4 cameraProjection = cameraComponent.GetProjectionMatrix();
+        glm::mat4 cameraView = cameraComponent.GetViewMatrix(cameraTransform);
+
+        glm::mat4 transform;
+        if (selectedItem.type == SelectedItemType::ENTITY)
+        {
+            TransformComponent& entityTransform = selectedItem.entity.GetComponent<TransformComponent>();
+            transform = selectedItem.entity.GetGlobalTransformMatrix();
+
+            ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+                (ImGuizmo::OPERATION)guizmoOperation, local ? ImGuizmo::LOCAL : ImGuizmo::WORLD, glm::value_ptr(transform),
+                nullptr, nullptr);
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 position, rotation, scale;
+                if (selectedItem.entity.HasParent())
+                    DecomposeTransform(glm::inverse(selectedItem.entity.GetParent().GetGlobalTransformMatrix()) * transform, position, rotation, scale);
+                else
+                    DecomposeTransform(transform, position, rotation, scale);
+
+                glm::vec3 deltaRotation = rotation - entityTransform.rotation;
+                entityTransform.position = position;
+                entityTransform.rotation += deltaRotation;
+                entityTransform.scale = scale;
+            }
+        }
+        if (selectedItem.type == SelectedItemType::BONE)
+        {
+            TransformComponent t;
+
+            glm::mat4 parentTransformWorldSpace = glm::mat4(1);
+            int parentId = selectedItem.boneData.armature->bones[selectedItem.boneData.id].parentId;
+             
+            while (parentId != -1)
+            {
+                parentTransformWorldSpace *= (*selectedItem.boneData.transforms)[parentId];
+                parentId = selectedItem.boneData.armature->bones[parentId].parentId;
+            }
+
+            transform = selectedItem.boneData.owningEntity.GetGlobalTransformMatrix() * parentTransformWorldSpace * (*selectedItem.boneData.transforms)[selectedItem.boneData.id];
+            t.SetFromMatrix(transform);
+
+            ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+                (ImGuizmo::OPERATION)guizmoOperation, local ? ImGuizmo::LOCAL : ImGuizmo::WORLD, glm::value_ptr(transform),
+                nullptr, nullptr);
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 position, rotation, scale;
+                DecomposeTransform(transform, position, rotation, scale);
+
+                glm::vec3 deltaRotation = rotation - t.rotation;
+                t.position = position;
+                t.rotation += deltaRotation;
+                t.scale = scale;
+
+                (*selectedItem.boneData.transforms)[selectedItem.boneData.id] = glm::inverse(parentTransformWorldSpace) * glm::inverse(selectedItem.boneData.owningEntity.GetGlobalTransformMatrix()) *  t.GetTransformMatrix();
+            }
+
+        }
+        
+    }
+
+    void Editor::OnEditorAction(EditorAction* action)
+    {
+        actions.Push(action);
+
+        for (auto& callback : actionCallbacks)
+            callback(*action);
+    }
+
+    void Editor::AddEditorActionCallback(const EditorActionCallback& callback)
+    {
+        actionCallbacks.push_back(callback);
+    }
 
     Application* Seidon::CreateApplication() 
     {

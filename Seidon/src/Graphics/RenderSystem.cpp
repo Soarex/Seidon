@@ -281,7 +281,20 @@ namespace Seidon
 			{
 				Entity e = scene->GetEntityByEntityId(id);
 
-				renderer.SubmitSkinnedMesh(renderComponent.mesh, renderComponent.boneTransforms, renderComponent.materials, e.GetGlobalTransformMatrix(), id);
+				renderComponent.worldSpaceBoneTransforms[0] = renderComponent.boneTransforms[0];
+				for (int i = 1; i < renderComponent.mesh->armature.bones.size(); i++)
+				{
+					BoneData& bone = renderComponent.mesh->armature.bones[i];
+					renderComponent.worldSpaceBoneTransforms[i] = renderComponent.worldSpaceBoneTransforms[bone.parentId] * renderComponent.boneTransforms[i];
+				}
+
+				for (int i = 0; i < renderComponent.mesh->armature.bones.size(); i++)
+				{
+					BoneData& bone = renderComponent.mesh->armature.bones[i];
+					renderComponent.worldSpaceBoneTransforms[i] *= bone.inverseBindPoseMatrix;
+				}
+
+				renderer.SubmitSkinnedMesh(renderComponent.mesh, renderComponent.worldSpaceBoneTransforms, renderComponent.materials, e.GetGlobalTransformMatrix(), id);
 			}
 		);
 

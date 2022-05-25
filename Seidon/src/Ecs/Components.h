@@ -148,8 +148,10 @@ namespace Seidon
 	{
 		SkinnedMesh* mesh;
 		std::vector<Material*> materials;
-
 		std::vector<glm::mat4> boneTransforms;
+
+
+		std::vector<glm::mat4> worldSpaceBoneTransforms;
 
 		SkinnedRenderComponent();
 		SkinnedRenderComponent(const SkinnedRenderComponent&) = default;
@@ -257,8 +259,6 @@ namespace Seidon
 
 		//Runtime data
 		float runtimeTime = 0;
-
-		glm::mat4 localBoneMatrices[MAX_BONE_COUNT];
 
 		float lastPositionKeyIndices[MAX_BONE_COUNT];
 		float lastRotationKeyIndices[MAX_BONE_COUNT];

@@ -149,7 +149,7 @@ namespace Seidon
 			if (entity.HasComponent<SkinnedRenderComponent>())
 			{
 				SkinnedRenderComponent& r = entity.GetComponent<SkinnedRenderComponent>();
-				DrawBoneNode(r.mesh->armature, r.boneTransforms, 0);
+				DrawBoneNode(entity, r.mesh->armature, r.boneTransforms, 0);
 			}
 
 			TransformComponent& t = entity.GetComponent<TransformComponent>();
@@ -167,17 +167,20 @@ namespace Seidon
 			if (selectedItem.type == SelectedItemType::ENTITY && (selectedItem.entity == entity || selectedItem.entity.IsDescendantOf(entity)))
 				selectedItem.type = SelectedItemType::NONE;
 
+			if(selectedItem.type == SelectedItemType::BONE)
+				selectedItem.type = SelectedItemType::NONE;
+
 			Application::Get()->GetSceneManager()->GetActiveScene()->DestroyEntity(entity);
 		}
 
 		ImGui::PopStyleVar();
 	}
 
-	void HierarchyPanel::DrawBoneNode(Armature& armature, std::vector<glm::mat4>& boneTransforms, int index)
+	void HierarchyPanel::DrawBoneNode(Entity& owningEntity, Armature& armature, std::vector<glm::mat4>& boneTransforms, int index)
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		if (selectedItem.type == SelectedItemType::BONE && *selectedItem.boneData.bone == armature.bones[index])
+		if (selectedItem.type == SelectedItemType::BONE && selectedItem.boneData.armature->bones[selectedItem.boneData.id] == armature.bones[index])
 			flags |= ImGuiTreeNodeFlags_Selected;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -188,15 +191,17 @@ namespace Seidon
 		if (ImGui::IsItemClicked())
 		{
 			selectedItem.type = SelectedItemType::BONE;
-			selectedItem.boneData.bone = &armature.bones[index];
-			selectedItem.boneData.transform = &boneTransforms[index];
+			selectedItem.boneData.id = index;
+			selectedItem.boneData.owningEntity = owningEntity;
+			selectedItem.boneData.armature = &armature;
+			selectedItem.boneData.transforms = &boneTransforms;
 		}
 
 		if (open)
 		{
 			for (int i = index + 1; i < armature.bones.size(); i++)
 				if(armature.bones[i].parentId == index)
-					DrawBoneNode(armature, boneTransforms, i);
+					DrawBoneNode(owningEntity, armature, boneTransforms, i);
 
 			ImGui::TreePop();
 		}

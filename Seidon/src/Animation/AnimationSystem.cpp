@@ -14,18 +14,17 @@ namespace Seidon
 
 	void AnimationSystem::Update(float deltaTime)
 	{
-		entt::basic_group group = scene->GetRegistry().group<AnimationComponent>(entt::get<SkinnedRenderComponent, TransformComponent>);
+		entt::basic_group group = scene->GetRegistry().group<AnimationComponent>(entt::get<SkinnedRenderComponent>);
 
 		for (entt::entity e : group)
 		{
 			AnimationComponent& a = group.get<AnimationComponent>(e);
 			SkinnedRenderComponent& r = group.get<SkinnedRenderComponent>(e);
-			TransformComponent& t = group.get<TransformComponent>(e);
 
 			Animation* animation = a.animation;
 			Armature* armature = &r.mesh->armature;
 
-			if (animation->channels.size() != armature->bones.size())
+			if (animation->channels.size() > armature->bones.size())
 			{
 				std::cout << animation->channels.size() << " " << armature->bones.size() << std::endl;
 				std::cerr << "Animation " << animation->name << " incompatible with armature " << armature->name << std::endl;
@@ -38,15 +37,8 @@ namespace Seidon
 			float timePoint = fmod(a.runtimeTime, animation->duration);
 
 			int channelIndex = 0;
-			for (int i = 0; i < armature->bones.size(); i++)
+			for (int i = 0; i < animation->channels.size(); i++)
 			{
-				BoneData& bone = armature->bones[i];
-
-				glm::mat4 parentTransform = glm::identity<glm::mat4>();
-
-				if (i > 0)
-					parentTransform = a.localBoneMatrices[bone.parentId];
-
 				AnimationChannel& channel = animation->channels[i];
 
 				int keyIndex = GetPositionKeyIndex(channel.positionKeys, timePoint, a.lastPositionKeyIndices[i]);
@@ -102,11 +94,7 @@ namespace Seidon
 
 				a.lastScalingKeyIndices[i] = keyIndex;
 
-				glm::mat4 animationTransform = translation * rotation * scale;
-
-				a.localBoneMatrices[i] = parentTransform * animationTransform;
-
-				r.boneTransforms[i] = a.localBoneMatrices[i] * bone.inverseBindPoseMatrix;
+				r.boneTransforms[channel.boneId] = translation * rotation * scale;
 			}
 		}
 	}

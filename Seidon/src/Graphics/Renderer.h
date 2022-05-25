@@ -136,10 +136,10 @@ namespace Seidon
 		uint32_t instanceDataBuffer;
 
 		uint32_t transformBuffers[3];
-		uint32_t boneTransformBuffers[3];
 		uint32_t entityIdBuffers[3];
 		uint32_t materialBuffers[3];
 		uint32_t indirectBuffers[3];
+		uint32_t boneTransformBuffer;
 
 		uint32_t objectCount = 0;
 		uint32_t nextIndexPosition = 0;
@@ -155,13 +155,11 @@ namespace Seidon
 		uint32_t skinnedIndexBufferHeadPosition = 0;
 
 		glm::mat4* transformBufferPointers[3];
-		glm::mat4* boneTransformBufferPointers[3];
 		int* entityIdBufferPointers[3];
 		byte* materialBufferPointers[3];
 		RenderCommand* indirectBufferPointers[3];
 
 		glm::mat4* transformBufferHead = 0;
-		glm::mat4* boneTransformBufferHead = 0;
 		int* entityIdBufferHead = 0;
 		byte* materialBufferHead = 0;
 		RenderCommand* indirectBufferHead = 0;

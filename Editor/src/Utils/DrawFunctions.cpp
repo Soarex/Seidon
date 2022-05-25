@@ -6,12 +6,15 @@
 
 namespace Seidon
 {
-	bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
+	ChangeStatus DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		bool changed = false;
+		bool stoppedChanging = false;
+
+		glm::vec3 oldValue = values;
 
 		ImGui::PushID(label.c_str());
 		ImGui::PushItemWidth(-1);
@@ -35,13 +38,17 @@ namespace Seidon
 		{
 			values.x = resetValue;
 			changed = true;
+			stoppedChanging = true;
 		}
 
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
 		changed |= ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -53,12 +60,16 @@ namespace Seidon
 		{
 			values.y = resetValue;
 			changed = true;
+			stoppedChanging = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
 		changed |= ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -70,12 +81,16 @@ namespace Seidon
 		{
 			values.z = resetValue;
 			changed = true;
+			stoppedChanging = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+		
 		changed |= ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -85,16 +100,20 @@ namespace Seidon
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 
-		return changed;
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawColorControl(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
+	ChangeStatus DrawColorControl(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		int i[3] = { IM_F32_TO_INT8_UNBOUND(values.x), IM_F32_TO_INT8_UNBOUND(values.y), IM_F32_TO_INT8_UNBOUND(values.z)};
 
 		bool changed = false;
+		bool stoppedChanging = false;
 
 		ImGui::PushID(label.c_str());
 		ImGui::PushItemWidth(-1);
@@ -118,6 +137,7 @@ namespace Seidon
 		{
 			values.x = 0;
 			changed = true;
+			stoppedChanging = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
@@ -125,6 +145,9 @@ namespace Seidon
 		ImGui::SameLine();
 		changed |= ImGui::DragInt("##R", &i[0], 1.0f, 0.0f, 255, "%3d");
 		values.x = i[0] / 255.0f;
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -136,6 +159,7 @@ namespace Seidon
 		{
 			values.y = 0;
 			changed = true;
+			stoppedChanging = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
@@ -143,6 +167,9 @@ namespace Seidon
 		ImGui::SameLine();
 		changed |= ImGui::DragInt("##G", &i[1], 1.0f, 0.0f, 255, "%3d");
 		values.y = i[1] / 255.0f;
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -154,6 +181,7 @@ namespace Seidon
 		{
 			values.z = 0;
 			changed = true;
+			stoppedChanging = true;
 		}
 		ImGui::PopFont();
 		ImGui::PopStyleColor(3);
@@ -161,6 +189,9 @@ namespace Seidon
 		ImGui::SameLine();
 		changed |= ImGui::DragInt("##B", &i[2], 1.0f, 0.0f, 255, "%3d");
 		values.z = i[2] / 255.0f;
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -183,10 +214,13 @@ namespace Seidon
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 
-		return changed;
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawIdControl(const std::string& label, UUID& value, float columnWidth)
+	ChangeStatus DrawIdControl(const std::string& label, UUID& value, float columnWidth)
 	{
 		ImGui::PushID(label.c_str());
 
@@ -220,10 +254,12 @@ namespace Seidon
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 
-		return changed;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawFloatControl(const std::string& label, float& value, float columnWidth)
+	ChangeStatus DrawFloatControl(const std::string& label, float& value, float columnWidth)
 	{
 		ImGui::PushID(label.c_str());
 
@@ -234,16 +270,22 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		bool changed = ImGui::DragFloat("##X", &value, 0.1f, 0.0f, 0.0f, "%.2f");
+		bool stoppedChanging = false;
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
 
 		ImGui::Columns(1);
 
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 
-		return changed;
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawFloatSliderControl(const std::string& label, float& value, float min, float max, float columnWidth)
+	ChangeStatus DrawFloatSliderControl(const std::string& label, float& value, float min, float max, float columnWidth)
 	{
 		ImGui::PushID(label.c_str());
 
@@ -255,15 +297,21 @@ namespace Seidon
 
 		bool changed = ImGui::SliderFloat("##X", &value, min, max, "%.2f");
 
+		bool stoppedChanging = false;
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::Columns(1);
 
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 
-		return changed;
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawBoolControl(const std::string& label, bool& value, float columnWidth)
+	ChangeStatus DrawBoolControl(const std::string& label, bool& value, float columnWidth)
 	{
 		ImGui::PushID(label.c_str());
 
@@ -275,15 +323,21 @@ namespace Seidon
 
 		bool changed = ImGui::Checkbox("##bool", &value);
 
+		bool stoppedChanging = false;
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::Columns(1);
 
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 
-		return changed;
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawStringControl(const std::string& label, std::string& value, float columnWidth)
+	ChangeStatus DrawStringControl(const std::string& label, std::string& value, float columnWidth)
 	{
 		ImGui::PushID(label.c_str());
 
@@ -295,15 +349,21 @@ namespace Seidon
 
 		bool changed = ImGui::InputText("##string", &value);
 
+		bool stoppedChanging = false;
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+
 		ImGui::Columns(1);
 
 		ImGui::PopItemWidth();
 		ImGui::PopID();
 
-		return changed;
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawTextureControl(const std::string& label, Texture** texture, float size)
+	ChangeStatus DrawTextureControl(const std::string& label, Texture** texture, float size)
 	{
 		bool changed = false;
 		ImGui::PushID(label.c_str());
@@ -335,10 +395,12 @@ namespace Seidon
 		ImGui::Columns(1);
 		ImGui::PopID();
 
-		return changed;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawCubemapControl(const std::string& label, HdrCubemap** cubemap, float size)
+	ChangeStatus DrawCubemapControl(const std::string& label, HdrCubemap** cubemap, float size)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		bool changed = false;
@@ -373,10 +435,12 @@ namespace Seidon
 		ImGui::Columns(1);
 		ImGui::PopID();
 
-		return changed;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawMeshControl(const std::string& label, Mesh** mesh, float size)
+	ChangeStatus DrawMeshControl(const std::string& label, Mesh** mesh, float size)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		bool changed = false;
@@ -411,10 +475,12 @@ namespace Seidon
 		ImGui::Columns(1);
 		ImGui::PopID();
 
-		return changed;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawSkinnedMeshControl(const std::string& label, SkinnedMesh** mesh, float size)
+	ChangeStatus DrawSkinnedMeshControl(const std::string& label, SkinnedMesh** mesh, float size)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		bool changed = false;
@@ -449,14 +515,17 @@ namespace Seidon
 		ImGui::Columns(1);
 		ImGui::PopID();
 
-		return changed;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawMaterialControl(const std::string& label, Material** material, float size)
+	ChangeStatus DrawMaterialControl(const std::string& label, Material** material, float size, bool* clicked)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
-		bool clicked = false;
 		static Material* selectedMaterial = nullptr;
+
+		bool changed = false;
 
 		ImGui::PushID(label.c_str());
 
@@ -466,8 +535,8 @@ namespace Seidon
 		ImGui::Columns(2);
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/MaterialIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		
-		if (ImGui::IsItemClicked())
-			clicked = true;
+		if (ImGui::IsItemClicked() && clicked)
+			*clicked = true;
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -477,6 +546,8 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 
 				*material = resourceManager.GetOrLoadMaterial(path);
+
+				changed = true;
 			}
 
 			ImGui::EndDragDropTarget();
@@ -490,19 +561,22 @@ namespace Seidon
 
 		ImGui::PopID();
 		
-		return clicked;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawMaterialEditor(const std::string& label, Material* material, bool* open)
+	ChangeStatus DrawMaterialEditor(const std::string& label, Material* material, bool* open)
 	{
 		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
-		bool changed = false;
+		ChangeStatus changeStatus = ChangeStatus::NO_CHANGE;
 
 		if (ImGui::Begin(label.c_str(), open))
 		{
-			DrawStringControl("Name", material->name);
+			if (ChangeStatus res = DrawStringControl("Name", material->name); (int)res)
+				changeStatus = res;
 			
-			if (DrawShaderControl("Shader", &material->shader))
+			if ((int)DrawShaderControl("Shader", &material->shader))
 			{
 				memset(material->data, 0, 500);
 
@@ -518,10 +592,11 @@ namespace Seidon
 						break;
 					}
 
-				changed = true;
+				changeStatus = ChangeStatus::CHANGED;
 			}
 
-			changed = DrawMetaType(material->data, *material->shader->GetBufferLayout());
+			if (ChangeData res = DrawMetaType(material->data, *material->shader->GetBufferLayout()); (int)res.status)
+				changeStatus = res.status;
 
 			ImGuiStyle& style = ImGui::GetStyle();
 			float size = ImGui::CalcTextSize("Save").x + style.FramePadding.x * 2.0f;
@@ -534,10 +609,10 @@ namespace Seidon
 			}
 			ImGui::End();
 
-			return changed;
+			return changeStatus;
 	}
 
-	bool DrawAnimationControl(const std::string& label, Animation** animation, float size)
+	ChangeStatus DrawAnimationControl(const std::string& label, Animation** animation, float size)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		bool changed = false;
@@ -571,10 +646,12 @@ namespace Seidon
 		ImGui::Columns(1);
 		ImGui::PopID();
 
-		return changed;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawShaderControl(const std::string& label, Shader** shader, float size)
+	ChangeStatus DrawShaderControl(const std::string& label, Shader** shader, float size)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 		bool changed = false;
@@ -608,78 +685,83 @@ namespace Seidon
 		ImGui::Columns(1);
 		ImGui::PopID();
 
-		return changed;
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
 	}
 
-	bool DrawReflectedMember(void* object, MemberData& member)
+	ChangeStatus DrawReflectedMember(void* object, MemberData& member)
 	{
-		bool changed = false;
+		ChangeStatus changeStatus = ChangeStatus::NO_CHANGE;
 
-		char* obj = (char*) object;
+		byte* obj = (byte*) object;
 		
 		if (member.type == Types::ID)
-			changed = DrawIdControl(member.name.c_str(), *(UUID*)(obj + member.offset));
+			changeStatus = DrawIdControl(member.name.c_str(), *(UUID*)(obj + member.offset));
 
 		if (member.type == Types::FLOAT)
-			changed = DrawFloatControl(member.name.c_str(), *(float*)(obj + member.offset));
+			changeStatus = DrawFloatControl(member.name.c_str(), *(float*)(obj + member.offset));
 
 		if (member.type == Types::FLOAT_ANGLE)
 		{
 			float temp = glm::degrees(*(float*)(obj + member.offset));
-			changed = DrawFloatControl(member.name.c_str(), temp, 0.0f);
+			changeStatus = DrawFloatControl(member.name.c_str(), temp, 0.0f);
 			*(float*)(obj + member.offset) = glm::radians(temp);
 		}
 
 		if (member.type == Types::FLOAT_NORMALIZED)
-			changed = DrawFloatSliderControl(member.name.c_str(), *(float*)(obj + member.offset));
+			changeStatus = DrawFloatSliderControl(member.name.c_str(), *(float*)(obj + member.offset));
 
 		if (member.type == Types::BOOL)
-			changed = DrawBoolControl(member.name.c_str(), *(bool*)(obj + member.offset));
+			changeStatus = DrawBoolControl(member.name.c_str(), *(bool*)(obj + member.offset));
 
 		if (member.type == Types::STRING)
-			changed = DrawStringControl(member.name.c_str(), *(std::string*)(obj + member.offset));
+			changeStatus = DrawStringControl(member.name.c_str(), *(std::string*)(obj + member.offset));
 
 		if (member.type == Types::VECTOR3)
-			changed = DrawVec3Control(member.name.c_str(), *(glm::vec3*)(obj + member.offset), 0.0f);
+			changeStatus = DrawVec3Control(member.name.c_str(), *(glm::vec3*)(obj + member.offset), 0.0f);
 
 		if (member.type == Types::VECTOR3_ANGLES)
 		{
 			glm::vec3 temp = glm::degrees(*(glm::vec3*)(obj + member.offset));
-			changed = DrawVec3Control(member.name.c_str(), temp, 0.0f);
+			changeStatus = DrawVec3Control(member.name.c_str(), temp, 0.0f);
 			*(glm::vec3*)(obj + member.offset) = glm::radians(temp);
 		}
 
 		if (member.type == Types::VECTOR3_COLOR)
-			changed = DrawColorControl(member.name.c_str(), *(glm::vec3*)(obj + member.offset));
+			changeStatus = DrawColorControl(member.name.c_str(), *(glm::vec3*)(obj + member.offset));
 
 		if (member.type == Types::TEXTURE)
 		{
 			Texture** t = (Texture**)(obj + member.offset);
-			changed = DrawTextureControl(member.name.c_str(), t);
+			changeStatus = DrawTextureControl(member.name.c_str(), t);
 		}
 
 		if (member.type == Types::MESH)
 		{
 			Mesh** m = (Mesh**)(obj + member.offset);
-			changed = DrawMeshControl(member.name.c_str(), m);
+			changeStatus = DrawMeshControl(member.name.c_str(), m);
 		}
 
 		if (member.type == Types::SKINNED_MESH)
 		{
 			SkinnedMesh** m = (SkinnedMesh**)(obj + member.offset);
-			changed = DrawSkinnedMeshControl(member.name.c_str(), m);
+			changeStatus = DrawSkinnedMeshControl(member.name.c_str(), m);
 		}
 
 		if (member.type == Types::MATERIAL)
 		{
 			Material** m = (Material**)(obj + member.offset);
 			static bool open;
+			bool clicked = false;
 
-			if (DrawMaterialControl(member.name.c_str(), m))
+			DrawMaterialControl(member.name.c_str(), m, 64, &clicked);
+
+			if (clicked)
 				open = !open;
 			
 			if(open)
-				changed = DrawMaterialEditor("Material Editor", *m, &open);
+				changeStatus = DrawMaterialEditor("Material Editor", *m, &open);
 		}
 
 		if (member.type == Types::MATERIAL_VECTOR)
@@ -690,7 +772,11 @@ namespace Seidon
 			static int selected;
 
 			for (int i = 0; i < v->size(); i++)
-				if (DrawMaterialControl(member.name.c_str(), &v->at(i)))
+			{
+				bool clicked = false;
+
+				DrawMaterialControl(member.name.c_str(), &v->at(i), 64, &clicked);
+				if (clicked)
 				{
 					if (selected == i && open)
 						open = false;
@@ -700,35 +786,53 @@ namespace Seidon
 						open = true;
 					}
 				}
+			}
 
 			if (open && selected < v->size())
-				changed = DrawMaterialEditor("Material Editor", v->at(selected), &open);
+				changeStatus = DrawMaterialEditor("Material Editor", v->at(selected), &open);
 		}
 
 		if (member.type == Types::CUBEMAP)
 		{
 			HdrCubemap** c = (HdrCubemap**)(obj + member.offset);
-			changed = DrawCubemapControl(member.name.c_str(), c);
+			changeStatus = DrawCubemapControl(member.name.c_str(), c);
 		}
 
 		if (member.type == Types::ANIMATION)
 		{
 			Animation** a = (Animation**)(obj + member.offset);
-			changed = DrawAnimationControl(member.name.c_str(), a);
+			changeStatus = DrawAnimationControl(member.name.c_str(), a);
 		}
 
-		return changed;
+		return changeStatus;
 	}
 
-	bool DrawMetaType(void* object, MetaType& type)
+	ChangeData DrawMetaType(void* object, MetaType& type)
 	{
-		bool changed = false;
+		ChangeData res;
+		res.status = ChangeStatus::NO_CHANGE;
 
 		for (MemberData& member : type.members)
-			changed |= DrawReflectedMember(object, member);
+		{
+			ChangeStatus status;
+			byte oldValue[50];
 
-		if (changed && type.OnChange) type.OnChange(object);
+			memcpy(oldValue, (byte*)object + member.offset, member.size);
+			status = DrawReflectedMember(object, member);
 
-		return changed;
+			if (res.status == ChangeStatus::CHANGING) continue;
+			if (status == ChangeStatus::CHANGED)
+			{
+				res.status = ChangeStatus::CHANGED;
+				memcpy(res.oldValue, oldValue, sizeof(res.oldValue));
+				memcpy(res.newValue, (byte*)object + member.offset, member.size);
+
+				res.modifiedMember = member;
+			}
+		}
+
+		if ((int)res.status && type.OnChange) type.OnChange(object);
+
+		return res;
 	}
 }

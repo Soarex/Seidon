@@ -67,8 +67,17 @@ namespace Seidon
 		if (oldSize < rc.mesh->armature.bones.size())
 		{
 			rc.boneTransforms.resize(rc.mesh->armature.bones.size());
-			for (int i = oldSize; i < rc.mesh->armature.bones.size(); i++)
-				rc.boneTransforms[i] = glm::mat4(1);
+			rc.worldSpaceBoneTransforms.resize(rc.mesh->armature.bones.size());
+		}
+
+		if(rc.boneTransforms.size() > 0)
+			rc.boneTransforms[0] = glm::inverse(rc.mesh->armature.bones[0].inverseBindPoseMatrix);
+
+		for (int i = 1; i < rc.mesh->armature.bones.size(); i++)
+		{
+			int parentId = rc.mesh->armature.bones[i].parentId;
+			rc.boneTransforms[i] = rc.mesh->armature.bones[parentId].inverseBindPoseMatrix * glm::inverse(rc.mesh->armature.bones[i].inverseBindPoseMatrix);
+
 		}
 	}
 

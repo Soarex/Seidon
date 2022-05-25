@@ -96,6 +96,8 @@ namespace Seidon
         importedArmatures.clear();
         importedMeshes.clear();
         importedSkinnedMeshes.clear();
+
+        prefabScene.Destroy();
 	} 
 
     bool AssetImporter::ContainsMeshes(aiNode* node)
@@ -226,8 +228,12 @@ namespace Seidon
 
             std::string rootBoneName = mesh->mBones[0]->mName.C_Str();
             for (Armature& a : importedArmatures)
+            {
+                //if (mesh->mNumBones != a.bones.size()) continue;
+
                 if (a.bones[0].name == rootBoneName || a.bones[1].name == rootBoneName)
                     armature = &a;
+            }
 
             if (!armature)
             {
@@ -481,6 +487,7 @@ namespace Seidon
             anim.channels.push_back(channel);
         }
 
+        /*
         std::vector<bool> foundIds;
         foundIds.resize(armature->bones.size());
 
@@ -500,7 +507,7 @@ namespace Seidon
 
                 anim.channels.push_back(c);
             }
-
+        */
         std::sort(anim.channels.begin(), anim.channels.end(), [](AnimationChannel& a, AnimationChannel& b) { return a.boneId < b.boneId; });
         anim.Save(directory + "\\" + anim.name + ".sdanim");
 

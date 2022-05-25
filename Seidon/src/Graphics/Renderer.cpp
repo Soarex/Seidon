@@ -148,13 +148,9 @@ namespace Seidon
 			transformBufferPointers[i] = (glm::mat4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, maxObjects * sizeof(glm::mat4), flags);
 		}
 
-		GL_CHECK(glGenBuffers(3, boneTransformBuffers));
-		for (int i = 0; i < 3; i++)
-		{
-			GL_CHECK(glBindBuffer(GL_SHADER_STORAGE_BUFFER, boneTransformBuffers[i]));
-			GL_CHECK(glBufferStorage(GL_SHADER_STORAGE_BUFFER, MAX_BONE_COUNT * sizeof(glm::mat4), nullptr, flags));
-			boneTransformBufferPointers[i] = (glm::mat4*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, MAX_BONE_COUNT * sizeof(glm::mat4), flags);
-		}
+		GL_CHECK(glGenBuffers(1, &boneTransformBuffer));
+		GL_CHECK(glBindBuffer(GL_SHADER_STORAGE_BUFFER, boneTransformBuffer));
+		GL_CHECK(glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_BONE_COUNT * sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW));
 
 		GL_CHECK(glGenBuffers(3, entityIdBuffers));
 		for (int i = 0; i < 3; i++)
@@ -201,10 +197,10 @@ namespace Seidon
 		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage]));
 		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, materialBuffers[tripleBufferStage]));
 		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage]));
-		GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, boneTransformBuffers[tripleBufferStage]));
+		//GL_CHECK(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, boneTransformBuffers[tripleBufferStage]));
 
 		transformBufferHead = transformBufferPointers[tripleBufferStage];
-		boneTransformBufferHead = boneTransformBufferPointers[tripleBufferStage];
+		//boneTransformBufferHead = boneTransformBufferPointers[tripleBufferStage];
 		entityIdBufferHead = entityIdBufferPointers[tripleBufferStage];
 		materialBufferHead = materialBufferPointers[tripleBufferStage];
 		indirectBufferHead = indirectBufferPointers[tripleBufferStage];
@@ -534,16 +530,15 @@ namespace Seidon
 		for(int i = 0; i < 3; i++)
 		{
 			glUnmapNamedBuffer(transformBuffers[i]);
-			glUnmapNamedBuffer(boneTransformBuffers[i]);
 			glUnmapNamedBuffer(materialBuffers[i]);
 			glUnmapNamedBuffer(indirectBuffers[i]);
 			glDeleteSync(locks[i]);
 		}
 
 		glDeleteBuffers(3, transformBuffers);
-		glDeleteBuffers(3, boneTransformBuffers);
 		glDeleteBuffers(3, materialBuffers);
 		glDeleteBuffers(3, indirectBuffers);
+		glDeleteBuffers(1, &boneTransformBuffer);
 
 		glDeleteBuffers(1, &indexBuffer);
 		glDeleteBuffers(1, &vertexBuffer);
@@ -667,8 +662,9 @@ namespace Seidon
 			memcpy(transformBufferHead, &batch.transforms[0], batch.transforms.size() * sizeof(glm::mat4));
 			transformBufferHead += batch.transforms.size();
 
-			memcpy(boneTransformBufferHead, &(*batch.bones)[0], batch.bones->size() * sizeof(glm::mat4));
-			//boneTransformBufferHead += batch.bones->size();
+
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, boneTransformBuffer);
+			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, batch.bones->size() * sizeof(glm::mat4), &(*batch.bones)[0]);
 
 			*entityIdBufferHead = batch.entityId;
 			entityIdBufferHead++;
@@ -682,7 +678,7 @@ namespace Seidon
 			}
 
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage], offset * sizeof(glm::mat4), batch.transforms.size() * sizeof(glm::mat4));
-			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 3, boneTransformBuffers[tripleBufferStage], 0, batch.bones->size() * sizeof(glm::mat4));
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 3, boneTransformBuffer, 0, batch.bones->size() * sizeof(glm::mat4));
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage], idOffset, sizeof(int));
 
 			if (materialSize != 0)
