@@ -101,13 +101,6 @@ namespace Seidon
 
                     Editor& editor = *(Editor*)Application::Get();
                     editor.OnEditorAction(action);
-
-                    //glm::vec3 oldValue = *(glm::vec3*)action->oldValue;
-                    //glm::vec3 newValue = *(glm::vec3*)action->newValue;
-
-                    //std::cout << metaType.name << ": " << change.modifiedMember.name << std::endl;
-                    //std::cout << oldValue.x << " ," << oldValue.y << " ," << oldValue.z << std::endl;
-                    //std::cout << newValue.x << " ," << newValue.y << " ," << newValue.z << std::endl << std::endl;
                 }
             }
 
