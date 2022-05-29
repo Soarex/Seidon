@@ -78,6 +78,11 @@ namespace Seidon
         m->ModifyProperty("Inclination", glm::radians(45.0f));
         m->ModifyProperty("Intensity", 1.0f);
         AddMaterial("Preetham Sky Material", m);
+
+        Font* font = new Font(13);
+        font->name = "empty_font";
+        font->fontAtlas->Create(1, 1, grey);
+        AddFont("empty_font", font);
     }
 
     void ResourceManager::Destroy()
@@ -123,6 +128,12 @@ namespace Seidon
         animations.clear();
         nameToAnimationId.clear();
         idToAnimationPath.clear();
+
+        for (auto [id, font] : fonts)
+            delete font;
+        fonts.clear();
+        nameToFontId.clear();
+        idToFontPath.clear();
     }
 
     void ResourceManager::Save(std::ofstream& out)
@@ -204,6 +215,18 @@ namespace Seidon
         out.write((char*)&size, sizeof(size_t));
 
         for (auto& [id, path] : idToShaderPath)
+        {
+            out.write((char*)&id, sizeof(UUID));
+
+            size_t lenght = path.length() + 1;
+            out.write((char*)&lenght, sizeof(size_t));
+            out.write(path.c_str(), lenght * sizeof(char));
+        }
+
+        size = idToFontPath.size();
+        out.write((char*)&size, sizeof(size_t));
+
+        for (auto& [id, path] : idToFontPath)
         {
             out.write((char*)&id, sizeof(UUID));
 
@@ -322,6 +345,21 @@ namespace Seidon
 
             idToShaderPath[id] = path;
         }
+
+        in.read((char*)&size, sizeof(size_t));
+        for (int i = 0; i < size; i++)
+        {
+            UUID id;
+            in.read((char*)&id, sizeof(UUID));
+
+            size_t lenght = 0;
+            in.read((char*)&lenght, sizeof(size_t));
+            in.read(buffer, lenght * sizeof(char));
+
+            std::string path = std::string(buffer);
+
+            idToFontPath[id] = path;
+        }
     }
 
     Shader* ResourceManager::LoadShader(const std::string& path, UUID id)
@@ -413,6 +451,17 @@ namespace Seidon
 
         idToAnimationPath[a->id] = path;
         return a;
+    }
+
+    Font* ResourceManager::LoadFont(const std::string& path)
+    {
+        Font* f = new Font();
+        f->Load(path);
+
+        AddFont(path, f);
+
+        idToFontPath[f->id] = path;
+        return f;
     }
 
     Shader* ResourceManager::LoadShader(UUID id)
@@ -514,6 +563,18 @@ namespace Seidon
         return a;
     }
 
+    Font* ResourceManager::LoadFont(UUID id)
+    {
+        std::string& path = idToFontPath[id];
+
+        Font* f = new Font();
+        f->Load(path);
+
+        AddFont(path, f);
+
+        return f;
+    }
+
     void ResourceManager::RegisterShader(Shader* shader, const std::string& path)
     {
         idToShaderPath[shader->id] = path;
@@ -547,6 +608,11 @@ namespace Seidon
     void ResourceManager::RegisterAnimation(Animation* animation, const std::string& path)
     {
         idToAnimationPath[animation->id] = path;
+    }
+
+    void ResourceManager::RegisterFont(Font* font, const std::string& path)
+    {
+        idToFontPath[font->id] = path;
     }
 
     Texture* ResourceManager::GetOrLoadTexture(const std::string& name)
@@ -598,6 +664,13 @@ namespace Seidon
         return LoadAnimation(name);
     }
 
+    Font* ResourceManager::GetOrLoadFont(const std::string& name)
+    {
+        if (nameToFontId.count(name) > 0) return fonts[nameToFontId[name]];
+
+        return LoadFont(name);
+    }
+
     Texture* ResourceManager::GetOrLoadTexture(UUID id)
     {
         if (textures.count(id) > 0) return textures[id];
@@ -645,6 +718,13 @@ namespace Seidon
         if (animations.count(id) > 0) return animations[id];
 
         return LoadAnimation(id);
+    }
+
+    Font* ResourceManager::GetOrLoadFont(UUID id)
+    {
+        if (fonts.count(id) > 0) return fonts[id];
+
+        return LoadFont(id);
     }
 
 
@@ -718,6 +798,16 @@ namespace Seidon
         return res;
     }
 
+    std::vector<Font*>	ResourceManager::GetFonts()
+    {
+        std::vector<Font*> res;
+
+        for (auto& [key, font] : fonts)
+            res.push_back(font);
+
+        return res;
+    }
+
     void ResourceManager::AddTexture(const std::string& name, Texture* texture)
     { 
         textures[texture->GetId()] = texture; 
@@ -765,5 +855,12 @@ namespace Seidon
         animations[animation->id] = animation; 
         nameToAnimationId[name] = animation->id; 
         idToAnimationPath[animation->id] = name;
+    }
+
+    void ResourceManager::AddFont(const std::string& name, Font* font)
+    {
+        fonts[font->id] = font;
+        nameToFontId[name] = font->id;
+        idToFontPath[font->id] = name;
     }
 }

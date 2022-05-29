@@ -325,7 +325,7 @@ namespace Seidon
         ImGui::End();
 
         fileBrowserPanel.Draw();
-        
+
         dockspace.End();
 	}
 

@@ -10,6 +10,7 @@
 #include "../Graphics/Material.h"
 #include "../Graphics/HdrCubemap.h"
 #include "../Graphics/Armature.h"
+#include "../Graphics/Font.h"
 #include "../Animation/Animation.h"
 
 #include <vector>
@@ -33,6 +34,7 @@ namespace Seidon
 		void ImportModelFile(const std::string& path);
 		Texture* ImportTexture(const std::string& path, bool gammaCorrection = false);
 		HdrCubemap* ImportCubemap(const std::string& path);
+		Font* ImportFont(const std::string& path);
 
 	private:
 		bool ContainsMeshes(aiNode* node);

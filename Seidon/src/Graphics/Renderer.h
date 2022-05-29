@@ -83,6 +83,15 @@ namespace Seidon
 		std::vector<glm::vec4> colors;
 	};
 
+	struct TextVertexData
+	{
+		glm::vec3 position;
+		glm::vec2 uv;
+		glm::vec3 color;
+		uint64_t atlasHandle;
+		EntityId owningEntityId;
+	};
+
 	struct DirectionalLightData
 	{
 		glm::vec3 direction;
@@ -105,76 +114,8 @@ namespace Seidon
 
 	class Renderer
 	{
-	private:
-		static constexpr int CASCADE_COUNT = 4;
-		size_t maxVertexCount;
-		size_t maxSkinnedVertexCount;
-		size_t maxObjects;
-
-		int shaderBufferOffsetAlignment;
-
-		std::unordered_map <UUID, std::vector<CacheEntry>> meshCache;
-
-		std::unordered_map<Shader*, BatchData> batches;
-		std::unordered_map<UUID, SkinnedMeshBatch> skinnedMeshBatches;
-
-		Shader* wireframeShader;
-		WireframeBatchData wireframeBatch;
-		BatchData spriteObjects;
-
-
-		RenderStats stats;
-
-		uint32_t vao;
-		uint32_t vertexBuffer;
-		uint32_t indexBuffer;
-
-		uint32_t skinnedVao;
-		uint32_t skinnedVertexBuffer;
-		uint32_t skinnedIndexBuffer;
-
-		uint32_t instanceDataBuffer;
-
-		uint32_t transformBuffers[3];
-		uint32_t entityIdBuffers[3];
-		uint32_t materialBuffers[3];
-		uint32_t indirectBuffers[3];
-		uint32_t boneTransformBuffer;
-
-		uint32_t objectCount = 0;
-		uint32_t nextIndexPosition = 0;
-		uint32_t nextVertexPosition = 0;
-
-		uint32_t nextSkinnedIndexPosition = 0;
-		uint32_t nextSkinnedVertexPosition = 0;
-
-		uint32_t vertexBufferHeadPosition = 0;
-		uint32_t indexBufferHeadPosition = 0;
-
-		uint32_t skinnedVertexBufferHeadPosition = 0;
-		uint32_t skinnedIndexBufferHeadPosition = 0;
-
-		glm::mat4* transformBufferPointers[3];
-		int* entityIdBufferPointers[3];
-		byte* materialBufferPointers[3];
-		RenderCommand* indirectBufferPointers[3];
-
-		glm::mat4* transformBufferHead = 0;
-		int* entityIdBufferHead = 0;
-		byte* materialBufferHead = 0;
-		RenderCommand* indirectBufferHead = 0;
-
-		int tripleBufferStage = 0;
-		GLsync locks[3];
-		
-		HdrCubemap* ibl;
-		DirectionalLightData directionalLight;
-		CameraData camera;
-		ShadowMappingData shadowMaps;
-
-		double time;
 	public:
-		Renderer(size_t maxObjects = 1000, size_t maxVertexCount = 1000000, size_t maxSkinnedVertexCount = 100000);
+		Renderer(size_t maxObjects = 1000, size_t maxVertexCount = 1000000, size_t maxSkinnedVertexCount = 100000, size_t maxTextCharacterCount = 10000);
 
 		void Init();
 		void Begin();
@@ -182,6 +123,8 @@ namespace Seidon
 		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 		void SubmitSkinnedMesh(SkinnedMesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
+
+		void SubmitText(const std::string& string, Font* font, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 
 		void SetCamera(const CameraData& camera);
 		void SetShadowMaps(const ShadowMappingData& shadowMaps);
@@ -196,13 +139,91 @@ namespace Seidon
 		void Destroy();
 
 	private:
+		static constexpr int CASCADE_COUNT = 4;
+		size_t maxVertexCount;
+		size_t maxSkinnedVertexCount;
+		size_t maxTextCharacterCount;
+		size_t maxObjects;
+
+		int shaderBufferOffsetAlignment;
+
+		std::unordered_map <UUID, std::vector<CacheEntry>> meshCache;
+
+		std::unordered_map<Shader*, BatchData> batches;
+		std::unordered_map<UUID, SkinnedMeshBatch> skinnedMeshBatches;
+
+		Shader* wireframeShader;
+		WireframeBatchData wireframeBatch;
+		BatchData spriteObjects;
+
+		RenderStats stats;
+
+		uint32_t vao;
+		uint32_t vertexBuffer;
+		uint32_t indexBuffer;
+		uint32_t nextIndexPosition = 0;
+		uint32_t nextVertexPosition = 0;
+		uint32_t vertexBufferHeadPosition = 0;
+		uint32_t indexBufferHeadPosition = 0;
+
+		uint32_t skinnedVao;
+		uint32_t skinnedVertexBuffer;
+		uint32_t skinnedIndexBuffer;
+		uint32_t nextSkinnedIndexPosition = 0;
+		uint32_t nextSkinnedVertexPosition = 0;
+		uint32_t skinnedVertexBufferHeadPosition = 0;
+		uint32_t skinnedIndexBufferHeadPosition = 0;
+
+		uint32_t instanceDataBuffer;
+
+		uint32_t textVao;
+		uint32_t textIndexBuffer;
+		uint32_t textVertexBuffers[3];
+		TextVertexData* textBufferPointers[3];
+		TextVertexData* textBufferHead = 0;
+		Shader* textShader;
+		uint32_t characterCount = 0;
+
+		uint32_t transformBuffers[3];
+		glm::mat4* transformBufferPointers[3];
+		glm::mat4* transformBufferHead = 0;
+
+		uint32_t entityIdBuffers[3];
+		int* entityIdBufferPointers[3];
+		int* entityIdBufferHead = 0;
+
+		uint32_t materialBuffers[3];
+		byte* materialBufferPointers[3];
+		byte* materialBufferHead = 0;
+
+		uint32_t indirectBuffers[3];
+		RenderCommand* indirectBufferPointers[3];
+		RenderCommand* indirectBufferHead = 0;
+
+		uint32_t boneTransformBuffer;
+
+		uint32_t objectCount = 0;
+
+		int tripleBufferStage = 0;
+		GLsync locks[3];
+
+		HdrCubemap* ibl;
+		DirectionalLightData directionalLight;
+		CameraData camera;
+		ShadowMappingData shadowMaps;
+
+		double time;
+
+	private:
 		void InitStaticMeshBuffers();
 		void InitSkinnedMeshBuffers();
+		void InitTextBuffers();
 		void InitStorageBuffers();
 
 		void SetupMaterialData(Material* material, MaterialData& materialData);
 		void DrawMeshes(int& offset, int& materialOffset, int& idOffset);
 		void DrawSkinnedMeshes(int& offset, int& materialOffset, int& idOffset);
 		void DrawWireframes(int& offset, int& materialOffset, int& idOffset);
+		void DrawText();
 	};
 }

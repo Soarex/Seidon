@@ -81,6 +81,18 @@ namespace Seidon
 		}
 	}
 
+	SpriteRenderComponent::SpriteRenderComponent()
+	{
+		material = Application::Get()->GetResourceManager()->GetMaterial("default_material");
+	}
+
+	TextRenderComponent::TextRenderComponent()
+	{
+		text = "";
+		font = Application::Get()->GetResourceManager()->GetFont("empty_font");
+		color = glm::vec3(0);
+	}
+
 	CubemapComponent::CubemapComponent()
 	{
 		cubemap = Application::Get()->GetResourceManager()->GetCubemap("default_cubemap");

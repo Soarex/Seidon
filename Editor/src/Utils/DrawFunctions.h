@@ -35,6 +35,7 @@ namespace Seidon
 	ChangeStatus DrawMaterialEditor(const std::string& label, Material* material, bool* open = 0);
 	ChangeStatus DrawAnimationControl(const std::string& label, Animation** animation, float size = 64, Animation** oldValue = nullptr);
 	ChangeStatus DrawShaderControl(const std::string& label, Shader** shader, float size = 64, Shader** oldValue = nullptr);
+	ChangeStatus DrawFontControl(const std::string& label, Font** font, float size = 64, Font** oldValue = nullptr);
 
 	ChangeData DrawReflectedMember(void* object, MemberData& member);
 	ChangeData DrawMetaType(void* object, MetaType& type);

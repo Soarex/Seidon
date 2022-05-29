@@ -130,6 +130,12 @@ namespace Seidon
 
     void Texture::Save(const std::string& path)
     {
+        std::ofstream out(path, std::ios::out | std::ios::binary);
+        Save(out);
+    }
+
+    void Texture::Save(std::ofstream& out)
+    {
         SD_ASSERT(initialized, "Texture not initialized");
 
         int elementsPerPixel = 0;
@@ -154,11 +160,9 @@ namespace Seidon
         }
 
         byte* pixels = new byte[(long long)width * height * elementsPerPixel];
-        
+
         Bind(0);
         GL_CHECK(glGetTexImage(GL_TEXTURE_2D, 0, (GLenum)format, GL_UNSIGNED_BYTE, pixels));
-
-        std::ofstream out(path, std::ios::out | std::ios::binary);
 
         out.write((char*)&id, sizeof(UUID));
 
@@ -231,9 +235,13 @@ namespace Seidon
 
     void Texture::Load(const std::string& path)
     {
-        SD_ASSERT(!initialized, "Texture already initialized");
-
         std::ifstream in(path, std::ios::in | std::ios::binary);
+        Load(in);
+    }
+
+    void Texture::Load(std::ifstream& in)
+    {
+        SD_ASSERT(!initialized, "Texture already initialized");
 
         if (!in)
         {

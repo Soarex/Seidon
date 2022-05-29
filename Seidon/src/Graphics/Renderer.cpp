@@ -5,10 +5,12 @@
 
 #include "../Reflection/Reflection.h"
 
+#include "../Utils/StringUtils.h"
+
 namespace Seidon
 {
-	Renderer::Renderer(size_t maxObjects, size_t maxVertexCount, size_t maxSkinnedVertexCount)
-		: maxObjects(maxObjects), maxVertexCount(maxVertexCount), maxSkinnedVertexCount(maxSkinnedVertexCount) {}
+	Renderer::Renderer(size_t maxObjects, size_t maxVertexCount, size_t maxSkinnedVertexCount, size_t maxTextCharacterCount)
+		: maxObjects(maxObjects), maxVertexCount(maxVertexCount), maxSkinnedVertexCount(maxSkinnedVertexCount), maxTextCharacterCount(maxTextCharacterCount){}
 
 	void Renderer::Init()
 	{
@@ -26,6 +28,7 @@ namespace Seidon
 
 		InitStaticMeshBuffers();
 		InitSkinnedMeshBuffers();
+		InitTextBuffers();
 		InitStorageBuffers();
 
 		locks[0] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
@@ -34,6 +37,10 @@ namespace Seidon
 
 		wireframeShader = new Shader();
 		wireframeShader->LoadFromFile("Shaders/Wireframe.sdshader");
+
+		textShader = new Shader();
+		textShader->LoadFromFile("Shaders/Text.sdshader");
+		textShader->SetInt("fontAtlas", 0);
 	}
 
 	void Renderer::InitStaticMeshBuffers()
@@ -128,6 +135,65 @@ namespace Seidon
 		GL_CHECK(glBindVertexArray(0));
 	}
 
+	void Renderer::InitTextBuffers()
+	{
+		GL_CHECK(glGenVertexArrays(1, &textVao));
+		GL_CHECK(glBindVertexArray(textVao));
+
+		int flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+		GL_CHECK(glGenBuffers(3, textVertexBuffers));
+		for (int i = 0; i < 3; i++)
+		{
+			GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, textVertexBuffers[i]));
+			GL_CHECK(glBufferStorage(GL_ARRAY_BUFFER, maxTextCharacterCount * 4 * sizeof(TextVertexData), nullptr, flags));
+			textBufferPointers[i] = (TextVertexData*)glMapBufferRange(GL_ARRAY_BUFFER, 0, maxTextCharacterCount * 4 * sizeof(TextVertexData), flags);
+		}
+
+		uint32_t* indices = new uint32_t[maxTextCharacterCount * 6 * sizeof(uint32_t)];
+
+		uint32_t offset = 0;
+		for (uint32_t i = 0; i < maxTextCharacterCount * 6 * sizeof(uint32_t); i += 6)
+		{
+			indices[i + 0] = offset + 0;
+			indices[i + 1] = offset + 2;
+			indices[i + 2] = offset + 1;
+
+			indices[i + 3] = offset + 1;
+			indices[i + 4] = offset + 2;
+			indices[i + 5] = offset + 3;
+
+			offset += 4;
+		}
+
+		GL_CHECK(glGenBuffers(1, &textIndexBuffer));
+		GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, textIndexBuffer));
+		GL_CHECK(glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxTextCharacterCount * 6 * sizeof(uint32_t), indices, GL_STATIC_DRAW));
+
+		delete[] indices;
+
+		// vertex positions
+		GL_CHECK(glEnableVertexAttribArray(0));
+		GL_CHECK(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertexData), (void*)0));
+
+		// vertex texture coords
+		GL_CHECK(glEnableVertexAttribArray(3));
+		GL_CHECK(glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TextVertexData), (void*)offsetof(TextVertexData, uv)));
+
+		// vertex color
+		GL_CHECK(glEnableVertexAttribArray(7));
+		GL_CHECK(glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertexData), (void*)offsetof(TextVertexData, color)));
+
+		// atlas handle
+		GL_CHECK(glEnableVertexAttribArray(8));
+		GL_CHECK(glVertexAttribLPointer(8, 1, GL_UNSIGNED_INT64_ARB, sizeof(TextVertexData), (void*)offsetof(TextVertexData, atlasHandle)));
+
+		// entity id
+		GL_CHECK(glEnableVertexAttribArray(9));
+		GL_CHECK(glVertexAttribIPointer(9, 1, GL_INT, sizeof(TextVertexData), (void*)offsetof(TextVertexData, owningEntityId)));
+
+		GL_CHECK(glBindVertexArray(0));
+	}
+
 	void Renderer::InitStorageBuffers()
 	{
 		int flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
@@ -204,9 +270,12 @@ namespace Seidon
 		entityIdBufferHead = entityIdBufferPointers[tripleBufferStage];
 		materialBufferHead = materialBufferPointers[tripleBufferStage];
 		indirectBufferHead = indirectBufferPointers[tripleBufferStage];
+		textBufferHead = textBufferPointers[tripleBufferStage];
 
 		stats.batchCount = 0;
 		stats.objectCount = 0;
+
+		characterCount = 0;
 	}
 
 	void Renderer::SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId)
@@ -474,6 +543,76 @@ namespace Seidon
 		meshCache[mesh->id] = cache;
 	}
 
+	void Renderer::SubmitText(const std::string& string, Font* font, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId)
+	{
+		if (string.empty()) return;
+		glBindVertexArray(textVao);
+
+		std::u32string utf32string = ConvertToUTF32(string);
+
+		font->GetAtlas()->MakeResident();
+		glm::vec2 pos(0);
+
+		for (int i = 0; i < utf32string.size(); i++)
+		{
+			char32_t character = utf32string[i];
+			
+			if (character == '\n')
+			{
+				pos.x = 0;
+				pos.y -= font->GetMetrics().lineHeight;
+				continue;
+			}
+
+			const Glyph& glyph = font->GetGlyph(character);
+
+			BoundingBox uvBounds = glyph.uvBounds;
+			BoundingBox bounds = glyph.bounds;
+			
+			bounds.left += pos.x, bounds.bottom += pos.y, bounds.right += pos.x, bounds.top += pos.y;
+
+			double texelWidth = 1. / font->GetAtlas()->GetWidth();
+			double texelHeight = 1. / font->GetAtlas()->GetHeight();
+			uvBounds.left *= texelWidth, uvBounds.bottom *= texelHeight, uvBounds.right *= texelWidth, uvBounds.top *= texelHeight;
+
+			uint64_t atlasHandle = font->GetAtlas()->GetRenderHandle();
+
+			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.bottom, 0.0f, 1.0f);
+			textBufferHead->uv = { uvBounds.left, uvBounds.bottom };
+			textBufferHead->color = color;
+			textBufferHead->atlasHandle = atlasHandle;
+			textBufferHead->owningEntityId = owningEntityId;
+			textBufferHead++;
+
+			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.top, 0.0f, 1.0f);
+			textBufferHead->uv = { uvBounds.left, uvBounds.top };
+			textBufferHead->color = color;
+			textBufferHead->atlasHandle = atlasHandle;
+			textBufferHead->owningEntityId = owningEntityId;
+			textBufferHead++;
+
+			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.bottom, 0.0f, 1.0f);
+			textBufferHead->uv = { uvBounds.right, uvBounds.bottom };
+			textBufferHead->color = color;
+			textBufferHead->atlasHandle = atlasHandle;
+			textBufferHead->owningEntityId = owningEntityId;
+			textBufferHead++;
+
+			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.top, 0.0f, 1.0f);
+			textBufferHead->uv = { uvBounds.right, uvBounds.top };
+			textBufferHead->color = color;
+			textBufferHead->atlasHandle = atlasHandle;
+			textBufferHead->owningEntityId = owningEntityId;
+			textBufferHead++;
+
+			characterCount++;
+
+			pos.x += font->GetAdvance(character, utf32string[i + 1]);
+		}
+		glBindVertexArray(0);
+
+	}
+
 	void Renderer::SetCamera(const CameraData& camera)
 	{
 		this->camera = camera;
@@ -501,8 +640,6 @@ namespace Seidon
 
 	void Renderer::Render()
 	{
-		if (objectCount == 0) return;
-
 		GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffers[tripleBufferStage]));
 
 		int offset = 0;
@@ -512,6 +649,7 @@ namespace Seidon
 		DrawMeshes(offset, materialOffset, idOffset);
 		DrawWireframes(offset, materialOffset, idOffset);
 		DrawSkinnedMeshes(offset, materialOffset, idOffset);
+		DrawText();
 
 		GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
 
@@ -532,12 +670,14 @@ namespace Seidon
 			glUnmapNamedBuffer(transformBuffers[i]);
 			glUnmapNamedBuffer(materialBuffers[i]);
 			glUnmapNamedBuffer(indirectBuffers[i]);
+			glUnmapNamedBuffer(textVertexBuffers[i]);
 			glDeleteSync(locks[i]);
 		}
 
 		glDeleteBuffers(3, transformBuffers);
 		glDeleteBuffers(3, materialBuffers);
 		glDeleteBuffers(3, indirectBuffers);
+		glDeleteBuffers(3, textVertexBuffers);
 		glDeleteBuffers(1, &boneTransformBuffer);
 
 		glDeleteBuffers(1, &indexBuffer);
@@ -545,11 +685,14 @@ namespace Seidon
 		glDeleteBuffers(1, &skinnedIndexBuffer);
 		glDeleteBuffers(1, &skinnedVertexBuffer);
 		glDeleteBuffers(1, &instanceDataBuffer);
+		glDeleteBuffers(1, &textIndexBuffer);
 
 		glDeleteVertexArrays(1, &vao);
 		glDeleteVertexArrays(1, &skinnedVao);
+		glDeleteVertexArrays(1, &textVao);
 
 		delete wireframeShader;
+		delete textShader;
 	}
 
 	void Renderer::DrawMeshes(int& offset, int& materialOffset, int& idOffset)
@@ -749,6 +892,26 @@ namespace Seidon
 		wireframeBatch.objectCount = 0;
 
 		GL_CHECK(glBindVertexArray(0));
+	}
+
+	void Renderer::DrawText()
+	{
+		glBindVertexArray(textVao);
+		glBindBuffer(GL_ARRAY_BUFFER, textVertexBuffers[tripleBufferStage]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, textIndexBuffer);
+
+		textShader->Use();
+		textShader->SetMat4("camera.viewMatrix", camera.viewMatrix);
+		textShader->SetMat4("camera.projectionMatrix", camera.projectionMatrix);
+		textShader->SetVec3("camera.position", camera.position);
+
+		glDisable(GL_CULL_FACE);
+		glDrawElements(GL_TRIANGLES, characterCount * 6, GL_UNSIGNED_INT, nullptr);
+		glEnable(GL_CULL_FACE);
+
+		GL_CHECK(glBindVertexArray(0));
+
+		characterCount = 0;
 	}
 
 	void Renderer::SetupMaterialData(Material* material, MaterialData& materialData)

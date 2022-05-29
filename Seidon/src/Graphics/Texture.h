@@ -39,19 +39,7 @@ namespace Seidon
     {
     public:
         std::string path;
-    private:
-        bool initialized = false; 
-
-        UUID id;
-        unsigned int renderId;
-        uint64_t renderHandle;
-
-        unsigned int width, height;
-        TextureFormat format;
-        bool gammaCorrected = false;
-        bool isResident = false;
-
-        static Texture* temporaryTexture;
+    
     public:
         Texture(UUID id = UUID());
         ~Texture();
@@ -66,9 +54,11 @@ namespace Seidon
             ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& = glm::vec3(1.0f));
 
         void Save(const std::string& path);
+        void Save(std::ofstream& out);
         void SaveAsync(const std::string& path);
 
         void Load(const std::string& path);
+        void Load(std::ifstream& in);
         void LoadAsync(const std::string& path);
 
         bool Import(const std::string& path, bool gammaCorrection = true);
@@ -84,6 +74,23 @@ namespace Seidon
         inline unsigned int GetRenderId() const { return renderId; }
         inline uint64_t GetRenderHandle() const { return renderHandle; }
         inline const std::string& GetPath() { return path; }
+
+        inline unsigned int GetWidth() { return width; }
+        inline unsigned int GetHeight() { return height; }
+
+    private:
+        bool initialized = false;
+
+        UUID id;
+        unsigned int renderId;
+        uint64_t renderHandle;
+
+        unsigned int width, height;
+        TextureFormat format;
+        bool gammaCorrected = false;
+        bool isResident = false;
+
+        static Texture* temporaryTexture;
 
         friend class ResourceManager;
     };

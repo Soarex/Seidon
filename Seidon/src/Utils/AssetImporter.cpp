@@ -697,4 +697,17 @@ namespace Seidon
 
         return c;
     }
+
+    Font* AssetImporter::ImportFont(const std::string& path)
+    {
+        Font* f = new Font();
+        f->Import(path);
+        f->name = ChangeSuffix(path, ".sdfont");
+
+        std::ofstream out(f->GetName(), std::ios::out | std::ios::binary);
+        f->Save(out);
+
+        Application::Get()->GetResourceManager()->RegisterFont(f, f->GetName());
+        return f;
+    }
 }

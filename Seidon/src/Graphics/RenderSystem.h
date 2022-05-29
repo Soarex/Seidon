@@ -10,6 +10,7 @@
 #include "Framebuffer.h"
 #include "CaptureCube.h"
 #include "FullscreenQuad.h"
+#include "QuadMesh.h"
 
 namespace Seidon
 {
@@ -51,6 +52,7 @@ namespace Seidon
 
 		FullscreenQuad fullscreenQuad;
 		CaptureCube captureCube;
+		QuadMesh quadMesh;
 
 		CameraComponent defaultCamera;
 

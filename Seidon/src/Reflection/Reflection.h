@@ -5,6 +5,7 @@
 #include "../Graphics/Mesh.h"
 #include "../Graphics/Armature.h"
 #include "../Graphics/Shader.h"
+#include "../Graphics/Font.h"
 
 #include "../Animation/Animation.h"
 
@@ -52,6 +53,7 @@ namespace Seidon
 		CUBEMAP,
 		ANIMATION,
 		SHADER,
+		FONT
 	};
 
 	template<typename T, typename U> 
@@ -156,6 +158,9 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(Shader*).hash_code())
 				data.type = Types::SHADER;
+
+			if (typeid(U).hash_code() == typeid(Font*).hash_code())
+				data.type = Types::FONT;
 
 			members.push_back(data);
 			nameToMember[data.name] = data;

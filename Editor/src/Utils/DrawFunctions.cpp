@@ -153,7 +153,7 @@ namespace Seidon
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("R", buttonSize))
 		{
-			values.x = 0;
+			i[0] = 0;
 			changed = true;
 			stoppedChanging = true;
 			updateOldValue = true;
@@ -177,7 +177,7 @@ namespace Seidon
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("G", buttonSize))
 		{
-			values.y = 0;
+			i[1] = 0;
 			changed = true;
 			stoppedChanging = true;
 			updateOldValue = true;
@@ -201,7 +201,7 @@ namespace Seidon
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button("B", buttonSize))
 		{
-			values.z = 0;
+			i[2] = 0;
 			changed = true;
 			stoppedChanging = true;
 			updateOldValue = true;
@@ -746,6 +746,48 @@ namespace Seidon
 		return ChangeStatus::NO_CHANGE;
 	}
 
+	ChangeStatus DrawFontControl(const std::string& label, Font** font, float size, Font** oldValue)
+	{
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		bool changed = false;
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/FontIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_FONT"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				if (oldValue) *oldValue = *font;
+
+				*font = resourceManager.GetOrLoadFont(path);
+
+				changed = true;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::NextColumn();
+
+		if(*font) ImGui::Text((*font)->GetName().c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
+	}
+
 	ChangeData DrawReflectedMember(void* object, MemberData& member)
 	{
 		ChangeData data;
@@ -944,6 +986,17 @@ namespace Seidon
 
 			memcpy(data.oldValue, &old, sizeof(Animation*));
 			memcpy(data.newValue, *a, sizeof(Animation*));
+		}
+
+		if (member.type == Types::FONT)
+		{
+			Font** f = (Font**)(obj + member.offset);
+			Font* old;
+
+			data.status = DrawFontControl(member.name.c_str(), f, 64.0f, &old);
+
+			memcpy(data.oldValue, &old, sizeof(Font*));
+			if(*f)memcpy(data.newValue, *f, sizeof(Font*));
 		}
 
 		return data;

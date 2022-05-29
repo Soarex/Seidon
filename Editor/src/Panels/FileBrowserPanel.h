@@ -36,6 +36,7 @@ namespace Seidon
 		Texture* animationIcon;
 		Texture* skinnedMeshIcon;
 		Texture* prefabIcon;
+		Texture* fontIcon;
 		Texture* backIcon;
 
 		std::vector<DirectoryEntry> currentDirectories;
@@ -59,6 +60,7 @@ namespace Seidon
 		void DrawExternalImageFile(FileEntry& file);
 		void DrawExternalModelFile(FileEntry& file);
 		void DrawExternalCubemapFile(FileEntry& file);
+		void DrawExternalFontFile(FileEntry& file);
 		
 		void DrawTextureFile(FileEntry& file);
 		void DrawMeshFile(FileEntry& file);
@@ -69,6 +71,7 @@ namespace Seidon
 		void DrawSceneFile(FileEntry& file);
 		void DrawPrefabFile(FileEntry& file);
 		void DrawShaderFile(FileEntry& file);
+		void DrawFontFile(FileEntry& file);
 		void DrawGenericFile(FileEntry& file);
 	};
 }

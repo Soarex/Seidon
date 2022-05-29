@@ -1,5 +1,7 @@
 #include "StringUtils.h"
 
+#include <codecvt>
+
 namespace Seidon
 {
 	std::string ChangeSuffix(const std::string& source, const std::string& newSuffix)
@@ -50,5 +52,11 @@ namespace Seidon
 		if (end == 0) end = source.size() - 1;
 
 		return source.substr(begin, end - begin + 1);
+	}
+
+	std::u32string ConvertToUTF32(const std::string& s)
+	{
+		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+		return conv.from_bytes(s);
 	}
 }

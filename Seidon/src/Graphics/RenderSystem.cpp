@@ -92,6 +92,7 @@ namespace Seidon
 		auto renderGroup = scene->CreateComponentGroup<RenderComponent>(GetTypeList<TransformComponent>);
 		auto skinnedRenderGroup = scene->CreateComponentGroup<SkinnedRenderComponent>(GetTypeList<TransformComponent>);
 		auto wireframeRenderGroup = scene->CreateComponentGroup<WireframeRenderComponent>(GetTypeList<TransformComponent>);
+		auto textRenderGroup = scene->CreateComponentGroup<TextRenderComponent>(GetTypeList<TransformComponent>);
 
 		DirectionalLightComponent light;
 		TransformComponent lightTransform;
@@ -306,6 +307,18 @@ namespace Seidon
 				Entity e = scene->GetEntityByEntityId(id);
 
 				renderer.SubmitMeshWireframe(renderComponent.mesh, renderComponent.color, e.GetGlobalTransformMatrix(), id);
+			}
+		);
+
+		scene->Iterate
+		(
+			textRenderGroup,
+			[&](EntityId id, TextRenderComponent& renderComponent, TransformComponent& transform)
+			{
+				Entity e = scene->GetEntityByEntityId(id);
+
+				if(renderComponent.font)
+					renderer.SubmitText(renderComponent.text, renderComponent.font, renderComponent.color, e.GetGlobalTransformMatrix(), id);
 			}
 		);
 

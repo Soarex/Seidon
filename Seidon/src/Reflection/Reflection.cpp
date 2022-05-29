@@ -171,6 +171,13 @@ namespace Seidon
 				out.write((char*)&id, sizeof(UUID));
 				break;
 			}
+			case Types::FONT:
+			{
+				Font* item = *(Font**)&data[m.offset];
+				UUID id = item->GetId();
+				out.write((char*)&id, sizeof(UUID));
+				break;
+			}
 			case Types::UNKNOWN:
 				break;
 			}
@@ -466,6 +473,20 @@ namespace Seidon
 				}
 				break;
 			}
+			case Types::FONT:
+			{
+				UUID id;
+				in.read((char*)&id, sizeof(UUID));
+
+				if (resourceManager.IsFontRegistered(id))
+					*(Font**)&data[m.offset] = resourceManager.GetOrLoadFont(id);
+				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Font id not registered" << std::endl;
+					*(Font**)&data[m.offset] = resourceManager.GetFont("empty_font");
+				}
+				break;
+			}
 			case Types::UNKNOWN:
 				break;
 			}
@@ -542,6 +563,9 @@ namespace Seidon
 		if (type == Types::SHADER)
 			return "Shader";
 
+		if (type == Types::FONT)
+			return "Font";
+
 		return "Unknown";
 	}
 
@@ -612,6 +636,9 @@ namespace Seidon
 
 		if (string == "SHADER")
 			return Types::SHADER;
+
+		if (string == "FONT")
+			return Types::FONT;
 
 		return Types::UNKNOWN;
 	}

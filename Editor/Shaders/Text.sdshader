@@ -1,0 +1,90 @@
+~VERTEX SHADER
+
+#version 460 core
+#extension GL_ARB_bindless_texture : require
+
+layout(location = 0) in vec3 vertexPosition;
+layout(location = 3) in vec2 vertexUV;
+layout(location = 7) in vec3 vertexColor;
+layout(location = 8) in sampler2D fontAtlasHandle;
+layout(location = 9) in int entityId;
+
+struct CameraData
+{
+    vec3 position;
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
+};
+
+uniform CameraData camera;
+
+out VS_OUT
+{
+    vec2 uv;
+    vec3 color;
+    flat int entityId;
+} vs_out;
+
+out flat sampler2D fontAtlas;
+
+void main()
+{
+    vs_out.uv = vertexUV;
+    vs_out.color = vertexColor;
+    fontAtlas = fontAtlasHandle;
+    vs_out.entityId = entityId;
+
+    gl_Position = camera.projectionMatrix * camera.viewMatrix * vec4(vertexPosition, 1.0);
+}
+
+
+~FRAGMENT SHADER
+#version 460 core
+#extension GL_ARB_bindless_texture : require
+
+layout(location = 0) out vec4 fragmentColor;
+layout(location = 1) out int entityOutput;
+
+in VS_OUT
+{
+    vec2 uv;
+    vec3 color;
+    flat int entityId;
+} fs_in;
+
+in flat sampler2D fontAtlas;
+
+float Median(float r, float g, float b);
+float ScreenPxRange();
+
+void main()
+{
+    vec4 backgroundColor = vec4(fs_in.color, 0.0);
+	vec4 foregroundColor = vec4(fs_in.color, 1.0);
+
+    vec3 msd = texture(fontAtlas, fs_in.uv).rgb;
+
+    float sd = Median(msd.r, msd.g, msd.b);
+    float screenPxDistance = ScreenPxRange() * (sd - 0.5f);
+    float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
+
+    fragmentColor = mix(backgroundColor, foregroundColor, opacity);
+    entityOutput = fs_in.entityId;
+
+	if (opacity == 0)
+		discard;
+
+}
+
+float Median(float r, float g, float b)
+{
+    return max(min(r, g), min(max(r, g), b));
+}
+
+float ScreenPxRange()
+{
+	float pxRange = 2.0f;
+    vec2 unitRange = vec2(pxRange)/vec2(textureSize(fontAtlas, 0));
+    vec2 screenTexSize = vec2(1.0)/fwidth(fs_in.uv);
+    return max(0.5*dot(unitRange, screenTexSize), 1.0);
+}

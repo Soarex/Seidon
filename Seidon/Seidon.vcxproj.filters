@@ -282,6 +282,12 @@
     <ClCompile Include="src\Vendor\ImGuizmo\ImSequencer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Graphics\QuadMesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Shader.h">
@@ -882,6 +888,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Vendor\ImGuizmo\ImZoomSlider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\QuadMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

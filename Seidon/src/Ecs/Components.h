@@ -4,6 +4,7 @@
 #include "Graphics/Armature.h"
 #include "Graphics/Material.h"
 #include "Graphics/HdrCubemap.h"
+#include "Graphics/Font.h"
 
 #include "Animation/Animation.h"
 
@@ -170,12 +171,20 @@ namespace Seidon
 	struct SpriteRenderComponent
 	{
 		Texture* sprite;
+		Material* material;
 
-		SpriteRenderComponent() = default;
+		SpriteRenderComponent();
 		SpriteRenderComponent(const SpriteRenderComponent&) = default;
+	};
 
-		SpriteRenderComponent(Texture* sprite)
-			: sprite(sprite) {}
+	struct TextRenderComponent
+	{
+		std::string text;
+		Font* font = nullptr;
+		glm::vec3 color;
+
+		TextRenderComponent();
+		TextRenderComponent(const TextRenderComponent&) = default;
 	};
 
 	struct WireframeRenderComponent

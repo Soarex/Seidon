@@ -68,6 +68,11 @@ namespace Seidon
 		RegisterComponent<SpriteRenderComponent>()
 			.AddMember("Sprite", &SpriteRenderComponent::sprite);
 
+		RegisterComponent<TextRenderComponent>()
+			.AddMember("Text", &TextRenderComponent::text)
+			.AddMember("Font", &TextRenderComponent::font)
+			.AddMember("Color", &TextRenderComponent::color, Types::VECTOR3_COLOR);
+
 		RegisterComponent<WireframeRenderComponent>()
 			.AddMember("Mesh", &WireframeRenderComponent::mesh)
 			.AddMember("Color", &WireframeRenderComponent::color, Types::VECTOR3_COLOR);
