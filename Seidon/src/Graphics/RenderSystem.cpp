@@ -42,6 +42,15 @@ namespace Seidon
 		renderFramebuffer.SetColorTexture(renderTarget);
 		renderFramebuffer.SetDepthStencilRenderBuffer(renderDepthStencilBuffer);
 
+		shader = resourceManager->GetShader("default_skinned_shader");
+		shader->Use();
+
+		shader->SetInt("iblData.irradianceMap", 5);
+		shader->SetInt("iblData.prefilterMap", 6);
+		shader->SetInt("iblData.BRDFLookupMap", 7);
+
+		shader->SetInts("shadowMappingData.shadowMaps", shadowSamplers, CASCADE_COUNT);
+
 		shader = resourceManager->GetShader("default_shader");
 		shader->Use();
 
@@ -51,7 +60,9 @@ namespace Seidon
 
 		shader->SetInts("shadowMappingData.shadowMaps", shadowSamplers, CASCADE_COUNT);
 
+
 		depthShader.LoadFromFile("Shaders/ShadowPass.shader");
+		skinnedDepthShader.LoadFromFile("Shaders/ShadowPass-Skinned.sdshader");
 		quadShader.LoadFromFile("Shaders/Simple.shader");
 		cubemapShader.LoadFromFile("Shaders/Cubemap.shader");
 
@@ -174,11 +185,15 @@ namespace Seidon
 			depthShader.Use();
 			depthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
 
+			skinnedDepthShader.Use();
+			skinnedDepthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
+
 			renderer.Begin();
 			
-			static std::vector<Material*> ms;
-			static Material m;
+			static std::vector<Material*> ms, ms2;
+			static Material m, m2;
 			m.shader = &depthShader;
+			m2.shader = &skinnedDepthShader;
 
 			scene->Iterate
 			(
@@ -201,10 +216,10 @@ namespace Seidon
 				{
 					Entity e = scene->GetEntityByEntityId(id);
 
-					while (renderComponent.mesh->subMeshes.size() > ms.size())
-						ms.push_back(&m);
+					while (renderComponent.mesh->subMeshes.size() > ms2.size())
+						ms2.push_back(&m2);
 
-					renderer.SubmitSkinnedMesh(renderComponent.mesh, renderComponent.boneTransforms, ms, e.GetGlobalTransformMatrix(), id);
+					renderer.SubmitSkinnedMesh(renderComponent.mesh, renderComponent.worldSpaceBoneTransforms, ms2, e.GetGlobalTransformMatrix(), id);
 				}
 			);
 
@@ -282,7 +297,7 @@ namespace Seidon
 			{
 				Entity e = scene->GetEntityByEntityId(id);
 
-				renderComponent.worldSpaceBoneTransforms[0] = renderComponent.boneTransforms[0];
+				if (renderComponent.worldSpaceBoneTransforms.size() > 0) renderComponent.worldSpaceBoneTransforms[0] = renderComponent.boneTransforms[0];
 				for (int i = 1; i < renderComponent.mesh->armature.bones.size(); i++)
 				{
 					BoneData& bone = renderComponent.mesh->armature.bones[i];
@@ -318,7 +333,7 @@ namespace Seidon
 				Entity e = scene->GetEntityByEntityId(id);
 
 				if(renderComponent.font)
-					renderer.SubmitText(renderComponent.text, renderComponent.font, renderComponent.color, e.GetGlobalTransformMatrix(), id);
+					renderer.SubmitText(renderComponent.text, renderComponent.font, renderComponent.color, e.GetGlobalTransformMatrix(), renderComponent.shadowDistance, renderComponent.shadowColor, id);
 			}
 		);
 

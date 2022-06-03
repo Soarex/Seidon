@@ -71,7 +71,9 @@ namespace Seidon
 		RegisterComponent<TextRenderComponent>()
 			.AddMember("Text", &TextRenderComponent::text)
 			.AddMember("Font", &TextRenderComponent::font)
-			.AddMember("Color", &TextRenderComponent::color, Types::VECTOR3_COLOR);
+			.AddMember("Color", &TextRenderComponent::color, Types::VECTOR3_COLOR)
+			.AddMember("Shadow Distance", &TextRenderComponent::shadowDistance, Types::FLOAT_NORMALIZED)
+			.AddMember("Shadow Color", &TextRenderComponent::shadowColor, Types::VECTOR3_COLOR);
 
 		RegisterComponent<WireframeRenderComponent>()
 			.AddMember("Mesh", &WireframeRenderComponent::mesh)

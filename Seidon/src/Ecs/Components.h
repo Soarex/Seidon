@@ -122,7 +122,7 @@ namespace Seidon
 
 		glm::vec3 GetForwardDirection() const
 		{
-			return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, 1.0f));
+			return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
 		}
 	};
 
@@ -181,7 +181,9 @@ namespace Seidon
 	{
 		std::string text;
 		Font* font = nullptr;
-		glm::vec3 color;
+		glm::vec3 color = { 1, 1, 1 };
+		float shadowDistance = 0;
+		glm::vec3 shadowColor = { 0, 0, 0 };
 
 		TextRenderComponent();
 		TextRenderComponent(const TextRenderComponent&) = default;
@@ -253,7 +255,7 @@ namespace Seidon
 
 		glm::mat4 GetViewMatrix(TransformComponent& transform)
 		{
-			return glm::lookAt(transform.position, transform.position - transform.GetForwardDirection(), transform.GetUpDirection());
+			return glm::lookAt(transform.position, transform.position + transform.GetForwardDirection(), transform.GetUpDirection());
 		}
 
 		glm::mat4 GetProjectionMatrix()

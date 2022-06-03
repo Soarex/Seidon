@@ -12,12 +12,17 @@ Ambient Occlusion : TEXTURE
 #version 460 core
 #extension GL_ARB_bindless_texture : require
 
+
 #define MAX_CASCADE_COUNT 8
+#define MAX_BONE_INFLUENCE 4
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexNormal;
 layout(location = 2) in vec3 vertexTangent;
 layout(location = 3) in vec2 vertexUV;
+
+layout(location = 4) in ivec4 boneIds;
+layout(location = 5) in vec4 boneWeights;
 
 layout(location = 6) in uint objectId;
 
@@ -38,6 +43,11 @@ layout(std430, binding = 0) buffer transforms
     mat4 modelMatrices[];
 };
 
+layout(std430, binding = 3) buffer bones
+{
+    mat4 boneTransforms[];
+};
+
 struct CameraData
 {
     vec3 position;
@@ -47,21 +57,33 @@ struct CameraData
 
 uniform CameraData camera;
 
+//uniform mat3 normalMatrix;
 uniform mat4 lightSpaceMatrices[MAX_CASCADE_COUNT];
 
 void main()
 {
+    /*
+        Skinning
+    */
+
+    mat4 boneTransformMatrix = mat4(0);
+    for (int i = 0; i < MAX_BONE_INFLUENCE; i++)
+            boneTransformMatrix += boneTransforms[boneIds[i]] * boneWeights[i];
+
+    /*
+        
+    */
     mat4 modelMatrix = modelMatrices[objectId];
     mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 
-    vec3 T = normalize(vec3(modelMatrix * vec4(vertexTangent, 0.0)));
-    vec3 N = normalize(vec3(modelMatrix * vec4(vertexNormal, 0.0)));
+    vec3 T = normalize(vec3(modelMatrix * boneTransformMatrix * vec4(vertexTangent, 0.0)));
+    vec3 N = normalize(vec3(modelMatrix * boneTransformMatrix * vec4(vertexNormal, 0.0)));
 
     T = normalize(T - dot(T, N) * N);
 
     vec3 B = cross(N, T);
 
-    vs_out.worldSpaceFragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0));
+    vs_out.worldSpaceFragmentPosition = vec3(modelMatrix * boneTransformMatrix * vec4(vertexPosition, 1.0));
     vs_out.normal = normalMatrix * vertexNormal;
     vs_out.UV = vertexUV;
 
@@ -211,7 +233,7 @@ void main()
     vec3 irradiance = texture(iblData.irradianceMap, N).rgb;
     vec3 ambientDiffuse = irradiance * albedo;
 
-    const float MAX_REFLECTION_LOD = 6.0;
+    const float MAX_REFLECTION_LOD = 4.0;
     vec3 prefilteredColor = textureLod(iblData.prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
     vec2 envBRDF = texture(iblData.BRDFLookupMap, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 ambientSpecular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
@@ -279,7 +301,6 @@ float shadowCalculation(float NdotL)
             break;
         }
 
-
     vec3 projectedCoordinates = fs_in.lightSpaceFragmentPositions[cascadeIndex].xyz / fs_in.lightSpaceFragmentPositions[cascadeIndex].w;
     projectedCoordinates = projectedCoordinates * 0.5 + 0.5;
 
@@ -298,7 +319,7 @@ float shadowCalculation(float NdotL)
         for (int y = -1; y <= 1; ++y)
         {
             float pcfDepth = texture(shadowMappingData.shadowMaps[cascadeIndex], projectedCoordinates.xy + vec2(x, y) * texelSize).r;
-            shadow += currentDepth  > pcfDepth ? 1.0 : 0.0;
+            shadow += currentDepth > pcfDepth ? 1.0 : 0.0;
         }
 
     shadow /= 9.0;

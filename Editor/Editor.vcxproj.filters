@@ -103,4 +103,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\PBR-Skinned.sdshader" />
+    <None Include="Shaders\ShadowPass-Skinned.sdshader" />
+  </ItemGroup>
 </Project>

@@ -30,6 +30,7 @@ namespace Seidon
 
 		Shader* shader;
 		Shader depthShader;
+		Shader skinnedDepthShader;
 		Shader cubemapShader;
 		Shader quadShader;
 

@@ -59,7 +59,7 @@ namespace Seidon
 		{
 			rc.materials.resize(rc.mesh->subMeshes.size());
 			for (int i = oldSize; i < rc.mesh->subMeshes.size(); i++)
-				rc.materials[i] = Application::Get()->GetResourceManager()->GetMaterial("default_material");
+				rc.materials[i] = Application::Get()->GetResourceManager()->GetMaterial("default_skinned_material");
 		}
 
 		oldSize = rc.boneTransforms.size();

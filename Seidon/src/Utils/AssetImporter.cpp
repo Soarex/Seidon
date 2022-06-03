@@ -85,11 +85,15 @@ namespace Seidon
             delete m;
         }
 
+
         for (auto& [name, texture] : importedTextures)
             delete texture;
 
         for (auto& [name, material] : importedMaterials)
+        {
+            material->Save(directory + "\\" + material->name + ".sdmat");
             delete material;
+        }
 
         importedMaterials.clear();
         importedTextures.clear();
@@ -248,6 +252,7 @@ namespace Seidon
             aiString materialName;
             material->Get(AI_MATKEY_NAME, materialName);
 
+            importedMaterials[materialName.C_Str()]->shader = Application::Get()->GetResourceManager()->GetShader("default_skinned_shader");
             materials.push_back(importedMaterials[materialName.C_Str()]);
             
         }
@@ -576,7 +581,7 @@ namespace Seidon
         {
             material->GetTexture(aiTextureType_NORMALS, 0, &str);
 
-            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), true);
+            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), false);
 
             if (t)
                 *((Texture**)ptr) = t;
@@ -597,7 +602,7 @@ namespace Seidon
             //*((float*)ptr) = 1.0f;
             //ptr += sizeof(float);
 
-            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), true);
+            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), false);
 
             if (t)
                 *((Texture**)ptr) = t;
@@ -622,7 +627,7 @@ namespace Seidon
             //*((float*)ptr) = 1.0f;
             //ptr += sizeof(float);
 
-            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), true);
+            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), false);
 
             if (t)
                 *((Texture**)ptr) = t;
@@ -643,7 +648,7 @@ namespace Seidon
         {
             material->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &str);
              
-            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), true);
+            Texture* t = ImportTexture(directory + "\\" + std::string(str.C_Str()), false);
 
             if (t)
                 *((Texture**)ptr) = t;
@@ -656,8 +661,6 @@ namespace Seidon
             *((Texture**)ptr) = resourceManager.GetTexture("ao_default");
             ptr += sizeof(Texture*);
         }
-
-        m->Save(directory + "\\" + m->name + ".sdmat");
 
         Application::Get()->GetResourceManager()->RegisterMaterial(m, directory + "\\" + m->name + ".sdmat");
 

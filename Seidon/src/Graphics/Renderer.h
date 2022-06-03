@@ -65,11 +65,11 @@ namespace Seidon
 	struct SkinnedMeshBatch
 	{
 		uint32_t objectCount = 0;
-		int entityId;
 
 		std::vector<RenderCommand> commands;
 		std::vector<glm::mat4> transforms;
 		std::vector<MaterialData> materials;
+		std::vector<int> entityIds;
 
 		std::vector<glm::mat4>* bones;
 	};
@@ -88,6 +88,7 @@ namespace Seidon
 		glm::vec3 position;
 		glm::vec2 uv;
 		glm::vec3 color;
+		glm::vec4 shadowColorAndDistance;
 		uint64_t atlasHandle;
 		EntityId owningEntityId;
 	};
@@ -124,7 +125,8 @@ namespace Seidon
 		void SubmitSkinnedMesh(SkinnedMesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 
-		void SubmitText(const std::string& string, Font* font, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
+		void SubmitText(const std::string& string, Font* font, const glm::vec3& color, const glm::mat4& transform, 
+			float shadowDistance = 0, const glm::vec3& shadowColor = glm::vec3(0), EntityId owningEntityId = NullEntityId);
 
 		void SetCamera(const CameraData& camera);
 		void SetShadowMaps(const ShadowMappingData& shadowMaps);
@@ -150,7 +152,9 @@ namespace Seidon
 		std::unordered_map <UUID, std::vector<CacheEntry>> meshCache;
 
 		std::unordered_map<Shader*, BatchData> batches;
-		std::unordered_map<UUID, SkinnedMeshBatch> skinnedMeshBatches;
+
+		//TODO: Change batching method
+		std::unordered_map<std::vector<glm::mat4>*, SkinnedMeshBatch> skinnedMeshBatches;
 
 		Shader* wireframeShader;
 		WireframeBatchData wireframeBatch;

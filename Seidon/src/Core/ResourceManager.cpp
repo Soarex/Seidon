@@ -83,6 +83,15 @@ namespace Seidon
         font->name = "empty_font";
         font->fontAtlas->Create(1, 1, grey);
         AddFont("empty_font", font);
+
+        s = new Shader(14);
+        s->LoadFromFile("Shaders/PBR-Skinned.sdshader");
+        AddShader("default_skinned_shader", s);
+
+        m = new Material(15);
+        m->shader = s;
+        m->name = "default_skinned_material";
+        AddMaterial("default_skinned_material", m);
     }
 
     void ResourceManager::Destroy()

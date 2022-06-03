@@ -195,6 +195,10 @@
     <ClCompile Include="src\Utils\Dialogs.cpp" />
     <ClCompile Include="src\Utils\DrawFunctions.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\PBR-Skinned.sdshader" />
+    <None Include="Shaders\ShadowPass-Skinned.sdshader" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

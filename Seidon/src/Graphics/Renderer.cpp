@@ -183,13 +183,18 @@ namespace Seidon
 		GL_CHECK(glEnableVertexAttribArray(7));
 		GL_CHECK(glVertexAttribPointer(7, 3, GL_FLOAT, GL_FALSE, sizeof(TextVertexData), (void*)offsetof(TextVertexData, color)));
 
-		// atlas handle
+		// shadow color and distance
 		GL_CHECK(glEnableVertexAttribArray(8));
-		GL_CHECK(glVertexAttribLPointer(8, 1, GL_UNSIGNED_INT64_ARB, sizeof(TextVertexData), (void*)offsetof(TextVertexData, atlasHandle)));
+		GL_CHECK(glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, sizeof(TextVertexData), (void*)offsetof(TextVertexData, shadowColorAndDistance)));
+
+		// atlas handle
+		GL_CHECK(glEnableVertexAttribArray(9));
+		GL_CHECK(glVertexAttribLPointer(9, 1, GL_UNSIGNED_INT64_ARB, sizeof(TextVertexData), (void*)offsetof(TextVertexData, atlasHandle)));
 
 		// entity id
-		GL_CHECK(glEnableVertexAttribArray(9));
-		GL_CHECK(glVertexAttribIPointer(9, 1, GL_INT, sizeof(TextVertexData), (void*)offsetof(TextVertexData, owningEntityId)));
+		GL_CHECK(glEnableVertexAttribArray(10));
+		GL_CHECK(glVertexAttribIPointer(10, 1, GL_INT, sizeof(TextVertexData), (void*)offsetof(TextVertexData, owningEntityId)));
+
 
 		GL_CHECK(glBindVertexArray(0));
 	}
@@ -380,7 +385,7 @@ namespace Seidon
 			int i = 0;
 			for (CacheEntry& entry : cachedSubmeshes)
 			{
-				SkinnedMeshBatch& batch = skinnedMeshBatches[mesh->id];
+				SkinnedMeshBatch& batch = skinnedMeshBatches[&bones];
 
 				RenderCommand command;
 
@@ -400,7 +405,7 @@ namespace Seidon
 				batch.transforms.push_back(transform);
 				batch.commands.push_back(command);
 				batch.materials.push_back(material);
-				batch.entityId = (int)owningEntityId;
+				batch.entityIds.push_back((int)owningEntityId);
 				batch.bones = &bones;
 
 				i++;
@@ -414,7 +419,7 @@ namespace Seidon
 		int i = 0;
 		for (SkinnedSubmesh* s : mesh->subMeshes)
 		{
-			SkinnedMeshBatch& batch = skinnedMeshBatches[mesh->id];
+			SkinnedMeshBatch& batch = skinnedMeshBatches[&bones];
 
 			RenderCommand command;
 			command.count = s->indices.size();
@@ -445,7 +450,7 @@ namespace Seidon
 			glBufferSubData(GL_ARRAY_BUFFER, skinnedVertexBufferHeadPosition, s->vertices.size() * sizeof(SkinnedVertex), (void*)&s->vertices[0]);
 			skinnedVertexBufferHeadPosition += s->vertices.size() * sizeof(SkinnedVertex);
 
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, skinnedIndexBuffer);
 			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, skinnedIndexBufferHeadPosition, s->indices.size() * sizeof(uint32_t), (void*)&s->indices[0]);
 			skinnedIndexBufferHeadPosition += s->indices.size() * sizeof(uint32_t);
 			glBindVertexArray(0);
@@ -456,7 +461,7 @@ namespace Seidon
 			batch.transforms.push_back(transform);
 			batch.commands.push_back(command);
 			batch.materials.push_back(material);
-			batch.entityId = (int)owningEntityId;
+			batch.entityIds.push_back((int)owningEntityId);
 			batch.bones = &bones;
 
 			i++;
@@ -543,15 +548,17 @@ namespace Seidon
 		meshCache[mesh->id] = cache;
 	}
 
-	void Renderer::SubmitText(const std::string& string, Font* font, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId)
+	void Renderer::SubmitText(const std::string& string, Font* font, const glm::vec3& color, 
+		 const glm::mat4& transform, float shadowDistance, const glm::vec3& shadowColor, EntityId owningEntityId)
 	{
 		if (string.empty()) return;
-		glBindVertexArray(textVao);
 
 		std::u32string utf32string = ConvertToUTF32(string);
 
 		font->GetAtlas()->MakeResident();
 		glm::vec2 pos(0);
+
+		glm::vec4 zBias = { 0, 0, -0.001f, 0 };
 
 		for (int i = 0; i < utf32string.size(); i++)
 		{
@@ -577,30 +584,34 @@ namespace Seidon
 
 			uint64_t atlasHandle = font->GetAtlas()->GetRenderHandle();
 
-			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.bottom, 0.0f, 1.0f);
+			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.bottom, 0.0f, 1.0f) + zBias;
 			textBufferHead->uv = { uvBounds.left, uvBounds.bottom };
 			textBufferHead->color = color;
+			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
 			textBufferHead->atlasHandle = atlasHandle;
 			textBufferHead->owningEntityId = owningEntityId;
 			textBufferHead++;
 
-			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.top, 0.0f, 1.0f);
+			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.top, 0.0f, 1.0f) + zBias;
 			textBufferHead->uv = { uvBounds.left, uvBounds.top };
 			textBufferHead->color = color;
+			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
 			textBufferHead->atlasHandle = atlasHandle;
 			textBufferHead->owningEntityId = owningEntityId;
 			textBufferHead++;
 
-			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.bottom, 0.0f, 1.0f);
+			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.bottom, 0.0f, 1.0f) + zBias;
 			textBufferHead->uv = { uvBounds.right, uvBounds.bottom };
 			textBufferHead->color = color;
+			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
 			textBufferHead->atlasHandle = atlasHandle;
 			textBufferHead->owningEntityId = owningEntityId;
 			textBufferHead++;
 
-			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.top, 0.0f, 1.0f);
+			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.top, 0.0f, 1.0f) + zBias;
 			textBufferHead->uv = { uvBounds.right, uvBounds.top };
 			textBufferHead->color = color;
+			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
 			textBufferHead->atlasHandle = atlasHandle;
 			textBufferHead->owningEntityId = owningEntityId;
 			textBufferHead++;
@@ -608,9 +619,8 @@ namespace Seidon
 			characterCount++;
 
 			pos.x += font->GetAdvance(character, utf32string[i + 1]);
+			zBias += zBias;
 		}
-		glBindVertexArray(0);
-
 	}
 
 	void Renderer::SetCamera(const CameraData& camera)
@@ -646,9 +656,9 @@ namespace Seidon
 		int materialOffset = 0;
 		int idOffset = 0;
 
+		DrawSkinnedMeshes(offset, materialOffset, idOffset);
 		DrawMeshes(offset, materialOffset, idOffset);
 		DrawWireframes(offset, materialOffset, idOffset);
-		DrawSkinnedMeshes(offset, materialOffset, idOffset);
 		DrawText();
 
 		GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
@@ -769,7 +779,7 @@ namespace Seidon
 	{
 		glBindVertexArray(skinnedVao);
 
-		for (auto& [id, batch] : skinnedMeshBatches)
+		for (auto& [bones, batch] : skinnedMeshBatches)
 		{
 			Shader* shader = batch.materials[0].shader;
 			shader->Use();
@@ -805,12 +815,11 @@ namespace Seidon
 			memcpy(transformBufferHead, &batch.transforms[0], batch.transforms.size() * sizeof(glm::mat4));
 			transformBufferHead += batch.transforms.size();
 
+			memcpy(entityIdBufferHead, &batch.entityIds[0], batch.entityIds.size() * sizeof(int));
+			entityIdBufferHead += batch.entityIds.size();
 
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, boneTransformBuffer);
 			glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, batch.bones->size() * sizeof(glm::mat4), &(*batch.bones)[0]);
-
-			*entityIdBufferHead = batch.entityId;
-			entityIdBufferHead++;
 
 			int materialSize = 0;
 			for (MaterialData& m : batch.materials)
@@ -831,7 +840,7 @@ namespace Seidon
 
 			offset += batch.objectCount;
 			materialOffset += materialSize;
-			idOffset += batch.objectCount * sizeof(int);
+			idOffset += batch.entityIds.size() * sizeof(int);
 
 			if (idOffset % shaderBufferOffsetAlignment != 0)
 				idOffset = idOffset + shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);
@@ -906,7 +915,9 @@ namespace Seidon
 		textShader->SetVec3("camera.position", camera.position);
 
 		glDisable(GL_CULL_FACE);
+
 		glDrawElements(GL_TRIANGLES, characterCount * 6, GL_UNSIGNED_INT, nullptr);
+
 		glEnable(GL_CULL_FACE);
 
 		GL_CHECK(glBindVertexArray(0));
