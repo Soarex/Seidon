@@ -656,8 +656,8 @@ namespace Seidon
 		int materialOffset = 0;
 		int idOffset = 0;
 
-		DrawSkinnedMeshes(offset, materialOffset, idOffset);
 		DrawMeshes(offset, materialOffset, idOffset);
+		DrawSkinnedMeshes(offset, materialOffset, idOffset);
 		DrawWireframes(offset, materialOffset, idOffset);
 		DrawText();
 
@@ -767,7 +767,11 @@ namespace Seidon
 			idOffset += batch.objectCount * sizeof(int);
 
 			if (idOffset % shaderBufferOffsetAlignment != 0)
-				idOffset = idOffset + shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);
+			{
+				int alignedOffset = shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);;
+				idOffset += alignedOffset;
+				entityIdBufferHead = (int*)((byte*)entityIdBufferHead + alignedOffset);
+			}
 
 			stats.batchCount++;
 		}
@@ -843,7 +847,11 @@ namespace Seidon
 			idOffset += batch.entityIds.size() * sizeof(int);
 
 			if (idOffset % shaderBufferOffsetAlignment != 0)
-				idOffset = idOffset + shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);
+			{
+				int alignedOffset = shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);;
+				idOffset += alignedOffset;
+				entityIdBufferHead = (int*)((byte*)entityIdBufferHead + alignedOffset);
+			}
 
 			stats.batchCount++;
 		}
@@ -868,15 +876,11 @@ namespace Seidon
 
 		memcpy(transformBufferHead, &wireframeBatch.transforms[0], wireframeBatch.transforms.size() * sizeof(glm::mat4));
 		transformBufferHead += wireframeBatch.transforms.size();
-
-		memcpy(entityIdBufferHead, &wireframeBatch.entityIds[0], wireframeBatch.entityIds.size() * sizeof(int));
-		entityIdBufferHead += wireframeBatch.entityIds.size();
 		
 		memcpy(materialBufferHead, &wireframeBatch.colors[0], wireframeBatch.colors.size() * sizeof(glm::vec4));
 		materialBufferHead += wireframeBatch.colors.size() * sizeof(glm::vec4);
 		
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage], offset * sizeof(glm::mat4), wireframeBatch.transforms.size() * sizeof(glm::mat4));
-		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage], idOffset, wireframeBatch.entityIds.size() * sizeof(int));
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, materialBuffers[tripleBufferStage], materialOffset, wireframeBatch.colors.size() * sizeof(glm::vec4));
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -887,10 +891,6 @@ namespace Seidon
 
 		offset += wireframeBatch.objectCount;
 		materialOffset += wireframeBatch.colors.size() * sizeof(glm::vec4);
-		idOffset += wireframeBatch.objectCount * sizeof(int);
-
-		if (idOffset % shaderBufferOffsetAlignment != 0)
-			idOffset = idOffset + shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);
 
 		stats.batchCount++;
 
