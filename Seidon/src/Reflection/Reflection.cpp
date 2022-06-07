@@ -42,6 +42,12 @@ namespace Seidon
 				out.write((char*)item, sizeof(float));
 				break;
 			}
+			case Types::INT:
+			{
+				int* item = (int*)&data[m.offset];
+				out.write((char*)item, sizeof(int));
+				break;
+			}
 			case Types::BOOL:
 			{
 				bool* item = (bool*)&data[m.offset];
@@ -178,6 +184,13 @@ namespace Seidon
 				out.write((char*)&id, sizeof(UUID));
 				break;
 			}
+			case Types::MESH_COLLIDER:
+			{
+				MeshCollider* item = *(MeshCollider**)&data[m.offset];
+				UUID id = item->id;
+				out.write((char*)&id, sizeof(UUID));
+				break;
+			}
 			case Types::UNKNOWN:
 				break;
 			}
@@ -237,6 +250,14 @@ namespace Seidon
 				*(float*)&data[m.offset] = item;
 				break;
 			}
+			case Types::INT:
+			{
+				int item;
+				in.read((char*)&item, sizeof(int));
+
+				*(int*)&data[m.offset] = item;
+				break;
+			}
 			case Types::BOOL:
 			{
 				bool item;
@@ -274,12 +295,12 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if(resourceManager.IsTextureRegistered(id))
-					*(Texture**)&data[m.offset] = resourceManager.GetOrLoadTexture(id);
+				if(resourceManager.IsAssetRegistered(id))
+					*(Texture**)&data[m.offset] = resourceManager.GetOrLoadAsset<Texture>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Texture id not registered" << std::endl;
-					*(Texture**)&data[m.offset] = resourceManager.GetTexture("albedo_default");
+					*(Texture**)&data[m.offset] = resourceManager.GetAsset<Texture>("albedo_default");
 				}
 
 				break;
@@ -297,12 +318,12 @@ namespace Seidon
 					UUID id;
 					in.read((char*)&id, sizeof(UUID));
 
-					if (resourceManager.IsTextureRegistered(id))
-						item.push_back(resourceManager.GetOrLoadTexture(id));
+					if (resourceManager.IsAssetRegistered(id))
+						item.push_back(resourceManager.GetOrLoadAsset<Texture>(id));
 					else
 					{
 						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Texture id not registered" << std::endl;
-						item.push_back(resourceManager.GetTexture("albedo_default"));
+						item.push_back(resourceManager.GetAsset<Texture>("albedo_default"));
 					}
 				}
 
@@ -314,12 +335,12 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if (resourceManager.IsMeshRegistered(id))
-					*(Mesh**)&data[m.offset] = resourceManager.GetOrLoadMesh(id);
+				if (resourceManager.IsAssetRegistered(id))
+					*(Mesh**)&data[m.offset] = resourceManager.GetOrLoadAsset<Mesh>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Mesh id not registered" << std::endl;
-					*(Mesh**)&data[m.offset] = resourceManager.GetMesh("empty_mesh");
+					*(Mesh**)&data[m.offset] = resourceManager.GetAsset<Mesh>("empty_mesh");
 				}
 
 				break;
@@ -337,12 +358,12 @@ namespace Seidon
 					UUID id;
 					in.read((char*)&id, sizeof(UUID));
 
-					if (resourceManager.IsMeshRegistered(id))
-						item.push_back(resourceManager.GetOrLoadMesh(id));
+					if (resourceManager.IsAssetRegistered(id))
+						item.push_back(resourceManager.GetOrLoadAsset<Mesh>(id));
 					else
 					{
 						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Mesh id not registered" << std::endl;
-						item.push_back(resourceManager.GetMesh("empty_mesh"));
+						item.push_back(resourceManager.GetAsset<Mesh>("empty_mesh"));
 					}
 				}
 
@@ -354,12 +375,12 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if (resourceManager.IsSkinnedMeshRegistered(id))
-					*(SkinnedMesh**)&data[m.offset] = resourceManager.GetOrLoadSkinnedMesh(id);
+				if (resourceManager.IsAssetRegistered(id))
+					*(SkinnedMesh**)&data[m.offset] = resourceManager.GetOrLoadAsset<SkinnedMesh>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Skinned mesh id not registered" << std::endl;
-					*(SkinnedMesh**)&data[m.offset] = resourceManager.GetSkinnedMesh("empty_skinned_mesh");
+					*(SkinnedMesh**)&data[m.offset] = resourceManager.GetAsset<SkinnedMesh>("empty_skinned_mesh");
 				}
 
 				break;
@@ -377,12 +398,12 @@ namespace Seidon
 					UUID id;
 					in.read((char*)&id, sizeof(UUID));
 
-					if (resourceManager.IsSkinnedMeshRegistered(id))
-						item.push_back(resourceManager.GetOrLoadSkinnedMesh(id));
+					if (resourceManager.IsAssetRegistered(id))
+						item.push_back(resourceManager.GetOrLoadAsset<SkinnedMesh>(id));
 					else
 					{
 						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Skinned mesh id not registered" << std::endl;
-						item.push_back(resourceManager.GetSkinnedMesh("empty_skinned_mesh"));
+						item.push_back(resourceManager.GetAsset<SkinnedMesh>("empty_skinned_mesh"));
 					}
 				}
 
@@ -394,12 +415,12 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if (resourceManager.IsMaterialRegistered(id))
-					*(Material**)&data[m.offset] = resourceManager.GetOrLoadMaterial(id);
+				if (resourceManager.IsAssetRegistered(id))
+					*(Material**)&data[m.offset] = resourceManager.GetOrLoadAsset<Material>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Material id not registered" << std::endl;
-					*(Material**)&data[m.offset] = resourceManager.GetMaterial("default_material");
+					*(Material**)&data[m.offset] = resourceManager.GetAsset<Material>("default_material");
 				}
 
 				break;
@@ -417,12 +438,12 @@ namespace Seidon
 					UUID id;
 					in.read((char*)&id, sizeof(UUID));
 
-					if (resourceManager.IsMaterialRegistered(id))
-						item.push_back(resourceManager.GetOrLoadMaterial(id));
+					if (resourceManager.IsAssetRegistered(id))
+						item.push_back(resourceManager.GetOrLoadAsset<Material>(id));
 					else
 					{
 						std::cerr << "Error loading member " << m.name << "[" << i << "] of " << name << ": Material id not registered" << std::endl;
-						item.push_back(resourceManager.GetMaterial("default_material"));
+						item.push_back(resourceManager.GetAsset<Material>("default_material"));
 					}
 				}
 
@@ -434,12 +455,12 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if (resourceManager.IsCubemapRegistered(id))
-					*(HdrCubemap**)&data[m.offset] = resourceManager.GetOrLoadCubemap(id);
+				if (resourceManager.IsAssetRegistered(id))
+					*(HdrCubemap**)&data[m.offset] = resourceManager.GetOrLoadAsset<HdrCubemap>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Cubemap id not registered" << std::endl;
-					*(HdrCubemap**)&data[m.offset] = resourceManager.GetCubemap("default_cubemap");
+					*(HdrCubemap**)&data[m.offset] = resourceManager.GetAsset<HdrCubemap>("default_cubemap");
 				}
 
 				break;
@@ -449,12 +470,12 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if (resourceManager.IsAnimationRegistered(id))
-					*(Animation**)&data[m.offset] = resourceManager.GetOrLoadAnimation(id);
+				if (resourceManager.IsAssetRegistered(id))
+					*(Animation**)&data[m.offset] = resourceManager.GetOrLoadAsset<Animation>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Animation id not registered" << std::endl;
-					*(Animation**)&data[m.offset] = resourceManager.GetAnimation("default_animation");
+					*(Animation**)&data[m.offset] = resourceManager.GetAsset<Animation>("default_animation");
 				}
 
 				break;
@@ -464,12 +485,12 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if (resourceManager.IsShaderRegistered(id))
-					*(Shader**)&data[m.offset] = resourceManager.GetOrLoadShader(id);
+				if (resourceManager.IsAssetRegistered(id))
+					*(Shader**)&data[m.offset] = resourceManager.GetOrLoadAsset<Shader>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Shader id not registered" << std::endl;
-					*(Shader**)&data[m.offset] = resourceManager.GetShader("default_shader");
+					*(Shader**)&data[m.offset] = resourceManager.GetAsset<Shader>("default_shader");
 				}
 				break;
 			}
@@ -478,12 +499,26 @@ namespace Seidon
 				UUID id;
 				in.read((char*)&id, sizeof(UUID));
 
-				if (resourceManager.IsFontRegistered(id))
-					*(Font**)&data[m.offset] = resourceManager.GetOrLoadFont(id);
+				if (resourceManager.IsAssetRegistered(id))
+					*(Font**)&data[m.offset] = resourceManager.GetOrLoadAsset<Font>(id);
 				else
 				{
 					std::cerr << "Error loading member " << m.name << " of " << name << ": Font id not registered" << std::endl;
-					*(Font**)&data[m.offset] = resourceManager.GetFont("empty_font");
+					*(Font**)&data[m.offset] = resourceManager.GetAsset<Font>("empty_font");
+				}
+				break;
+			}
+			case Types::MESH_COLLIDER:
+			{
+				UUID id;
+				in.read((char*)&id, sizeof(UUID));
+
+				if (resourceManager.IsAssetRegistered(id))
+					*(MeshCollider**)&data[m.offset] = resourceManager.GetOrLoadAsset<MeshCollider>(id);
+				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Mesh Collider id not registered" << std::endl;
+					*(MeshCollider**)&data[m.offset] = resourceManager.GetAsset<MeshCollider>("empty_mesh_collider");
 				}
 				break;
 			}

@@ -13,6 +13,7 @@
 #include "../Physics/DynamicActor.h"
 #include "../Physics/CharacterController.h"
 #include "../Physics/PhysicsShape.h"
+#include "../Physics/MeshCollider.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -122,7 +123,7 @@ namespace Seidon
 
 		glm::vec3 GetForwardDirection() const
 		{
-			return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
+			return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 	};
 
@@ -171,7 +172,7 @@ namespace Seidon
 	struct SpriteRenderComponent
 	{
 		Texture* sprite;
-		Material* material;
+		glm::vec3 tint = { 1, 1, 1 };
 
 		SpriteRenderComponent();
 		SpriteRenderComponent(const SpriteRenderComponent&) = default;
@@ -187,6 +188,30 @@ namespace Seidon
 
 		TextRenderComponent();
 		TextRenderComponent(const TextRenderComponent&) = default;
+	};
+
+	struct UISpriteComponent : public SpriteRenderComponent
+	{
+		int id = 0;
+
+		UISpriteComponent() : SpriteRenderComponent() {};
+		UISpriteComponent(const UISpriteComponent&) = default;
+	};
+
+	struct UITextComponent : public TextRenderComponent
+	{
+		int id = 0;
+
+		UITextComponent() : TextRenderComponent() {};
+		UITextComponent(const UITextComponent&) = default;
+	};
+
+	struct UIAnchorComponent
+	{
+		int anchorPoint = 0;
+
+		UIAnchorComponent() = default;
+		UIAnchorComponent(const UIAnchorComponent&) = default;
 	};
 
 	struct WireframeRenderComponent
@@ -255,7 +280,7 @@ namespace Seidon
 
 		glm::mat4 GetViewMatrix(TransformComponent& transform)
 		{
-			return glm::lookAt(transform.position, transform.position + transform.GetForwardDirection(), transform.GetUpDirection());
+			return glm::lookAt(transform.position, transform.position - transform.GetForwardDirection(), transform.GetUpDirection());
 		}
 
 		glm::mat4 GetProjectionMatrix()
@@ -298,7 +323,7 @@ namespace Seidon
 
 	struct MeshColliderComponent
 	{
-		Mesh* mesh;
+		MeshCollider* collider;
 		PhysicsShape shape;
 
 		MeshColliderComponent();

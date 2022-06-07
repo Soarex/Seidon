@@ -1,6 +1,6 @@
 #pragma once
 #include "../Core/UUID.h"
-
+#include "../Core/Asset.h"
 
 #include <glm/glm.hpp>
 #include <string>
@@ -9,30 +9,25 @@ namespace Seidon
 {
     struct MetaType;
 
-    class Shader
+    class Shader : public Asset
     {
-    private:
-        bool initialized = false;
-
-        UUID id;
-        std::string path;
-        unsigned int renderId;
-
-        MetaType* bufferLayout;
-
-        static Shader* temporaryShader;
     public:
         Shader(UUID id = UUID());
         Shader(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
         ~Shader();
 
         inline UUID GetId() { return id; }
-        inline const std::string& GetPath() { return path; }
 
         void CreateFromSource(const std::string& vertexShaderCode, const std::string& fragmentShaderCode);
         void Destroy();
 
-        void LoadFromFile(const std::string& path);
+        using Asset::Save;
+        using Asset::Load;
+
+        void Save(std::ofstream& out) override;
+        void Load(std::ifstream& in) override;
+
+        void Load(const std::string& path) override;
         void LoadFromFileAsync(const std::string& path);
 
         void Use();
@@ -48,6 +43,14 @@ namespace Seidon
 
         MetaType* GetBufferLayout() { return bufferLayout; }
 
+    private:
+        bool initialized = false;
+
+        unsigned int renderId;
+
+        MetaType* bufferLayout;
+
+        static Shader* temporaryShader;
     private:
         void ReadLayout(std::ifstream& stream);
 

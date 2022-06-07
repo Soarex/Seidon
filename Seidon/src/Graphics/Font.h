@@ -1,5 +1,7 @@
 #pragma once
 #include "../Core/UUID.h"
+#include "../Core/Asset.h"
+
 #include "BoundingBox.h"
 #include "Texture.h"
 
@@ -27,7 +29,7 @@ namespace Seidon
 		float underlineY, underlineThickness;
 	};
 
-	class Font
+	class Font : public Asset
 	{
 	public:
 		Font(UUID id = UUID());
@@ -44,17 +46,14 @@ namespace Seidon
 
 		inline Texture* GetAtlas() { return fontAtlas; }
 
+		using Asset::Save;
+		using Asset::Load;
+
 		void Save(std::ofstream& out);
 		void Load(std::ifstream& in);
 
-		void Save(const std::string& path);
-		void Load(const std::string& path);
-
 		bool Import(const std::string& path);
 	private:
-		UUID id;
-		std::string name;
-
 		Texture* fontAtlas;
 		std::map<char32_t, Glyph> glyphs;
 		std::map<std::pair<char32_t, char32_t>, float> kernings;

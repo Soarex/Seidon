@@ -1,5 +1,6 @@
 #pragma once
 #include "../Core/UUID.h"
+#include "../Core/Asset.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -56,21 +57,21 @@ namespace Seidon
 		std::vector<ScalingKey> scalingKeys;
 	};
 
-	class Animation
+	class Animation : public Asset
 	{
 	public:
-		UUID id;
-		std::string name;
 		float duration;
 		float ticksPerSecond;
 		
 		std::vector<AnimationChannel> channels;
+
 	public:
 		Animation(UUID id = UUID());
 
-		void Save(const std::string& path);
-		void SaveAsync(const std::string& path);
-		void Load(const std::string& path);
-		void LoadAsync(const std::string& path);
+		using Asset::Save;
+		using Asset::Load;
+
+		void Save(std::ofstream& out) override;
+		void Load(std::ifstream& in) override;
 	};
 }

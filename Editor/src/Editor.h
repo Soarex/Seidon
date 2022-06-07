@@ -42,6 +42,7 @@ namespace Seidon
         bool colliderRenderingEnabled = false;
 
         int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+        BoundingBox viewBounds;
         bool local = false;
 
         bool isPlaying = false;

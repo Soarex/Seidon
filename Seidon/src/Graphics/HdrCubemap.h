@@ -1,4 +1,12 @@
 #pragma once
+#include "../Core/UUID.h"
+#include "../Core/Asset.h"
+
+#include "Texture.h"
+#include "Shader.h"
+#include "Framebuffer.h"
+#include "Mesh.h"
+
 #include <StbImage/stb_image.h>
 #include <glad/glad.h>
 
@@ -6,33 +14,12 @@
 #include <iostream>
 #include <vector>
 
-#include "Texture.h"
-#include "Shader.h"
-#include "Framebuffer.h"
-#include "Mesh.h"
-
 namespace Seidon
 {
 	class Material;
 
-	class HdrCubemap
+	class HdrCubemap : public Asset
 	{
-	private:
-		bool initialized = false;
-		UUID id;
-		std::string filepath;
-		unsigned int skyboxID;
-		unsigned int irradianceMapID;
-		unsigned int prefilteredMapID;
-		
-		Texture* BRDFLookupMap;
-
-		unsigned int faceSize;
-		unsigned int irradianceMapSize;
-		unsigned int prefilteredMapSize;
-		unsigned int BRDFLookupSize;
-
-		static constexpr unsigned int maxMipLevels = 5;
 	public:
 		HdrCubemap(UUID id, unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
 		HdrCubemap(unsigned int faceSize = 512, unsigned int irradianceMapSize = 32, unsigned int prefilteredMapSize = 128, unsigned int BRDFLookupSize = 512);
@@ -41,10 +28,11 @@ namespace Seidon
 		void Destroy();
 
 
-		void Save(const std::string& path);
-		void SaveAsync(const std::string& path);
-		void Load(const std::string& path);
-		void LoadAsync(const std::string& path);
+		using Asset::Save;
+		using Asset::Load;
+
+		void Save(std::ofstream& out);
+		void Load(std::ifstream& in);
 		
 		void CreateFromEquirectangularMap(Texture* texture);
 		void CreateFromMaterial(Material* material);
@@ -55,9 +43,26 @@ namespace Seidon
 		void BindPrefilteredMap(unsigned int slot = 0);
 		void BindBRDFLookupMap(unsigned int slot = 0);
 
-		inline const std::string& GetPath() { return filepath; }
+		inline const std::string& GetPath() { return name; }
 		inline UUID GetId() { return id; }
 		inline unsigned int GetSkyboxID() { return skyboxID; }
+
+	private:
+		bool initialized = false;
+
+		unsigned int skyboxID;
+		unsigned int irradianceMapID;
+		unsigned int prefilteredMapID;
+
+		Texture* BRDFLookupMap;
+
+		unsigned int faceSize;
+		unsigned int irradianceMapSize;
+		unsigned int prefilteredMapSize;
+		unsigned int BRDFLookupSize;
+
+		static constexpr unsigned int maxMipLevels = 5;
+
 	private:
 		void SaveCubemap(std::ofstream& out);
 		void LoadCubemap(std::ifstream& in);

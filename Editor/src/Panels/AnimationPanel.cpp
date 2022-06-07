@@ -23,7 +23,7 @@ namespace Seidon
 		{
 			std::string filepath = LoadFile("Seidon Animation (*.sdanim)\0*.sdanim\0");
 			if (!filepath.empty())
-				openedAnimation = Application::Get()->GetResourceManager()->GetOrLoadAnimation(filepath);
+				openedAnimation = Application::Get()->GetResourceManager()->GetOrLoadAsset<Animation>(filepath);
 		}
 
 		ImGui::SameLine();

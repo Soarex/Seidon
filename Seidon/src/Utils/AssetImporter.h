@@ -32,7 +32,7 @@ namespace Seidon
 		std::vector<SkinnedMesh*> importedSkinnedMeshes;
 	public:
 		void ImportModelFile(const std::string& path);
-		Texture* ImportTexture(const std::string& path, bool gammaCorrection = false);
+		Texture* ImportTexture(const std::string& path, bool gammaCorrection = false, ClampingMode clampingMode = ClampingMode::REPEAT);
 		HdrCubemap* ImportCubemap(const std::string& path);
 		Font* ImportFont(const std::string& path);
 

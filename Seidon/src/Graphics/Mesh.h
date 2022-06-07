@@ -1,7 +1,9 @@
 #pragma once
+#include "../Core/UUID.h"
+#include "../Core/Asset.h"
+
 #include "Vertex.h"
 #include "Armature.h"
-#include "../Core/UUID.h"
 
 #include <vector>
 #include <string>
@@ -28,20 +30,21 @@ namespace Seidon
     };
 
     template <typename T>
-    struct BaseMesh
+    struct BaseMesh : public Asset
     {
-        UUID id;
         std::string filepath;
-        std::string name;
         std::vector<T*> subMeshes;
 
         T submeshType;
 
-        BaseMesh(UUID id = UUID()) : id(id) {}
+        BaseMesh(UUID id = UUID()) { this->id = id; }
         BaseMesh(const std::string& name) : name(name) {};
         virtual ~BaseMesh() = default;
 
-        void Load(std::ifstream& in)
+        using Asset::Save;
+        using Asset::Load;
+
+        void Load(std::ifstream& in) override
         {
             char buffer[2048];
             in.read((char*)&id, sizeof(id));
@@ -83,7 +86,7 @@ namespace Seidon
         }
 
         //void SaveAsync(const std::string& path);
-        void Save(std::ofstream& out)
+        void Save(std::ofstream& out) override
         {
             out.write((char*)&id, sizeof(id));
 
@@ -128,13 +131,16 @@ namespace Seidon
         SkinnedMesh(UUID id = UUID()) { this->id = id; }
         SkinnedMesh(const std::string& name) { this->name = name; };
 
-        void Save(std::ofstream& out)
+        using BaseMesh::Save;
+        using BaseMesh::Load;
+
+        void Save(std::ofstream& out) override
         {
             BaseMesh::Save(out);
             armature.Save(out);
         }
 
-        void Load(std::ifstream& in)
+        void Load(std::ifstream& in) override
         {
             BaseMesh::Load(in);
             armature.Load(in);

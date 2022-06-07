@@ -7,45 +7,44 @@
 namespace Seidon
 {
 	Material::Material(UUID id)
-		: id(id)
 	{
+		this->id = id;
+
 		memset(data, 0, 500);
 		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
 
 		name = "";
-		shader = resourceManager.GetShader("default_shader");
+		shader = resourceManager.GetAsset<Shader>("default_shader");
 		
 		byte* ptr = data;
 
 		*((glm::vec3*)ptr) = glm::vec3(1);
 		ptr += sizeof(glm::vec3);
 
-		*((Texture**)ptr) = resourceManager.GetTexture("albedo_default");
+		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("albedo_default");
 		ptr += sizeof(Texture*);
 
-		*((Texture**)ptr) = resourceManager.GetTexture("normal_default");
-		ptr += sizeof(Texture*);
-
-		//*((float*)ptr) = 0.0f;
-		//ptr += sizeof(float);
-
-		*((Texture**)ptr) = resourceManager.GetTexture("roughness_default");
+		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("normal_default");
 		ptr += sizeof(Texture*);
 
 		//*((float*)ptr) = 0.0f;
 		//ptr += sizeof(float);
 
-		*((Texture**)ptr) = resourceManager.GetTexture("metallic_default");
+		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("roughness_default");
 		ptr += sizeof(Texture*);
 
-		*((Texture**)ptr) = resourceManager.GetTexture("ao_default");
+		//*((float*)ptr) = 0.0f;
+		//ptr += sizeof(float);
+
+		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("metallic_default");
+		ptr += sizeof(Texture*);
+
+		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("ao_default");
 		ptr += sizeof(Texture*);
 	}
 
-	void Material::Save(const std::string& path)
+	void Material::Save(std::ofstream& out)
 	{
-		std::ofstream out(path, std::ios::out | std::ios::binary);
-
 		out.write((char*)&id, sizeof(UUID));
 
 		size_t size = name.length() + 1;
@@ -68,16 +67,8 @@ namespace Seidon
 			});
 	}
 
-	void Material::Load(const std::string& path)
+	void Material::Load(std::ifstream& in)
 	{
-		std::ifstream in(path, std::ios::in | std::ios::binary);
-
-		if (!in)
-		{
-			std::cerr << "Error opening material file: " << path << std::endl;
-			return;
-		}
-
 		in.read((char*)&id, sizeof(UUID));
 
 		size_t size = 0;
@@ -91,7 +82,7 @@ namespace Seidon
 		UUID shaderId;
 
 		in.read((char*)&shaderId, sizeof(UUID));
-		shader = resourceManager->GetOrLoadShader(shaderId);
+		shader = resourceManager->GetOrLoadAsset<Shader>(shaderId);
 
 		MetaType& layout = *shader->GetBufferLayout();
 		layout.Load(in, data);

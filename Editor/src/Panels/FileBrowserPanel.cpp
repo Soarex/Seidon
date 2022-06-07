@@ -10,16 +10,16 @@ namespace Seidon
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 
-		backIcon = resourceManager.LoadTexture("Resources/BackIcon.sdtex");
-		fileIcon = resourceManager.LoadTexture("Resources/FileIcon.sdtex");
-		folderIcon = resourceManager.LoadTexture("Resources/FolderIcon.sdtex");
-		modelIcon = resourceManager.LoadTexture("Resources/ModelIcon.sdtex");
-		materialIcon = resourceManager.LoadTexture("Resources/MaterialIcon.sdtex");
-		animationIcon = resourceManager.LoadTexture("Resources/AnimationIcon.sdtex");
-		skinnedMeshIcon = resourceManager.LoadTexture("Resources/SkinnedMeshIcon.sdtex");
-		prefabIcon = resourceManager.LoadTexture("Resources/PrefabIcon.sdtex");
-		fontIcon = resourceManager.LoadTexture("Resources/FontIcon.sdtex");
-
+		backIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/BackIcon.sdtex");
+		fileIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex");
+		folderIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FolderIcon.sdtex");
+		modelIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/ModelIcon.sdtex");
+		materialIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/MaterialIcon.sdtex");
+		animationIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/AnimationIcon.sdtex");
+		skinnedMeshIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/SkinnedMeshIcon.sdtex");
+		prefabIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/PrefabIcon.sdtex");
+		fontIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FontIcon.sdtex");
+		colliderIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex");
 
 		currentDirectory = assetsPath;
 		UpdateEntries();
@@ -53,7 +53,7 @@ namespace Seidon
 
 				m.Save(currentDirectory.string() + "\\" + m.name + ".sdmat");
 
-				resourceManager.RegisterMaterial(&m, currentDirectory.string() + "\\" + m.name + ".sdmat");
+				resourceManager.RegisterAsset(&m, currentDirectory.string() + "\\" + m.name + ".sdmat");
 
 				UpdateEntries();
 			}
@@ -230,6 +230,9 @@ namespace Seidon
 			else if (file.extension == ".sdfont")
 				DrawFontFile(file);
 
+			else if (file.extension == ".sdcoll")
+				DrawColliderFile(file);
+
 			else
 				DrawGenericFile(file);
 
@@ -260,9 +263,27 @@ namespace Seidon
 			ImGui::SameLine();
 			ImGui::Checkbox("##Gamma correction", &gammaCorrection);
 
+			const char* clampModeNames[] = { "Repeat", "Clamp To Edge", "Clamp To Border" };
+			ClampingMode clampModes[] = { ClampingMode::REPEAT, ClampingMode::CLAMP, ClampingMode::BORDER };
+			static int selectedModeIndex = 0;
+
+			if (ImGui::BeginCombo("##Clamp mode", clampModeNames[selectedModeIndex], NULL))
+			{
+				for (int i = 0; i < IM_ARRAYSIZE(clampModeNames); i++)
+				{
+					const bool selected = (selectedModeIndex == i);
+					if (ImGui::Selectable(clampModeNames[i], selected))
+						selectedModeIndex = i;
+
+					if (selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
 			if (ImGui::Button("Import"))
 			{
-				importer.ImportTexture(file.path, gammaCorrection);
+				importer.ImportTexture(file.path, gammaCorrection, clampModes[selectedModeIndex]);
 				ImGui::CloseCurrentPopup();
 
 				UpdateEntries();
@@ -289,6 +310,7 @@ namespace Seidon
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
+		bool imported = false;
 		if (ImGui::BeginPopupModal("Model Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			ImGui::Text("Import model file?");
@@ -299,7 +321,8 @@ namespace Seidon
 			{
 				importer.ImportModelFile(file.path);
 				ImGui::CloseCurrentPopup();
-				UpdateEntries();
+
+				imported = true;
 			}
 
 			ImGui::SameLine();
@@ -312,6 +335,8 @@ namespace Seidon
 
 		ImGui::TextWrapped(file.name.c_str());
 		ImGui::NextColumn();
+
+		if(imported) UpdateEntries();
 	}
 
 	void FileBrowserPanel::DrawExternalFontFile(FileEntry& file)
@@ -323,6 +348,7 @@ namespace Seidon
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
+		bool imported = false;
 		if (ImGui::BeginPopupModal("Font Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			ImGui::Text("Import font file?");
@@ -333,7 +359,7 @@ namespace Seidon
 			{
 				delete importer.ImportFont(file.path);
 				ImGui::CloseCurrentPopup();
-				UpdateEntries();
+				imported = true;
 			}
 
 			ImGui::SameLine();
@@ -346,6 +372,8 @@ namespace Seidon
 
 		ImGui::TextWrapped(file.name.c_str());
 		ImGui::NextColumn();
+
+		if (imported) UpdateEntries();
 	}
 
 	void FileBrowserPanel::DrawExternalCubemapFile(FileEntry& file)
@@ -356,6 +384,7 @@ namespace Seidon
 		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
 		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
+		bool imported = false;
 		if (ImGui::BeginPopupModal("Cubemap Import", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			ImGui::Text("Import cubemap file?");
@@ -366,7 +395,8 @@ namespace Seidon
 			{
 				delete importer.ImportCubemap(file.path);
 				ImGui::CloseCurrentPopup();
-				UpdateEntries();
+
+				imported = true;
 			}
 
 			ImGui::SameLine();
@@ -379,13 +409,15 @@ namespace Seidon
 
 		ImGui::TextWrapped(file.name.c_str());
 		ImGui::NextColumn();
+
+		if (imported) UpdateEntries();
 	}
 
 	void FileBrowserPanel::DrawTextureFile(FileEntry& file)
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 
-		Texture* t = resourceManager.GetOrLoadTexture(file.path);
+		Texture* t = resourceManager.GetOrLoadAsset<Texture>(file.path);
 		ImGui::ImageButton((ImTextureID)t->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
 		if (ImGui::BeginDragDropSource())
@@ -447,7 +479,7 @@ namespace Seidon
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 		{
 			selectedItem.type = SelectedItemType::MATERIAL;
-			selectedItem.material = resourceManager.GetOrLoadMaterial(file.path);
+			selectedItem.material = resourceManager.GetOrLoadAsset<Material>(file.path);
 		}
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
@@ -636,6 +668,24 @@ namespace Seidon
 		{
 			const std::string& itemPath = file.path;
 			ImGui::SetDragDropPayload("FILE_BROWSER_FONT", itemPath.c_str(), itemPath.length() + 1);
+			ImGui::EndDragDropSource();
+		}
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		ImGui::TextWrapped(file.name.c_str());
+		ImGui::NextColumn();
+	}
+
+	void FileBrowserPanel::DrawColliderFile(FileEntry& file)
+	{
+		ImGui::ImageButton((ImTextureID)colliderIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+		if (ImGui::BeginDragDropSource())
+		{
+			const std::string& itemPath = file.path;
+			ImGui::SetDragDropPayload("FILE_BROWSER_COLLIDER", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
 

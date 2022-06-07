@@ -380,6 +380,39 @@ namespace Seidon
 		return ChangeStatus::NO_CHANGE;
 	}
 
+	ChangeStatus DrawIntControl(const std::string& label, int& value, int* oldValue)
+	{
+		static std::unordered_map<int*, int> oldValues;
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::PushItemWidth(-1);
+		ImGui::Columns(2);
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+		ImGui::NextColumn();
+
+		float old = value;
+
+		bool changed = ImGui::DragInt("##X", &value);
+		bool stoppedChanging = false;
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+		if (ImGui::IsItemActivated()) oldValues[&value] = old;
+
+		ImGui::Columns(1);
+
+		ImGui::PopItemWidth();
+		ImGui::PopID();
+
+		if (oldValue) *oldValue = oldValues[&value];
+
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		return ChangeStatus::NO_CHANGE;
+	}
+
 	ChangeStatus DrawStringControl(const std::string& label, std::string& value, std::string* oldValue)
 	{
 		static std::unordered_map<std::string*, std::string> oldValues;
@@ -394,7 +427,7 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		bool stoppedChanging = false;
-		bool changed = ImGui::InputText("##string", &value);
+		bool changed = ImGui::InputText("##string", &value, ImGuiInputTextFlags_CtrlEnterForNewLine);
 
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
 		if (ImGui::IsItemActivated()) oldValues[&value] = old;
@@ -430,7 +463,7 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 				
 				if (oldValue) *oldValue = *texture;
-				*texture = resourceManager.GetOrLoadTexture(path);
+				*texture = resourceManager.GetOrLoadAsset<Texture>(path);
 
 				changed = true;
 			}
@@ -461,7 +494,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -471,7 +504,7 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 
 				if (oldValue) *oldValue = *cubemap;
-				*cubemap = resourceManager.GetOrLoadCubemap(path);
+				*cubemap = resourceManager.GetOrLoadAsset<HdrCubemap>(path);
 
 				changed = true;
 			}
@@ -502,7 +535,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/ModelIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/ModelIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -512,7 +545,7 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 
 				if (oldValue) *oldValue = *mesh;
-				*mesh = resourceManager.GetOrLoadMesh(path);
+				*mesh = resourceManager.GetOrLoadAsset<Mesh>(path);
 
 				changed = true;
 			}
@@ -543,7 +576,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/SkinnedMeshIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SkinnedMeshIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -553,7 +586,7 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 
 				if (oldValue) *oldValue = *mesh;
-				*mesh = resourceManager.GetOrLoadSkinnedMesh(path);
+				*mesh = resourceManager.GetOrLoadAsset<SkinnedMesh>(path);
 
 				changed = true;
 			}
@@ -586,7 +619,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/MaterialIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MaterialIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		
 		if (ImGui::IsItemClicked() && clicked)
 			*clicked = true;
@@ -599,7 +632,7 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 
 				if (oldValue) *oldValue = *material;
-				*material = resourceManager.GetOrLoadMaterial(path);
+				*material = resourceManager.GetOrLoadAsset<Material>(path);
 
 				changed = true;
 			}
@@ -642,7 +675,7 @@ namespace Seidon
 						break;
 
 					case Types::TEXTURE:
-						*(Texture**)(material->data + m.offset) = resourceManager.GetTexture("albedo_default");
+						*(Texture**)(material->data + m.offset) = resourceManager.GetOrLoadAsset<Texture>("albedo_default");
 						break;
 					}
 
@@ -658,7 +691,7 @@ namespace Seidon
 			float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 			if (ImGui::Button("Save"))
-				material->Save(Application::Get()->GetResourceManager()->GetMaterialPath(material->id));
+				material->Save(Application::Get()->GetResourceManager()->GetAssetPath(material->id));
 		
 			}
 			ImGui::End();
@@ -676,7 +709,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/AnimationIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/AnimationIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -686,7 +719,7 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 
 				if (oldValue) *oldValue = *animation;
-				*animation = resourceManager.GetOrLoadAnimation(path);
+				*animation = resourceManager.GetOrLoadAsset<Animation>(path);
 
 				changed = true;
 			}
@@ -717,7 +750,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -727,7 +760,7 @@ namespace Seidon
 				std::string path = (const char*)payload->Data;
 
 				if (oldValue) *oldValue = *shader;
-				*shader = resourceManager.GetOrLoadShader(path);
+				*shader = resourceManager.GetOrLoadAsset<Shader>(path);
 				changed = true;
 			}
 
@@ -736,7 +769,7 @@ namespace Seidon
 
 		ImGui::NextColumn();
 
-		ImGui::Text((*shader)->GetPath().c_str());
+		ImGui::Text((*shader)->name.c_str());
 
 		ImGui::Columns(1);
 		ImGui::PopID();
@@ -757,7 +790,7 @@ namespace Seidon
 		ImGui::Text(label.c_str());
 
 		ImGui::Columns(2);
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadTexture("Resources/FontIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FontIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -768,7 +801,7 @@ namespace Seidon
 
 				if (oldValue) *oldValue = *font;
 
-				*font = resourceManager.GetOrLoadFont(path);
+				*font = resourceManager.GetOrLoadAsset<Font>(path);
 
 				changed = true;
 			}
@@ -779,6 +812,48 @@ namespace Seidon
 		ImGui::NextColumn();
 
 		if(*font) ImGui::Text((*font)->GetName().c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
+	}
+
+	ChangeStatus DrawMeshColliderControl(const std::string& label, MeshCollider** collider, float size, MeshCollider** oldValue)
+	{
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		bool changed = false;
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_COLLIDER"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				if (oldValue) *oldValue = *collider;
+
+				*collider = resourceManager.GetOrLoadAsset<MeshCollider>(path);
+
+				changed = true;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::NextColumn();
+
+		if (*collider) ImGui::Text((*collider)->name.c_str());
 
 		ImGui::Columns(1);
 		ImGui::PopID();
@@ -810,6 +885,14 @@ namespace Seidon
 			data.status = DrawFloatControl(member.name.c_str(), *(float*)(obj + member.offset), &old);
 			memcpy(data.oldValue, &old, sizeof(float));
 			memcpy(data.newValue, (float*)(obj + member.offset), sizeof(float));
+		}
+
+		if (member.type == Types::INT)
+		{
+			int old;
+			data.status = DrawIntControl(member.name.c_str(), *(int*)(obj + member.offset), &old);
+			memcpy(data.oldValue, &old, sizeof(int));
+			memcpy(data.newValue, (int*)(obj + member.offset), sizeof(int));
 		}
 
 		if (member.type == Types::FLOAT_ANGLE)
@@ -997,6 +1080,17 @@ namespace Seidon
 
 			memcpy(data.oldValue, &old, sizeof(Font*));
 			if(*f)memcpy(data.newValue, *f, sizeof(Font*));
+		}
+
+		if (member.type == Types::MESH_COLLIDER)
+		{
+			MeshCollider** c = (MeshCollider**)(obj + member.offset);
+			MeshCollider* old;
+
+			data.status = DrawMeshColliderControl(member.name.c_str(), c, 64.0f, &old);
+
+			memcpy(data.oldValue, &old, sizeof(MeshCollider*));
+			if (*c)memcpy(data.newValue, *c, sizeof(MeshCollider*));
 		}
 
 		return data;

@@ -2,6 +2,7 @@
 
 #include "../Core/Application.h"
 #include "../Ecs/Entity.h"
+#include "MeshCollider.h"
 
 using namespace physx;
 
@@ -283,66 +284,15 @@ namespace Seidon
 
 		glm::vec3 size = transform.scale;
 
-		int vertexCount = 0;
-		int indexCount = 0;
-		for (Submesh* submesh : collider.mesh->subMeshes)
-		{
-			vertexCount += submesh->vertices.size();
-			indexCount += submesh->indices.size();
-		}
-
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
-
-		vertices.resize(vertexCount);
-		indices.resize(indexCount);
-
-		int vertexOffset = 0;
-		int indexOffset = 0;
-		for (Submesh* submesh : collider.mesh->subMeshes)
-		{
-			memcpy(&vertices[vertexOffset], &submesh->vertices[0], submesh->vertices.size() * sizeof(Vertex));
-
-			for (int i = 0; i < submesh->indices.size(); i++)
-				indices[indexOffset + i] = submesh->indices[i] + vertexOffset;
-
-			vertexOffset += submesh->vertices.size();
-			indexOffset += submesh->indices.size();
-		}
-		
-		PxTriangleMeshDesc meshDesc;
-
-		meshDesc.points.count = vertices.size();
-		meshDesc.points.stride = sizeof(Vertex);
-		meshDesc.points.data = &vertices[0];
-
-		meshDesc.triangles.count = indices.size();
-		meshDesc.triangles.stride = 3 * sizeof(int);
-		meshDesc.triangles.data = &indices[0];
-
-		std::cout << meshDesc.isValid() << std::endl;
-
-		PxDefaultMemoryOutputStream writeBuffer;
-		PxTriangleMeshCookingResult::Enum result;
-
-		bool status = api->GetCooker()->cookTriangleMesh(meshDesc, writeBuffer, &result);
-		if (!status)
-		{
-			std::cerr << "Error cooking mesh " << collider.mesh->name << std::endl;
-			return;
-		}
-
-		PxDefaultMemoryInputData readBuffer(writeBuffer.getData(), writeBuffer.getSize());
-		PxTriangleMesh* triangleMesh = physics->createTriangleMesh(readBuffer);
+		MeshCollider& meshCollider = *collider.collider;
 
 		PxMeshScale scale({ size.x, size.y, size.z }, PxQuat(PxIdentity));
-		PxTriangleMeshGeometry geometry(triangleMesh, scale);
+		PxTriangleMeshGeometry geometry(meshCollider.GetMeshData(), scale);
 
 		PxShape* shape = physics->createShape(geometry, *defaultMaterial, true);
 
 		collider.shape.physxShape = shape;
 		collider.shape.initialized = true;
-
 
 		if (e.HasComponent<StaticRigidbodyComponent>())
 		{
@@ -376,6 +326,7 @@ namespace Seidon
 		desc.contactOffset = controller.contactOffset;
 		desc.slopeLimit = glm::cos(glm::radians(controller.maxSlopeAngle));
 		desc.userData = (void*)id;
+		desc.climbingMode = PxCapsuleClimbingMode::eCONSTRAINED;
 		desc.reportCallback = characterControllerCallbacks;
 
 		PxController* c = characterControllerManager->createController(desc);

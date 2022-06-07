@@ -25,7 +25,7 @@ struct DamageableComponent
 
     DamageableComponent()
     {
-        m = Seidon::Application::Get()->GetResourceManager()->GetMaterial("default_material");
+        m = Seidon::Application::Get()->GetResourceManager()->GetAsset<Seidon::Material>("default_material");
     }
 };
 
@@ -148,8 +148,11 @@ public:
                 {
                     auto& rigidbody = e.GetComponent<Seidon::DynamicRigidbodyComponent>();
 
-                    glm::vec3 force = data.hitDirection + glm::vec3(0, 1, 0);
-                    rigidbody.actor.AddForce(force / 2.0f, Seidon::ForceMode::IMPULSE);
+                    if (!rigidbody.kinematic)
+                    {
+                        glm::vec3 force = data.hitDirection + glm::vec3(0, 1, 0);
+                        rigidbody.actor.AddForce(force / 2.0f, Seidon::ForceMode::IMPULSE);
+                    }
                 }
             }
         }

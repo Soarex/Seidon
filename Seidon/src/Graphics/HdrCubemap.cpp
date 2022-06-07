@@ -11,9 +11,9 @@
 namespace Seidon
 {
     HdrCubemap::HdrCubemap(UUID id, unsigned int faceSize, unsigned int irradianceMapSize, unsigned int prefilteredMapSize, unsigned int BRDFLookupSize)
-        : id(id), faceSize(faceSize), irradianceMapSize(irradianceMapSize), prefilteredMapSize(prefilteredMapSize), BRDFLookupSize(BRDFLookupSize)
+        : faceSize(faceSize), irradianceMapSize(irradianceMapSize), prefilteredMapSize(prefilteredMapSize), BRDFLookupSize(BRDFLookupSize)
     {
-
+        this->id = id;
     }
 
     HdrCubemap::HdrCubemap(unsigned int faceSize, unsigned int irradianceMapSize, unsigned int prefilteredMapSize, unsigned int BRDFLookupSize)
@@ -40,17 +40,15 @@ namespace Seidon
         initialized = false;
     }
 
-    void HdrCubemap::Save(const std::string& path)
+    void HdrCubemap::Save(std::ofstream& out)
     {
         SD_ASSERT(initialized, "Cubemap not initialized");
 
-        std::ofstream out(path, std::ios::out | std::ios::binary);
-        
         out.write((char*)&id, sizeof(UUID));
 
-        size_t size = filepath.length() + 1;
+        size_t size = name.length() + 1;
         out.write((char*)&size, sizeof(size_t));
-        out.write(filepath.c_str(), size * sizeof(char));
+        out.write(name.c_str(), size * sizeof(char));
 
         SaveCubemap(out);
         SaveIrradianceMap(out);
@@ -126,17 +124,9 @@ namespace Seidon
         delete[] pixels;
     }
 
-    void HdrCubemap::Load(const std::string& path)
+    void HdrCubemap::Load(std::ifstream& in)
     {
         SD_ASSERT(!initialized, "Cubemap alrady initialized");
-
-        std::ifstream in(path, std::ios::in | std::ios::binary);
-
-        if (!in)
-        {
-            std::cerr << "Error opening cubemap file: " << path << std::endl;
-            return;
-        }
 
         in.read((char*)&id, sizeof(UUID));
 
@@ -145,7 +135,7 @@ namespace Seidon
 
         char buffer[2048];
         in.read(buffer, size * sizeof(char));
-        filepath = buffer;
+        name = buffer;
 
         LoadCubemap(in);
         LoadIrradianceMap(in);
@@ -254,7 +244,7 @@ namespace Seidon
     {
         SD_ASSERT(!initialized, "Cubemap already initialized");
 
-        filepath = texture->GetPath();
+        name = texture->GetPath();
         ToCubemap(*texture);
         GenerateIrradianceMap();
         GeneratePrefilteredMap();
@@ -342,7 +332,7 @@ namespace Seidon
 	{
         SD_ASSERT(!initialized, "Cubemap already initialized");
 
-        filepath = path;
+        name = path;
         stbi_set_flip_vertically_on_load(true);
         int width, height, channelCount;
         float* data = stbi_loadf(path.c_str(), &width, &height, &channelCount, 0);
@@ -432,7 +422,7 @@ namespace Seidon
         conversionFramebuffer.Create();
 
         Shader conversionShader;
-        conversionShader.LoadFromFile("Shaders/EquirectangularConversion.shader");
+        conversionShader.Load("Shaders/EquirectangularConversion.shader");
         conversionShader.Use();
         conversionShader.SetInt("equirectangularMap", 0);
         conversionShader.SetMat4("projectionMatrix", projectionMatrix);
@@ -493,7 +483,7 @@ namespace Seidon
         convolutionFramebuffer.Create();
 
         Shader convolutionShader;
-        convolutionShader.LoadFromFile("Shaders/Convolution.shader");
+        convolutionShader.Load("Shaders/Convolution.shader");
         convolutionShader.Use();
         convolutionShader.SetInt("environmentMap", 0);
         convolutionShader.SetFloat("faceResolution", faceSize);
@@ -555,7 +545,7 @@ namespace Seidon
         convolutionFramebuffer.Create();
 
         Shader convolutionShader;
-        convolutionShader.LoadFromFile("Shaders/PrefilterConvolution.shader");
+        convolutionShader.Load("Shaders/PrefilterConvolution.shader");
         convolutionShader.Use();
         convolutionShader.SetInt("environmentMap", 0);
         convolutionShader.SetMat4("projectionMatrix", projectionMatrix);
@@ -609,7 +599,7 @@ namespace Seidon
         convolutionFramebuffer.Bind();
 
         Shader convolutionShader;
-        convolutionShader.LoadFromFile("Shaders/BRDFConvolution.shader");
+        convolutionShader.Load("Shaders/BRDFConvolution.shader");
         convolutionShader.Use();
         
         GL_CHECK(glViewport(0, 0, BRDFLookupSize, BRDFLookupSize));

@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+#include "QuadMesh.h"
+
 #include "../Debug/Debug.h"
 #include "../Debug/Timer.h"
 
@@ -28,6 +30,7 @@ namespace Seidon
 
 		InitStaticMeshBuffers();
 		InitSkinnedMeshBuffers();
+		InitSpriteBuffers();
 		InitTextBuffers();
 		InitStorageBuffers();
 
@@ -36,11 +39,13 @@ namespace Seidon
 		locks[2] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
 		wireframeShader = new Shader();
-		wireframeShader->LoadFromFile("Shaders/Wireframe.sdshader");
+		wireframeShader->Load("Shaders/Wireframe.sdshader");
+
+		spriteShader = new Shader();
+		spriteShader->Load("Shaders/Sprite.sdshader");
 
 		textShader = new Shader();
-		textShader->LoadFromFile("Shaders/Text.sdshader");
-		textShader->SetInt("fontAtlas", 0);
+		textShader->Load("Shaders/Text.sdshader");
 	}
 
 	void Renderer::InitStaticMeshBuffers()
@@ -133,6 +138,30 @@ namespace Seidon
 		GL_CHECK(glEnableVertexAttribArray(6));
 
 		GL_CHECK(glBindVertexArray(0));
+	}
+
+	void Renderer::InitSpriteBuffers()
+	{
+		QuadMesh quad;
+
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		glBufferSubData(GL_ARRAY_BUFFER, vertexBufferHeadPosition, quad.subMeshes[0]->vertices.size() * sizeof(Vertex), (void*)&quad.subMeshes[0]->vertices[0]);
+		vertexBufferHeadPosition += quad.subMeshes[0]->vertices.size() * sizeof(Vertex);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, indexBufferHeadPosition, quad.subMeshes[0]->indices.size() * sizeof(uint32_t), (void*)&quad.subMeshes[0]->indices[0]);
+		indexBufferHeadPosition += quad.subMeshes[0]->indices.size() * sizeof(uint32_t);
+		glBindVertexArray(0);
+
+		spriteBatch.command.firstIndex = nextIndexPosition;
+		spriteBatch.command.baseVertex = nextVertexPosition;
+		spriteBatch.command.count = quad.subMeshes[0]->indices.size();
+		spriteBatch.command.baseInstance = 0;
+		spriteBatch.command.instanceCount = 0;
+
+		nextIndexPosition += quad.subMeshes[0]->indices.size();
+		nextVertexPosition += quad.subMeshes[0]->vertices.size();
 	}
 
 	void Renderer::InitTextBuffers()
@@ -548,6 +577,20 @@ namespace Seidon
 		meshCache[mesh->id] = cache;
 	}
 
+	void Renderer::SubmitSprite(Texture* sprite, const glm::vec3& tint, const glm::mat4& transform, EntityId owningEntityId)
+	{
+		SpriteMaterialData material;
+		sprite->MakeResident();
+		material.textureHandle = sprite->GetRenderHandle();
+		material.tint = glm::vec4(tint, 1.0);
+		
+		spriteBatch.command.instanceCount++;
+		spriteBatch.objectCount++;
+		spriteBatch.sprites.push_back(material);
+		spriteBatch.transforms.push_back(transform);
+		spriteBatch.entityIds.push_back((int)owningEntityId);
+	}
+
 	void Renderer::SubmitText(const std::string& string, Font* font, const glm::vec3& color, 
 		 const glm::mat4& transform, float shadowDistance, const glm::vec3& shadowColor, EntityId owningEntityId)
 	{
@@ -558,7 +601,8 @@ namespace Seidon
 		font->GetAtlas()->MakeResident();
 		glm::vec2 pos(0);
 
-		glm::vec4 zBias = { 0, 0, -0.001f, 0 };
+		float zBias = -0.001f;
+		glm::vec4 currentBias = { 0, 0, 0, 0 };
 
 		for (int i = 0; i < utf32string.size(); i++)
 		{
@@ -584,7 +628,7 @@ namespace Seidon
 
 			uint64_t atlasHandle = font->GetAtlas()->GetRenderHandle();
 
-			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.bottom, 0.0f, 1.0f) + zBias;
+			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.bottom, 0.0f, 1.0f) + currentBias;
 			textBufferHead->uv = { uvBounds.left, uvBounds.bottom };
 			textBufferHead->color = color;
 			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
@@ -592,7 +636,7 @@ namespace Seidon
 			textBufferHead->owningEntityId = owningEntityId;
 			textBufferHead++;
 
-			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.top, 0.0f, 1.0f) + zBias;
+			textBufferHead->position = transform * glm::vec4(bounds.left, bounds.top, 0.0f, 1.0f) + currentBias;
 			textBufferHead->uv = { uvBounds.left, uvBounds.top };
 			textBufferHead->color = color;
 			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
@@ -600,7 +644,7 @@ namespace Seidon
 			textBufferHead->owningEntityId = owningEntityId;
 			textBufferHead++;
 
-			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.bottom, 0.0f, 1.0f) + zBias;
+			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.bottom, 0.0f, 1.0f) + currentBias;
 			textBufferHead->uv = { uvBounds.right, uvBounds.bottom };
 			textBufferHead->color = color;
 			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
@@ -608,7 +652,7 @@ namespace Seidon
 			textBufferHead->owningEntityId = owningEntityId;
 			textBufferHead++;
 
-			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.top, 0.0f, 1.0f) + zBias;
+			textBufferHead->position = transform * glm::vec4(bounds.right, bounds.top, 0.0f, 1.0f) + currentBias;
 			textBufferHead->uv = { uvBounds.right, uvBounds.top };
 			textBufferHead->color = color;
 			textBufferHead->shadowColorAndDistance = glm::vec4(shadowColor, shadowDistance);
@@ -619,7 +663,7 @@ namespace Seidon
 			characterCount++;
 
 			pos.x += font->GetAdvance(character, utf32string[i + 1]);
-			zBias += zBias;
+			currentBias.z += zBias;
 		}
 	}
 
@@ -659,6 +703,7 @@ namespace Seidon
 		DrawMeshes(offset, materialOffset, idOffset);
 		DrawSkinnedMeshes(offset, materialOffset, idOffset);
 		DrawWireframes(offset, materialOffset, idOffset);
+		DrawSprites(offset, materialOffset, idOffset);
 		DrawText();
 
 		GL_CHECK(glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0));
@@ -899,6 +944,63 @@ namespace Seidon
 		wireframeBatch.transforms.clear();
 		wireframeBatch.entityIds.clear();
 		wireframeBatch.objectCount = 0;
+
+		GL_CHECK(glBindVertexArray(0));
+	}
+
+	void Renderer::DrawSprites(int& offset, int& materialOffset, int& idOffset)
+	{
+		if (spriteBatch.objectCount == 0) return;
+
+		glBindVertexArray(vao);
+		spriteShader->Use();
+
+		spriteShader->SetMat4("camera.viewMatrix", camera.viewMatrix);
+		spriteShader->SetMat4("camera.projectionMatrix", camera.projectionMatrix);
+		spriteShader->SetVec3("camera.position", camera.position);
+
+		*indirectBufferHead = spriteBatch.command;
+		indirectBufferHead ++;
+
+		memcpy(transformBufferHead, &spriteBatch.transforms[0], spriteBatch.transforms.size() * sizeof(glm::mat4));
+		transformBufferHead += spriteBatch.transforms.size();
+
+		memcpy(materialBufferHead, &spriteBatch.sprites[0], spriteBatch.sprites.size() * sizeof(SpriteMaterialData));
+		materialBufferHead += spriteBatch.sprites.size() * sizeof(SpriteMaterialData);
+
+		memcpy(entityIdBufferHead, &spriteBatch.entityIds[0], spriteBatch.entityIds.size() * sizeof(int));
+		entityIdBufferHead += spriteBatch.entityIds.size();
+
+		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, transformBuffers[tripleBufferStage], offset * sizeof(glm::mat4), spriteBatch.transforms.size() * sizeof(glm::mat4));
+		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 1, materialBuffers[tripleBufferStage], materialOffset, spriteBatch.sprites.size() * sizeof(SpriteMaterialData));
+		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 2, entityIdBuffers[tripleBufferStage], idOffset, sizeof(int));
+
+		glDisable(GL_CULL_FACE);
+
+		glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)(offset * sizeof(RenderCommand)), 1, 0);
+
+		glEnable(GL_CULL_FACE);
+
+		offset++;
+		materialOffset += spriteBatch.sprites.size() * sizeof(SpriteMaterialData);
+
+		idOffset += spriteBatch.entityIds.size() * sizeof(int);
+
+		if (idOffset % shaderBufferOffsetAlignment != 0)
+		{
+			int alignedOffset = shaderBufferOffsetAlignment - (idOffset % shaderBufferOffsetAlignment);;
+			idOffset += alignedOffset;
+			entityIdBufferHead = (int*)((byte*)entityIdBufferHead + alignedOffset);
+		}
+
+		stats.batchCount++;
+
+		spriteBatch.transforms.clear();
+		spriteBatch.entityIds.clear();
+		spriteBatch.sprites.clear();
+
+		spriteBatch.objectCount = 0;
+		spriteBatch.command.instanceCount = 0;
 
 		GL_CHECK(glBindVertexArray(0));
 	}

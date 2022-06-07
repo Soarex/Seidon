@@ -16,13 +16,16 @@ namespace Seidon
 			window->EnableMouseCursor(false);
 			window->EnableFullscreen(true);
 
-			resourceManager->LoadText("Assets/ResourceRegistry.sdreg");
+			std::ifstream in("Assets/ResourceRegistry.sdreg", std::ios::in | std::ios::binary);
+			resourceManager->Load(in);
 
 			e.Bind(L"Assets/scripts.dll");
 			e.Init();
 
 			Scene* scene = new Scene();
-			scene->LoadText("Assets/Test.sdscene");
+
+			std::ifstream in2("Assets/Test.sdscene", std::ios::in | std::ios::binary);
+			scene->Load(in2);
 
 			sceneManager->SetActiveScene(scene);
 		}

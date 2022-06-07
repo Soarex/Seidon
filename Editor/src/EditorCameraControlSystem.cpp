@@ -55,7 +55,7 @@ namespace Seidon
 			if (inputManager->GetMouseButtonDown(MouseButton::RIGHT))
 			{
 				input.x = -inputManager->GetKey(GET_KEYCODE(A)) + inputManager->GetKey(GET_KEYCODE(D));
-				input.z = -inputManager->GetKey(GET_KEYCODE(S)) + inputManager->GetKey(GET_KEYCODE(W));
+				input.z = inputManager->GetKey(GET_KEYCODE(S)) - inputManager->GetKey(GET_KEYCODE(W));
 
 				glm::vec3 direction = forward * input.z + right * input.x;
 

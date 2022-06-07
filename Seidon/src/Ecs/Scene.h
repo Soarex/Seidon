@@ -52,8 +52,9 @@ namespace Seidon
 		void CopySystems(Scene* other);
 
 		Entity CreateEntity(const std::string& name = std::string(), const UUID& id = UUID());
-		Entity InstantiatePrefab(Prefab& prefab, const glm::vec3& position = glm::vec3(0), const glm::vec3& rotation = glm::vec3(0),
-			const glm::vec3& scale = glm::vec3(1), const std::string& name = "");
+		Entity InstantiatePrefab(Prefab& prefab, const std::string& name = "");
+		Entity InstantiatePrefab(Prefab& prefab, const glm::vec3& position, const glm::vec3& rotation,
+			const glm::vec3& scale, const std::string& name = "");
 
 		Entity GetEntityByEntityId(EntityId id);
 		Entity GetEntityById(UUID id);

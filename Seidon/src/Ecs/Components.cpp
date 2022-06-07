@@ -7,19 +7,19 @@ namespace Seidon
 {
 	RenderComponent::RenderComponent()
 	{
-		mesh = Application::Get()->GetResourceManager()->GetMesh("empty_mesh");
+		mesh = Application::Get()->GetResourceManager()->GetAsset<Mesh>("empty_mesh");
 	}
 
 	SkinnedRenderComponent::SkinnedRenderComponent()
 	{
-		mesh = Application::Get()->GetResourceManager()->GetSkinnedMesh("empty_skinned_mesh");
+		mesh = Application::Get()->GetResourceManager()->GetAsset<SkinnedMesh>("empty_skinned_mesh");
 
 		Revalidate(this);
 	}
 
 	WireframeRenderComponent::WireframeRenderComponent()
 	{
-		mesh = Application::Get()->GetResourceManager()->GetMesh("empty_mesh");
+		mesh = Application::Get()->GetResourceManager()->GetAsset<Mesh>("empty_mesh");
 		color = glm::vec3(1);
 	}
 
@@ -46,7 +46,7 @@ namespace Seidon
 		{
 			rc.materials.resize(rc.mesh->subMeshes.size());
 			for (int i = oldSize; i < rc.mesh->subMeshes.size(); i++)
-				rc.materials[i] = Application::Get()->GetResourceManager()->GetMaterial("default_material");
+				rc.materials[i] = Application::Get()->GetResourceManager()->GetAsset<Material>("default_material");
 		}
 	}
 
@@ -59,7 +59,7 @@ namespace Seidon
 		{
 			rc.materials.resize(rc.mesh->subMeshes.size());
 			for (int i = oldSize; i < rc.mesh->subMeshes.size(); i++)
-				rc.materials[i] = Application::Get()->GetResourceManager()->GetMaterial("default_skinned_material");
+				rc.materials[i] = Application::Get()->GetResourceManager()->GetAsset<Material>("default_skinned_material");
 		}
 
 		oldSize = rc.boneTransforms.size();
@@ -83,29 +83,29 @@ namespace Seidon
 
 	SpriteRenderComponent::SpriteRenderComponent()
 	{
-		material = Application::Get()->GetResourceManager()->GetMaterial("default_material");
+		sprite = Application::Get()->GetResourceManager()->GetAsset<Texture>("albedo_default");
 	}
 
 	TextRenderComponent::TextRenderComponent()
 	{
 		text = "";
-		font = Application::Get()->GetResourceManager()->GetFont("empty_font");
+		font = Application::Get()->GetResourceManager()->GetAsset<Font>("empty_font");
 		color = glm::vec3(0);
 	}
 
 	CubemapComponent::CubemapComponent()
 	{
-		cubemap = Application::Get()->GetResourceManager()->GetCubemap("default_cubemap");
+		cubemap = Application::Get()->GetResourceManager()->GetAsset<HdrCubemap>("default_cubemap");
 	}
 
 	ProceduralSkylightComponent::ProceduralSkylightComponent()
 	{
-		material = Application::Get()->GetResourceManager()->GetMaterial("Preetham Sky Material");
+		material = Application::Get()->GetResourceManager()->GetAsset<Material>("Preetham Sky Material");
 	}
 
 	AnimationComponent::AnimationComponent()
 	{
-		animation = Application::Get()->GetResourceManager()->GetAnimation("default_animation");
+		animation = Application::Get()->GetResourceManager()->GetAsset<Animation>("default_animation");
 
 		for (int i = 0; i < MAX_BONE_COUNT; i++)
 		{
@@ -117,7 +117,7 @@ namespace Seidon
 
 	MeshColliderComponent::MeshColliderComponent()
 	{
-		mesh = Application::Get()->GetResourceManager()->GetMesh("empty_mesh");
+		collider = Application::Get()->GetResourceManager()->GetAsset<MeshCollider>("quad_mesh_collider");
 	}
 
 	void CharacterControllerComponent::Move(TransformComponent& transform, glm::vec3 velocity, float deltaTime)

@@ -58,10 +58,21 @@ namespace Seidon
         {
             std::string path = directory + "\\" + m->name + ".sdmesh";
 
-            std::ofstream out(path, std::ios::out | std::ios::binary);
-            m->Save(out);
+            m->Save(path);
 
-            Application::Get()->GetResourceManager()->RegisterMesh(m, path);
+            Application::Get()->GetResourceManager()->RegisterAsset(m, path);
+
+            MeshCollider* collider = new MeshCollider();
+
+            if (!collider->CreateFromMesh(m)) continue;
+
+            collider->name = m->name;
+
+            path = directory + "\\" + m->name + ".sdcoll";
+            collider->Save(path);
+            Application::Get()->GetResourceManager()->RegisterAsset(collider, path);
+
+            delete collider;
             delete m;
         }
 
@@ -81,19 +92,19 @@ namespace Seidon
             std::ofstream out(path, std::ios::out | std::ios::binary);
 
             m->Save(out);
-            Application::Get()->GetResourceManager()->RegisterSkinnedMesh(m, path);
+            Application::Get()->GetResourceManager()->RegisterAsset(m, path);
             delete m;
         }
-
-
-        for (auto& [name, texture] : importedTextures)
-            delete texture;
 
         for (auto& [name, material] : importedMaterials)
         {
             material->Save(directory + "\\" + material->name + ".sdmat");
             delete material;
         }
+
+        for (auto& [name, texture] : importedTextures)
+            delete texture;
+
 
         importedMaterials.clear();
         importedTextures.clear();
@@ -252,7 +263,7 @@ namespace Seidon
             aiString materialName;
             material->Get(AI_MATKEY_NAME, materialName);
 
-            importedMaterials[materialName.C_Str()]->shader = Application::Get()->GetResourceManager()->GetShader("default_skinned_shader");
+            importedMaterials[materialName.C_Str()]->shader = Application::Get()->GetResourceManager()->GetAsset<Shader>("default_skinned_shader");
             materials.push_back(importedMaterials[materialName.C_Str()]);
             
         }
@@ -516,7 +527,7 @@ namespace Seidon
         std::sort(anim.channels.begin(), anim.channels.end(), [](AnimationChannel& a, AnimationChannel& b) { return a.boneId < b.boneId; });
         anim.Save(directory + "\\" + anim.name + ".sdanim");
 
-        Application::Get()->GetResourceManager()->RegisterAnimation(&anim, directory + "\\" + anim.name + ".sdanim");
+        Application::Get()->GetResourceManager()->RegisterAsset(&anim, directory + "\\" + anim.name + ".sdanim");
     }
     
     void AssetImporter::ProcessBones(aiNode* node, const aiScene* scene, Armature& armature, int parentId)
@@ -548,7 +559,7 @@ namespace Seidon
         Material* m = new Material();
 
         m->name = std::string(name.C_Str());
-        m->shader = resourceManager.GetShader("default_shader");
+        m->shader = resourceManager.GetAsset<Shader>("default_shader");
 
         byte* ptr = m->data;
 
@@ -567,13 +578,13 @@ namespace Seidon
             if (t)
                 *((Texture**)ptr) = t;
             else
-                *((Texture**)ptr) = resourceManager.GetTexture("albedo_default");
+                *((Texture**)ptr) = resourceManager.GetAsset<Texture>("albedo_default");
 
             ptr += sizeof(Texture*);
         }
         else
         {
-            *((Texture**)ptr) = resourceManager.GetTexture("albedo_default");
+            *((Texture**)ptr) = resourceManager.GetAsset<Texture>("albedo_default");
             ptr += sizeof(Texture*);
         }
 
@@ -586,12 +597,12 @@ namespace Seidon
             if (t)
                 *((Texture**)ptr) = t;
             else
-                *((Texture**)ptr) = resourceManager.GetTexture("normal_default");
+                *((Texture**)ptr) = resourceManager.GetAsset<Texture>("normal_default");
             ptr += sizeof(Texture*);
         }
         else
         {
-            *((Texture**)ptr) = resourceManager.GetTexture("normal_default");
+            *((Texture**)ptr) = resourceManager.GetAsset<Texture>("normal_default");
             ptr += sizeof(Texture*);
         }
 
@@ -607,7 +618,7 @@ namespace Seidon
             if (t)
                 *((Texture**)ptr) = t;
             else
-                *((Texture**)ptr) = resourceManager.GetTexture("roughness_default");
+                *((Texture**)ptr) = resourceManager.GetAsset<Texture>("roughness_default");
             ptr += sizeof(Texture*);
         }
         else
@@ -615,7 +626,7 @@ namespace Seidon
            // *((float*)ptr) = 0.0f;
            // ptr += sizeof(float);
 
-            *((Texture**)ptr) = resourceManager.GetTexture("roughness_default");
+            *((Texture**)ptr) = resourceManager.GetAsset<Texture>("roughness_default");
             ptr += sizeof(Texture*);
         }
 
@@ -632,7 +643,7 @@ namespace Seidon
             if (t)
                 *((Texture**)ptr) = t;
             else
-                *((Texture**)ptr) = resourceManager.GetTexture("metallic_default");
+                *((Texture**)ptr) = resourceManager.GetAsset<Texture>("metallic_default");
             ptr += sizeof(Texture*);
         }
         else
@@ -640,7 +651,7 @@ namespace Seidon
             //*((float*)ptr) = 0.0f;
             //ptr += sizeof(float);
 
-            *((Texture**)ptr) = resourceManager.GetTexture("metallic_default");
+            *((Texture**)ptr) = resourceManager.GetAsset<Texture>("metallic_default");
             ptr += sizeof(Texture*);
         }
 
@@ -653,28 +664,28 @@ namespace Seidon
             if (t)
                 *((Texture**)ptr) = t;
             else
-                *((Texture**)ptr) = resourceManager.GetTexture("ao_default");
+                *((Texture**)ptr) = resourceManager.GetAsset<Texture>("ao_default");
             ptr += sizeof(Texture*);
         }
         else
         {
-            *((Texture**)ptr) = resourceManager.GetTexture("ao_default");
+            *((Texture**)ptr) = resourceManager.GetAsset<Texture>("ao_default");
             ptr += sizeof(Texture*);
         }
 
-        Application::Get()->GetResourceManager()->RegisterMaterial(m, directory + "\\" + m->name + ".sdmat");
+        Application::Get()->GetResourceManager()->RegisterAsset(m, directory + "\\" + m->name + ".sdmat");
 
         importedMaterials[m->name] = m;
         return m;
     }
 
-    Texture* AssetImporter::ImportTexture(const std::string& path, bool gammaCorrection)
+    Texture* AssetImporter::ImportTexture(const std::string& path, bool gammaCorrection, ClampingMode clampingMode)
     {
         if (importedTextures.count(path) > 0) return importedTextures[path];
 
         Texture* t = new Texture();
 
-        if (!t->Import(path, gammaCorrection))
+        if (!t->Import(path, gammaCorrection, clampingMode))
         {
             //delete t;
             return nullptr;
@@ -683,7 +694,7 @@ namespace Seidon
         t->path = ChangeSuffix(path, ".sdtex");
         t->Save(t->path);
 
-        Application::Get()->GetResourceManager()->RegisterTexture(t, t->path);
+        Application::Get()->GetResourceManager()->RegisterAsset(t, t->path);
 
         importedTextures[path] = t;
         return t;
@@ -693,10 +704,10 @@ namespace Seidon
     {
         HdrCubemap* c = new HdrCubemap();
         c->LoadFromEquirectangularMap(path);
-        c->filepath = ChangeSuffix(path, ".sdhdr");
-        c->Save(c->filepath);
+        c->name = ChangeSuffix(path, ".sdhdr");
+        c->Save(c->name);
 
-        Application::Get()->GetResourceManager()->RegisterCubemap(c, c->filepath);
+        Application::Get()->GetResourceManager()->RegisterAsset(c, c->name);
 
         return c;
     }
@@ -710,7 +721,7 @@ namespace Seidon
         std::ofstream out(f->GetName(), std::ios::out | std::ios::binary);
         f->Save(out);
 
-        Application::Get()->GetResourceManager()->RegisterFont(f, f->GetName());
+        Application::Get()->GetResourceManager()->RegisterAsset(f, f->GetName());
         return f;
     }
 }

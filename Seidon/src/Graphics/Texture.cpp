@@ -39,6 +39,7 @@ namespace Seidon
         this->width = width;
         this->height = height;
         this->format = sourceFormat;
+        this->clampingMode = clampingMode;
 
         GL_CHECK(glGenTextures(1, &renderId));
         GL_CHECK(glActiveTexture(GL_TEXTURE0));
@@ -69,6 +70,7 @@ namespace Seidon
         this->width = width;
         this->height = height;
         this->format = sourceFormat;
+        this->clampingMode = clampingMode;
 
         GL_CHECK(glGenTextures(1, &renderId));
         GL_CHECK(glActiveTexture(GL_TEXTURE0));
@@ -98,6 +100,7 @@ namespace Seidon
         this->width = width;
         this->height = height;
         this->format = sourceFormat;
+        this->clampingMode = clampingMode;
 
         GL_CHECK(glGenTextures(1, &renderId));
         GL_CHECK(glActiveTexture(GL_TEXTURE0));
@@ -119,6 +122,15 @@ namespace Seidon
         initialized = true;
     }
 
+    void Texture::SetClampingMode(ClampingMode clampingMode)
+    {
+        Bind();
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLenum)clampingMode));
+        GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLenum)clampingMode));
+
+        this->clampingMode = clampingMode;
+    }
+
     void Texture::Destroy()
     {
         SD_ASSERT(initialized, "Texture not initialized");
@@ -126,12 +138,6 @@ namespace Seidon
         GL_CHECK(glDeleteTextures(1, &renderId));
 
         initialized = false;
-    }
-
-    void Texture::Save(const std::string& path)
-    {
-        std::ofstream out(path, std::ios::out | std::ios::binary);
-        Save(out);
     }
 
     void Texture::Save(std::ofstream& out)
@@ -175,6 +181,8 @@ namespace Seidon
         out.write((char*)&width, sizeof(unsigned int));
         out.write((char*)&height, sizeof(unsigned int));
         out.write((char*)&format, sizeof(TextureFormat));
+        out.write((char*)&clampingMode, sizeof(ClampingMode));
+
 
         out.write((char*)pixels, sizeof(byte) * width * height * elementsPerPixel);
 
@@ -233,12 +241,6 @@ namespace Seidon
         );
     }
 
-    void Texture::Load(const std::string& path)
-    {
-        std::ifstream in(path, std::ios::in | std::ios::binary);
-        Load(in);
-    }
-
     void Texture::Load(std::ifstream& in)
     {
         SD_ASSERT(!initialized, "Texture already initialized");
@@ -266,6 +268,8 @@ namespace Seidon
 
         TextureFormat format;
         in.read((char*)&format, sizeof(TextureFormat));
+
+        in.read((char*)&clampingMode, sizeof(ClampingMode));
 
         int elementsPerPixel = 0;
 
@@ -298,7 +302,7 @@ namespace Seidon
         if (gammaCorrected && format == TextureFormat::RGB) internalFormat = TextureFormat::SRGB;
         if (gammaCorrected && format == TextureFormat::RGBA) internalFormat = TextureFormat::SRGBA;
 
-        Create(width, height, pixels, format, internalFormat);
+        Create(width, height, pixels, format, internalFormat, clampingMode);
 
         delete[] pixels;
     }
@@ -307,7 +311,7 @@ namespace Seidon
     {
         SD_ASSERT(!initialized, "Texture already initialized");
 
-        renderId = Application::Get()->GetResourceManager()->GetTexture("albedo_default")->GetRenderId();
+        renderId = Application::Get()->GetResourceManager()->GetAsset<Texture>("albedo_default")->GetRenderId();
         Application::Get()->GetWorkManager()->Execute([&]()
             {
                 std::ifstream in(path, std::ios::in | std::ios::binary);
@@ -371,7 +375,7 @@ namespace Seidon
         );
     }
 
-    bool Texture::Import(const std::string& path, bool gammaCorrection)
+    bool Texture::Import(const std::string& path, bool gammaCorrection, ClampingMode clampingMode)
     {
         SD_ASSERT(!initialized, "Texture already initialized");
 
@@ -398,7 +402,7 @@ namespace Seidon
         
         if (data)
         {
-            Create(width, height, data, sourceFormat, internalFormat);
+            Create(width, height, data, sourceFormat, internalFormat, clampingMode);
             stbi_image_free(data);
         }
         else

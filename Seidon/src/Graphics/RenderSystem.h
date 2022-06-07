@@ -27,12 +27,13 @@ namespace Seidon
 		std::vector<RenderFunction> mainPassFunctions;
 
 		Renderer renderer;
+		Renderer uiRenderer;
 
 		Shader* shader;
-		Shader depthShader;
-		Shader skinnedDepthShader;
-		Shader cubemapShader;
-		Shader quadShader;
+		Shader* depthShader;
+		Shader* skinnedDepthShader;
+		Shader* cubemapShader;
+		Shader* quadShader;
 
 		Framebuffer hdrFramebuffer;
 		Framebuffer depthFramebuffers[CASCADE_COUNT];
@@ -42,7 +43,6 @@ namespace Seidon
 
 		Texture hdrMap;
 		Texture entityMap;
-		//Texture bloomMap;
 		
 		Texture shadowMaps[CASCADE_COUNT];
 
@@ -65,7 +65,7 @@ namespace Seidon
 
 		RenderStats stats;
 	public:
-		RenderSystem() = default;
+		RenderSystem();
 		~RenderSystem() = default;
 		void Init() override;
 		void Update(float deltatime) override;

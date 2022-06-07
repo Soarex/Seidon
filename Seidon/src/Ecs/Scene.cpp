@@ -210,6 +210,32 @@ namespace Seidon
 		return e;
 	}
 
+	Entity Scene::InstantiatePrefab(Prefab& prefab, const std::string& name)
+	{
+		Entity e(registry.create(), this);
+
+		const std::vector<ComponentMetaType>& components = Application::Get()->GetComponentMetaTypes();
+		for (auto& metaType : components)
+			if (metaType.Has(prefab.GetRootEntity()))
+				metaType.Copy(prefab.GetRootEntity(), e);
+
+		e.GetComponent<IDComponent>().ID = UUID();
+
+		if (name != "")
+			e.GetComponent<NameComponent>().name = name;
+
+		TransformComponent& t = e.GetComponent<TransformComponent>();
+		t.parent = 0;
+		t.children.clear();
+
+		for (UUID childId : prefab.GetRootEntity().GetChildrenIds())
+			AddChildEntityFromPrefab(e, prefab.prefabScene.GetEntityById(childId));
+
+		idToEntityMap[e.GetComponent<IDComponent>().ID] = e.ID;
+
+		return e;
+	}
+
 	Entity Scene::InstantiatePrefab(Prefab& prefab, const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale, const std::string& name)
 	{
 		Entity e(registry.create(), this);

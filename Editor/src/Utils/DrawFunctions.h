@@ -26,6 +26,7 @@ namespace Seidon
 	ChangeStatus DrawFloatControl(const std::string& label, float& value, float* oldValue = nullptr);
 	ChangeStatus DrawFloatSliderControl(const std::string& label, float& value, float min = 0, float max = 1, float* oldValue = nullptr);
 	ChangeStatus DrawBoolControl(const std::string& label, bool& value, bool* oldValue = nullptr);
+	ChangeStatus DrawIntControl(const std::string& label, int& value, int* oldValue = nullptr);
 	ChangeStatus DrawStringControl(const std::string& label, std::string& value, std::string* oldValue = nullptr);
 	ChangeStatus DrawTextureControl(const std::string& label, Texture** texture, float size = 64, Texture** oldValue = nullptr);
 	ChangeStatus DrawCubemapControl(const std::string& label, HdrCubemap** texture, float size = 64, HdrCubemap** oldValue = nullptr);
@@ -36,6 +37,7 @@ namespace Seidon
 	ChangeStatus DrawAnimationControl(const std::string& label, Animation** animation, float size = 64, Animation** oldValue = nullptr);
 	ChangeStatus DrawShaderControl(const std::string& label, Shader** shader, float size = 64, Shader** oldValue = nullptr);
 	ChangeStatus DrawFontControl(const std::string& label, Font** font, float size = 64, Font** oldValue = nullptr);
+	ChangeStatus DrawMeshColliderControl(const std::string& label, MeshCollider** collider, float size = 64, MeshCollider** oldValue = nullptr);
 
 	ChangeData DrawReflectedMember(void* object, MemberData& member);
 	ChangeData DrawMetaType(void* object, MetaType& type);

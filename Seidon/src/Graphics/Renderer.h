@@ -2,6 +2,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Texture.h"
 #include "HdrCubemap.h"
 
 #include "../Ecs/EnttWrappers.h"
@@ -83,6 +84,22 @@ namespace Seidon
 		std::vector<glm::vec4> colors;
 	};
 
+	struct SpriteMaterialData
+	{
+		glm::vec4 tint;
+		uint64_t textureHandle;
+		uint64_t padding;
+	};
+
+	struct SpriteBatchData
+	{
+		uint32_t objectCount = 0;
+		RenderCommand command;
+		std::vector<SpriteMaterialData> sprites;
+		std::vector<glm::mat4> transforms;
+		std::vector<int> entityIds;
+	};
+
 	struct TextVertexData
 	{
 		glm::vec3 position;
@@ -124,6 +141,7 @@ namespace Seidon
 		void SubmitMesh(Mesh* mesh, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 		void SubmitSkinnedMesh(SkinnedMesh* mesh, std::vector<glm::mat4>& bones, std::vector<Material*>& materials, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 		void SubmitMeshWireframe(Mesh* mesh, const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
+		void SubmitSprite(Texture* sprite,const glm::vec3& color, const glm::mat4& transform, EntityId owningEntityId = NullEntityId);
 
 		void SubmitText(const std::string& string, Font* font, const glm::vec3& color, const glm::mat4& transform, 
 			float shadowDistance = 0, const glm::vec3& shadowColor = glm::vec3(0), EntityId owningEntityId = NullEntityId);
@@ -158,7 +176,7 @@ namespace Seidon
 
 		Shader* wireframeShader;
 		WireframeBatchData wireframeBatch;
-		BatchData spriteObjects;
+		SpriteBatchData spriteBatch;
 
 		RenderStats stats;
 
@@ -186,6 +204,7 @@ namespace Seidon
 		TextVertexData* textBufferPointers[3];
 		TextVertexData* textBufferHead = 0;
 		Shader* textShader;
+		Shader* spriteShader;
 		uint32_t characterCount = 0;
 
 		uint32_t transformBuffers[3];
@@ -221,12 +240,14 @@ namespace Seidon
 	private:
 		void InitStaticMeshBuffers();
 		void InitSkinnedMeshBuffers();
+		void InitSpriteBuffers();
 		void InitTextBuffers();
 		void InitStorageBuffers();
 
 		void SetupMaterialData(Material* material, MaterialData& materialData);
 		void DrawMeshes(int& offset, int& materialOffset, int& idOffset);
 		void DrawSkinnedMeshes(int& offset, int& materialOffset, int& idOffset);
+		void DrawSprites(int& offset, int& materialOffset, int& idOffset);
 		void DrawWireframes(int& offset, int& materialOffset, int& idOffset);
 		void DrawText();
 	};

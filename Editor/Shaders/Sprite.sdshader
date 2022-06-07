@@ -2,27 +2,20 @@
 
 ~BEGIN LAYOUT
 Tint : VECTOR3_COLOR
-Albedo : TEXTURE
-Normal : TEXTURE
+Sprite : TEXTURE
 ~END LAYOUT
 
 #version 460 core
 #extension GL_ARB_bindless_texture : require
 
 layout(location = 0) in vec3 vertexPosition;
-layout(location = 1) in vec3 vertexNormal;
-layout(location = 2) in vec3 vertexTangent;
 layout(location = 3) in vec2 vertexUV;
 
 layout(location = 6) in uint objectId;
 
 out VS_OUT
 {
-    vec3 worldSpaceFragmentPosition;
-    vec3 normal;
-    vec2 UV;
-    mat3 TBN;
-
+    vec2 uv;
     flat uint objectId;
 } vs_out;
 
@@ -43,25 +36,11 @@ uniform CameraData camera;
 void main()
 {
     mat4 modelMatrix = modelMatrices[objectId];
-    mat3 normalMatrix = transpose(inverse(mat3(modelMatrix)));
 
-    vec3 T = normalize(vec3(modelMatrix * vec4(vertexTangent, 0.0)));
-    vec3 N = normalize(vec3(modelMatrix * vec4(vertexNormal, 0.0)));
-
-    T = normalize(T - dot(T, N) * N);
-
-    vec3 B = cross(N, T);
-
-
-    vs_out.worldSpaceFragmentPosition = vec3(modelMatrix * vec4(vertexPosition, 1.0));
-    vs_out.normal = normalMatrix * vertexNormal;
-    vs_out.UV = vertexUV;
-
-    vs_out.TBN = mat3(T, B, N);
-
+    vs_out.uv = vertexUV;
     vs_out.objectId = objectId;
 
-    gl_Position = camera.projectionMatrix * camera.viewMatrix * vec4(vs_out.worldSpaceFragmentPosition, 1.0);
+    gl_Position = camera.projectionMatrix * camera.viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }
 
 
@@ -70,69 +49,36 @@ void main()
 #extension GL_ARB_bindless_texture : require
 
 layout(location = 0) out vec4 fragmentColor;
-
-struct Material
-{
-    vec3 tint;
-    sampler2D albedoMap;
-    sampler2D normalMap;
-};
+layout(location = 1) out int entityOutput;
 
 in VS_OUT
 {
-    vec3 worldSpaceFragmentPosition;
-    vec3 normal;
-    vec2 UV;
-    mat3 TBN;
-
+    vec2 uv;
     flat uint objectId;
 } fs_in;
 
+struct Material
+{
+    vec4 tint;
+    sampler2D sprite;
+};
 
 layout(std430, binding = 1) buffer materialBuffer
 {
     Material materials[];
 };
 
-uniform double time;
-
-//vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D diffuseMap, sampler2D specularMap);
-//float ShadowCalculation(vec4 fragPosLightSpace);
+layout(std430, binding = 2) buffer ids
+{
+    int entityIds[];
+};
 
 void main()
 {
-    Material material = materials[fs_in.objectId];
+    vec4 spriteColor = texture(materials[fs_in.objectId].sprite, fs_in.uv);
 
-    //vec3 normal = texture(material.normalMap, fs_in.UV).rgb;
-    //normal = normal * 2.0 - 1.0;
-    //normal = normalize(fs_in.TBN * normal);
+    if(spriteColor.a < 0.1) discard;
 
-    //vec3 viewDir = normalize(viewPos - fs_in.FragPos);
-   // vec3 result = CalculateDirectionalLight(directionalLight, normal, viewDir, material.texture_diffuse, material.texture_specular);
-    vec2 uv = vec2(fs_in.UV.x + time, fs_in.UV.y + time);
-    vec3 color = texture(material.albedoMap, uv).rgb * material.tint;
-    fragmentColor = vec4(color, 1.0);
+    fragmentColor = spriteColor * materials[fs_in.objectId].tint;
+    entityOutput = entityIds[fs_in.objectId];
 }
-
-/*
-vec3 CalculateDirectionalLight(DirectionalLight light, vec3 normal, vec3 viewDir, sampler2D diffuseMap, sampler2D specularMap)
-{
-    vec3 lightDir = normalize(light.direction);
-    // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
-
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    vec3 halfwayDir = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
-
-    // combine results
-    vec3 ambient = 0.2f * vec3(1.0f) * vec3(texture(diffuseMap, fs_in.TexCoords));
-    vec3 diffuse = light.color * diff * vec3(texture(diffuseMap, fs_in.TexCoords));
-    vec3 specular = light.color * spec * vec3(texture(specularMap, fs_in.TexCoords));
-
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace);
-
-    return (ambient + (1 - shadow) *(diffuse + specular));
-}
-*/

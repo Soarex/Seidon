@@ -70,9 +70,9 @@ namespace Seidon
 
         inputManager->ListenToCursor(false);
 
-        editorResourceManager.LoadMesh("Assets\\Cube.sdmesh");
-        editorResourceManager.LoadMesh("Assets\\Cylinder.sdmesh");
-        editorResourceManager.LoadMesh("Assets\\Semisphere.sdmesh");
+        editorResourceManager.LoadAsset<Mesh>("Assets\\Cube.sdmesh");
+        editorResourceManager.LoadAsset<Mesh>("Assets\\Cylinder.sdmesh");
+        editorResourceManager.LoadAsset<Mesh>("Assets\\Semisphere.sdmesh");
 	}
 
 	void Editor::Update()
@@ -231,6 +231,11 @@ namespace Seidon
         inputManager->SetMousePosition(glm::vec2(mouseX, mouseY));
         
         ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+
+        viewBounds.left = ImGui::GetCursorPosX() + viewportOffset.x;
+        viewBounds.top = ImGui::GetCursorPosY() + viewportOffset.y;
+        viewBounds.right = viewportMaxRegion.x + viewportOffset.x;
+        viewBounds.bottom = viewportMaxRegion.y + viewportOffset.y;
         
         if (sceneManager->GetActiveScene()->HasSystem<RenderSystem>())
         {
@@ -360,14 +365,15 @@ namespace Seidon
                 float bias = 0.005f;
                 t1.scale = globalTransform.scale * c.halfExtents * 2.0f + glm::vec3(bias);
 
-                auto m = editorResourceManager.GetMesh("Assets\\Cube.sdmesh");
-                renderer.SubmitMeshWireframe(editorResourceManager.GetMesh("Assets\\Cube.sdmesh"), glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+                auto m = editorResourceManager.GetAsset<Mesh>("Assets\\Cube.sdmesh");
+                renderer.SubmitMeshWireframe(editorResourceManager.GetAsset<Mesh>("Assets\\Cube.sdmesh"), glm::vec3(0, 1, 0), t1.GetTransformMatrix());
             }
         );
     }
 
     void Editor::DrawMeshColliders(Renderer& renderer)
     {
+        /*
         sceneManager->GetActiveScene()->CreateGroupAndIterate<MeshColliderComponent>
         (
                 GetTypeList<TransformComponent>,
@@ -383,10 +389,11 @@ namespace Seidon
                     float bias = 0.005f;
                     t1.scale = t.scale + glm::vec3(bias);
 
-                    auto m = editorResourceManager.GetMesh("Assets\\Cube.sdmesh");
+                    auto m = editorResourceManager.GetAsset<Mesh>("Assets\\Cube.sdmesh");
                     renderer.SubmitMeshWireframe(c.mesh, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
                 }
         );
+        */
     }
 
     void Editor::DrawCharacterControllers(Renderer& renderer)
@@ -406,8 +413,8 @@ namespace Seidon
                     t1.scale = { c.colliderRadius * 2, c.colliderHeight, c.colliderRadius * 2 };
                     t1.scale += glm::vec3(bias);
 
-                    Mesh* semisphere = editorResourceManager.GetMesh("Assets\\Semisphere.sdmesh");
-                    Mesh* cylinder = editorResourceManager.GetMesh("Assets\\Cylinder.sdmesh");
+                    Mesh* semisphere = editorResourceManager.GetAsset<Mesh>("Assets\\Semisphere.sdmesh");
+                    Mesh* cylinder = editorResourceManager.GetAsset<Mesh>("Assets\\Cylinder.sdmesh");
 
                     renderer.SubmitMeshWireframe(cylinder, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
 
@@ -447,12 +454,26 @@ namespace Seidon
         ImGuizmo::SetOrthographic(false);
         ImGuizmo::SetDrawlist();
 
-        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
+        ImGuizmo::SetRect(viewBounds.left, viewBounds.top, viewBounds.right - viewBounds.left, viewBounds.bottom - viewBounds.top);
 
         TransformComponent& cameraTransform = camera.GetComponent<TransformComponent>();
         CameraComponent& cameraComponent = camera.GetComponent<CameraComponent>();
-        glm::mat4 cameraProjection = cameraComponent.GetProjectionMatrix();
-        glm::mat4 cameraView = cameraComponent.GetViewMatrix(cameraTransform);
+        glm::mat4 cameraProjection;
+        glm::mat4 cameraView;
+        if (selectedItem.type == SelectedItemType::ENTITY && (selectedItem.entity.HasComponent<UITextComponent>() || selectedItem.entity.HasComponent<UISpriteComponent>()))
+        {
+            float aspectRatio = cameraComponent.aspectRatio;
+            
+            float frameHalfSize = 100;
+            cameraProjection = glm::ortho(-frameHalfSize * aspectRatio, frameHalfSize * aspectRatio, -frameHalfSize, frameHalfSize, -10.0f, 10.0f);
+            cameraView = glm::identity<glm::mat4>();
+            ImGuizmo::SetOrthographic(true);
+        }
+        else
+        {
+            cameraProjection = cameraComponent.GetProjectionMatrix();
+            cameraView = cameraComponent.GetViewMatrix(cameraTransform);
+        }
 
         glm::mat4 transform;
         if (selectedItem.type == SelectedItemType::ENTITY)

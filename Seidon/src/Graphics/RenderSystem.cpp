@@ -9,6 +9,15 @@
 namespace Seidon
 {
 	static double time = 0;
+	RenderSystem::RenderSystem()
+		: uiRenderer(300, 100, 10, 10000)
+	{
+		depthShader = new Shader();
+		skinnedDepthShader = new Shader();
+		cubemapShader = new Shader();
+		quadShader = new Shader();
+	}
+
 	void RenderSystem::Init()
 	{
 		framebufferWidth = window->GetWidth();
@@ -42,7 +51,7 @@ namespace Seidon
 		renderFramebuffer.SetColorTexture(renderTarget);
 		renderFramebuffer.SetDepthStencilRenderBuffer(renderDepthStencilBuffer);
 
-		shader = resourceManager->GetShader("default_skinned_shader");
+		shader = resourceManager->GetAsset<Shader>("default_skinned_shader");
 		shader->Use();
 
 		shader->SetInt("iblData.irradianceMap", 5);
@@ -51,7 +60,7 @@ namespace Seidon
 
 		shader->SetInts("shadowMappingData.shadowMaps", shadowSamplers, CASCADE_COUNT);
 
-		shader = resourceManager->GetShader("default_shader");
+		shader = resourceManager->GetAsset<Shader>("default_shader");
 		shader->Use();
 
 		shader->SetInt("iblData.irradianceMap", 5);
@@ -61,10 +70,10 @@ namespace Seidon
 		shader->SetInts("shadowMappingData.shadowMaps", shadowSamplers, CASCADE_COUNT);
 
 
-		depthShader.LoadFromFile("Shaders/ShadowPass.shader");
-		skinnedDepthShader.LoadFromFile("Shaders/ShadowPass-Skinned.sdshader");
-		quadShader.LoadFromFile("Shaders/Simple.shader");
-		cubemapShader.LoadFromFile("Shaders/Cubemap.shader");
+		depthShader->Load("Shaders/ShadowPass.shader");
+		skinnedDepthShader->Load("Shaders/ShadowPass-Skinned.sdshader");
+		quadShader->Load("Shaders/Simple.shader");
+		cubemapShader->Load("Shaders/Cubemap.shader");
 
 		GL_CHECK(glEnable(GL_DEPTH_TEST));
 		//GL_CHECK(glEnable(GL_BLEND));
@@ -92,6 +101,7 @@ namespace Seidon
 		GL_CHECK(glBindBuffer(GL_PIXEL_PACK_BUFFER, 0));
 
 		renderer.Init();
+		uiRenderer.Init();
 	}
 
 	void RenderSystem::Update(float deltaTime)
@@ -103,6 +113,7 @@ namespace Seidon
 		auto renderGroup = scene->CreateComponentGroup<RenderComponent>(GetTypeList<TransformComponent>);
 		auto skinnedRenderGroup = scene->CreateComponentGroup<SkinnedRenderComponent>(GetTypeList<TransformComponent>);
 		auto wireframeRenderGroup = scene->CreateComponentGroup<WireframeRenderComponent>(GetTypeList<TransformComponent>);
+		auto spriteRenderGroup = scene->CreateComponentGroup<SpriteRenderComponent>(GetTypeList<TransformComponent>);
 		auto textRenderGroup = scene->CreateComponentGroup<TextRenderComponent>(GetTypeList<TransformComponent>);
 
 		DirectionalLightComponent light;
@@ -125,7 +136,7 @@ namespace Seidon
 		else
 			camera = defaultCamera;
 
-		HdrCubemap* cubemap = resourceManager->GetCubemap("default_cubemap");
+		HdrCubemap* cubemap = resourceManager->GetAsset<HdrCubemap>("default_cubemap");
 		if (!cubemaps.empty())
 			cubemap = cubemaps.get<CubemapComponent>(cubemaps.front()).cubemap;
 
@@ -182,18 +193,18 @@ namespace Seidon
 			
 			lightSpaceMatrices[i] = CalculateCsmMatrix(camera, cameraTransform, light, lightTransform, nearPlane, farPlane);
 
-			depthShader.Use();
-			depthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
+			depthShader->Use();
+			depthShader->SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
 
-			skinnedDepthShader.Use();
-			skinnedDepthShader.SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
+			skinnedDepthShader->Use();
+			skinnedDepthShader->SetMat4("lightSpaceMatrix", lightSpaceMatrices[i]);
 
 			renderer.Begin();
 			
 			static std::vector<Material*> ms, ms2;
 			static Material m, m2;
-			m.shader = &depthShader;
-			m2.shader = &skinnedDepthShader;
+			m.shader = depthShader;
+			m2.shader = skinnedDepthShader;
 
 			scene->Iterate
 			(
@@ -332,8 +343,18 @@ namespace Seidon
 			{
 				Entity e = scene->GetEntityByEntityId(id);
 
-				if(renderComponent.font)
-					renderer.SubmitText(renderComponent.text, renderComponent.font, renderComponent.color, e.GetGlobalTransformMatrix(), renderComponent.shadowDistance, renderComponent.shadowColor, id);
+				renderer.SubmitText(renderComponent.text, renderComponent.font, renderComponent.color, e.GetGlobalTransformMatrix(), renderComponent.shadowDistance, renderComponent.shadowColor, id);
+			}
+		);
+
+		scene->Iterate
+		(
+			spriteRenderGroup,
+			[&](EntityId id, SpriteRenderComponent& renderComponent, TransformComponent& transform)
+			{
+				Entity e = scene->GetEntityByEntityId(id);
+
+				renderer.SubmitSprite(renderComponent.sprite, renderComponent.tint, e.GetGlobalTransformMatrix(), id);
 			}
 		);
 
@@ -345,12 +366,62 @@ namespace Seidon
 
 		stats = renderer.GetRenderStats();
 
+		uiRenderer.Begin();
+
+		float aspectRatio = (float)framebufferWidth / framebufferHeight;
+		float frameHalfSize = 100;
+		glm::mat4 projectionMatrix = glm::ortho(-frameHalfSize * aspectRatio, frameHalfSize * aspectRatio, -frameHalfSize, frameHalfSize, -10.0f, 10.0f);
+		uiRenderer.SetCamera
+		(
+			{
+				glm::vec3(0),
+				glm::identity<glm::mat4>(),
+				projectionMatrix
+			}
+		);
+
+		glm::vec3 anchorPositions[3] = { {0, 0, 0 }, { frameHalfSize * aspectRatio, 0, 0 }, { -frameHalfSize * aspectRatio, 0, 0 } };
+
+		scene->CreateGroupAndIterate<UIAnchorComponent>
+			(
+				GetTypeList<TransformComponent>,
+				[&](EntityId id, UIAnchorComponent& anchorComponent, TransformComponent& transform)
+				{
+					Entity e = scene->GetEntityByEntityId(id);
+
+					if (anchorComponent.anchorPoint >= 0 && anchorComponent.anchorPoint < 3)
+						transform.position = anchorPositions[anchorComponent.anchorPoint];
+				}
+		);
+
+		scene->CreateViewAndIterate<UITextComponent>
+			(
+				[&](EntityId id, UITextComponent& textComponent)
+				{
+					Entity e = scene->GetEntityByEntityId(id);
+
+					uiRenderer.SubmitText(textComponent.text, textComponent.font, textComponent.color, e.GetGlobalTransformMatrix(), textComponent.shadowDistance, textComponent.shadowColor, id);
+				}
+		);
+
+		scene->CreateViewAndIterate<UISpriteComponent>
+			(
+				[&](EntityId id, UISpriteComponent& spriteComponent)
+				{
+					Entity e = scene->GetEntityByEntityId(id);
+
+					uiRenderer.SubmitSprite(spriteComponent.sprite, spriteComponent.tint, e.GetGlobalTransformMatrix(), id);
+				}
+		);
+		uiRenderer.End();
+		uiRenderer.Render();
+
 		ProcessMouseSelection();
 		
 		GL_CHECK(glDepthFunc(GL_LEQUAL));
-		cubemapShader.Use();
-		cubemapShader.SetMat4("viewMatrix", glm::mat4(glm::mat3(camera.GetViewMatrix(cameraTransform))));
-		cubemapShader.SetMat4("projectionMatrix", camera.GetProjectionMatrix());
+		cubemapShader->Use();
+		cubemapShader->SetMat4("viewMatrix", glm::mat4(glm::mat3(camera.GetViewMatrix(cameraTransform))));
+		cubemapShader->SetMat4("projectionMatrix", camera.GetProjectionMatrix());
 
 		cubemap->BindSkybox();
 
@@ -364,8 +435,8 @@ namespace Seidon
 		GL_CHECK(glViewport(0, 0, framebufferWidth, framebufferHeight));
 		GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-		quadShader.Use();
-		quadShader.SetFloat("exposure", camera.exposure);
+		quadShader->Use();
+		quadShader->SetFloat("exposure", camera.exposure);
 
 		hdrMap.Bind(0);
 		fullscreenQuad.Draw();
@@ -378,6 +449,7 @@ namespace Seidon
 		window->removeWindowSizeCallback(windowResizeCallbackPosition);
 
 		renderer.Destroy();
+		uiRenderer.Destroy();
 	}
 
 	void RenderSystem::ResizeFramebuffer(unsigned int width, unsigned int height)

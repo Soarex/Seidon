@@ -5,8 +5,8 @@
 namespace Seidon
 {
 	Font::Font(UUID id)
-		: id(id)
     {
+        this->id = id;
         fontAtlas = new Texture();
     }
 
@@ -35,18 +35,6 @@ namespace Seidon
         if (kernings.count(pair) > 0) kerning = kernings[pair];
 
         return glyphs[c1].advance + kerning;
-    }
-
-    void Font::Save(const std::string& path)
-    {
-        std::ofstream out(path, std::ios::out | std::ios::binary);
-        Save(out);
-    }
-
-    void Font::Load(const std::string& path)
-    {
-        std::ifstream in(path, std::ios::in | std::ios::binary);
-        Load(in);
     }
 
 	void Font::Save(std::ofstream& out)

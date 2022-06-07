@@ -1,5 +1,6 @@
 #pragma once
 #include "../Core/UUID.h"
+#include "../Core/Asset.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -35,7 +36,7 @@ namespace Seidon
         BORDER = GL_CLAMP_TO_BORDER
     };
 
-    class Texture
+    class Texture : public Asset
     {
     public:
         std::string path;
@@ -45,23 +46,26 @@ namespace Seidon
         ~Texture();
 
         void Create(int width, int height, unsigned char* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
-            ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f), bool anisotropicFiltering = true);
+            ClampingMode clampingMode = ClampingMode::CLAMP, const glm::vec3& borderColor = glm::vec3(1.0f), bool anisotropicFiltering = true);
 
         void Create(int width, int height, int* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
-            ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& borderColor = glm::vec3(1.0f));
+            ClampingMode clampingMode = ClampingMode::CLAMP, const glm::vec3& borderColor = glm::vec3(1.0f));
 
         void Create(int width, int height, float* rgbData, TextureFormat sourceFormat = TextureFormat::RGB, TextureFormat internalFormat = TextureFormat::RGB,
-            ClampingMode clampingMode = ClampingMode::REPEAT, const glm::vec3& = glm::vec3(1.0f));
+            ClampingMode clampingMode = ClampingMode::CLAMP, const glm::vec3& = glm::vec3(1.0f));
 
-        void Save(const std::string& path);
-        void Save(std::ofstream& out);
+        void SetClampingMode(ClampingMode clampingMode);
+
+        using Asset::Save;
+        using Asset::Load;
+
+        void Save(std::ofstream& out) override;
         void SaveAsync(const std::string& path);
 
-        void Load(const std::string& path);
-        void Load(std::ifstream& in);
+        void Load(std::ifstream& in) override;
         void LoadAsync(const std::string& path);
 
-        bool Import(const std::string& path, bool gammaCorrection = true);
+        bool Import(const std::string& path, bool gammaCorrection = true, ClampingMode clampingMode = ClampingMode::CLAMP);
         void ImportAsync(const std::string& path, bool gammaCorrection = true);
 
         void Bind(unsigned int slot = 0) const;
@@ -81,12 +85,12 @@ namespace Seidon
     private:
         bool initialized = false;
 
-        UUID id;
         unsigned int renderId;
         uint64_t renderHandle;
 
         unsigned int width, height;
         TextureFormat format;
+        ClampingMode clampingMode;
         bool gammaCorrected = false;
         bool isResident = false;
 

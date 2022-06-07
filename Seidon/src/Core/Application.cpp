@@ -27,9 +27,9 @@ namespace Seidon
 
 		window->Init("Seidon Game");
 		inputManager->Init(window);
+		physicsApi->Init();
 		resourceManager->Init();
 		workManager->Init();
-		physicsApi->Init();
 
 		RegisterSystem<RenderSystem>();
 
@@ -66,7 +66,8 @@ namespace Seidon
 			.OnChange = SkinnedRenderComponent::Revalidate;
 
 		RegisterComponent<SpriteRenderComponent>()
-			.AddMember("Sprite", &SpriteRenderComponent::sprite);
+			.AddMember("Sprite", &SpriteRenderComponent::sprite)
+			.AddMember("Tint", &SpriteRenderComponent::tint);
 
 		RegisterComponent<TextRenderComponent>()
 			.AddMember("Text", &TextRenderComponent::text)
@@ -74,6 +75,22 @@ namespace Seidon
 			.AddMember("Color", &TextRenderComponent::color, Types::VECTOR3_COLOR)
 			.AddMember("Shadow Distance", &TextRenderComponent::shadowDistance, Types::FLOAT_NORMALIZED)
 			.AddMember("Shadow Color", &TextRenderComponent::shadowColor, Types::VECTOR3_COLOR);
+
+		RegisterComponent<UISpriteComponent>()
+			.AddMember("Sprite", &UISpriteComponent::sprite)
+			.AddMember("Tint", &UISpriteComponent::tint)
+			.AddMember("Id", &UISpriteComponent::id);
+
+		RegisterComponent<UITextComponent>()
+			.AddMember("Text", &UITextComponent::text)
+			.AddMember("Font", &UITextComponent::font)
+			.AddMember("Color", &UITextComponent::color, Types::VECTOR3_COLOR)
+			.AddMember("Shadow Distance", &UITextComponent::shadowDistance, Types::FLOAT_NORMALIZED)
+			.AddMember("Shadow Color", &UITextComponent::shadowColor, Types::VECTOR3_COLOR)
+			.AddMember("Id", &UITextComponent::id);
+
+		RegisterComponent<UIAnchorComponent>()
+			.AddMember("Anchor point", &UIAnchorComponent::anchorPoint);
 
 		RegisterComponent<WireframeRenderComponent>()
 			.AddMember("Mesh", &WireframeRenderComponent::mesh)
@@ -107,7 +124,7 @@ namespace Seidon
 			.OnChange = CubeColliderComponent::Invalidate;
 
 		RegisterComponent<MeshColliderComponent>()
-			.AddMember("Mesh", &MeshColliderComponent::mesh);
+			.AddMember("Mesh collider", &MeshColliderComponent::collider);
 
 		RegisterComponent<DynamicRigidbodyComponent>()
 			.AddMember("Mass", &DynamicRigidbodyComponent::mass)

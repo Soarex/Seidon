@@ -20,8 +20,8 @@ namespace Seidon
     Shader* Shader::temporaryShader = nullptr;
 
     Shader::Shader(UUID id)
-        : id(id) 
     {
+        this->id = id;
         bufferLayout = new MetaType();
     }
 
@@ -40,6 +40,16 @@ namespace Seidon
         SD_ASSERT(initialized, "Shader not initialized");
 
         GL_CHECK(glDeleteProgram(renderId));
+    }
+
+    void Shader::Save(std::ofstream& out)
+    {
+
+    }
+
+    void Shader::Load(std::ifstream& in)
+    {
+
     }
 
     void Shader::ReadLayout(std::ifstream& stream)
@@ -115,11 +125,11 @@ namespace Seidon
         }
     }
 
-    void Shader::LoadFromFile(const std::string& path)
+    void Shader::Load(const std::string& path)
     {
         SD_ASSERT(!initialized, "Shader already initialized");
 
-        this->path = path;
+        this->name = path;
         std::stringstream vertexStream;
         std::stringstream fragmentStream;
         std::ifstream shaderFile;
@@ -168,7 +178,7 @@ namespace Seidon
     {
         SD_ASSERT(!initialized, "Shader already initialized");
 
-        this->path = path;
+        this->name = path;
 
         if (!temporaryShader)
         {
@@ -176,7 +186,7 @@ namespace Seidon
             std::string vertexSource = "#version 330 core\n void main() { gl_Position = vec4(0); } ";
             std::string fragmentSource = "#version 330 core\n void main() { } ";
 
-            temporaryShader->path = "Temp";
+            temporaryShader->name = "Temp";
             temporaryShader->CreateFromSource(vertexSource, fragmentSource);
         }
 

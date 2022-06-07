@@ -7,6 +7,8 @@
 #include "../Graphics/Shader.h"
 #include "../Graphics/Font.h"
 
+#include "../Physics/MeshCollider.h"
+
 #include "../Animation/Animation.h"
 
 #include <entt/entt.hpp>
@@ -53,7 +55,8 @@ namespace Seidon
 		CUBEMAP,
 		ANIMATION,
 		SHADER,
-		FONT
+		FONT,
+		MESH_COLLIDER
 	};
 
 	template<typename T, typename U> 
@@ -161,6 +164,9 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(Font*).hash_code())
 				data.type = Types::FONT;
+
+			if (typeid(U).hash_code() == typeid(MeshCollider*).hash_code())
+				data.type = Types::MESH_COLLIDER;
 
 			members.push_back(data);
 			nameToMember[data.name] = data;
