@@ -168,6 +168,7 @@
     <ClInclude Include="src\EditorCameraControlSystem.h" />
     <ClInclude Include="src\Extensions\Extension.h" />
     <ClInclude Include="src\Panels\AnimationPanel.h" />
+    <ClInclude Include="src\Panels\ConsolePanel.h" />
     <ClInclude Include="src\Panels\FileBrowserPanel.h" />
     <ClInclude Include="src\Panels\HierarchyPanel.h" />
     <ClInclude Include="src\Panels\InspectorPanel.h" />
@@ -188,6 +189,7 @@
     <ClCompile Include="src\EditorAction.cpp" />
     <ClCompile Include="src\EditorCameraControlSystem.cpp" />
     <ClCompile Include="src\Panels\AnimationPanel.cpp" />
+    <ClCompile Include="src\Panels\ConsolePanel.cpp" />
     <ClCompile Include="src\Panels\FileBrowserPanel.cpp" />
     <ClCompile Include="src\Panels\HierarchyPanel.cpp" />
     <ClCompile Include="src\Panels\InspectorPanel.cpp" />

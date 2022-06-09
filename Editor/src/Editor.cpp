@@ -10,21 +10,35 @@
 
 #include <Debug/Timer.h>
 
+#include <Soloud/soloud.h>
+#include <Soloud/soloud_speech.h>
+#include <Soloud/soloud_wav.h>
+
 namespace Seidon
 {
     Editor::Editor()
         : hierarchyPanel(selectedItem), inspectorPanel(selectedItem), fileBrowserPanel(selectedItem), animationPanel(selectedItem) {}
 
+    SoLoud::Soloud soloud;
+    SoLoud::Wav* sound;
     void Editor::Init()
 	{
+        sound = new SoLoud::Wav();
+        //sound->load("Assets/sound.ogg");
+        sound->setLooping(true);
+
+        soloud.init();
+
+        //soloud.play(*sound);
+
         int width, height, channelCount;
         unsigned char* data = stbi_load("Resources/ModelIcon.png", &width, &height, &channelCount, 0);
         window->SetIcon(data, width, height);
         delete data;
 
-        if (std::filesystem::exists("ResourceRegistry.sdreg"))
+        if (std::filesystem::exists("Assets\\ResourceRegistry.sdreg"))
         {
-            std::ifstream in("ResourceRegistry.sdreg", std::ios::in | std::ios::binary);
+            std::ifstream in("Assets\\ResourceRegistry.sdreg", std::ios::in | std::ios::binary);
             resourceManager->Load(in);
         }
 
@@ -50,7 +64,8 @@ namespace Seidon
 #endif
 
         hierarchyPanel.Init();           
-        inspectorPanel.Init();           
+        inspectorPanel.Init();        
+        consolePanel.Init();
         fileBrowserPanel.Init();
         
 		window->SetName("Seidon Editor");
@@ -308,6 +323,7 @@ namespace Seidon
         systemsPanel.Draw();
         inspectorPanel.Draw();
         hierarchyPanel.Draw();
+        consolePanel.Draw();
         animationPanel.Draw();
 
         ImGui::Begin("Stats"); 
@@ -336,7 +352,7 @@ namespace Seidon
 
 	void Editor::Destroy()
 	{
-        std::ofstream out("ResourceRegistry.sdreg", std::ios::out | std::ios::binary);
+        std::ofstream out("Assets\\ResourceRegistry.sdreg", std::ios::out | std::ios::binary);
         resourceManager->Save(out);
 
         editorSystems.Destroy();
@@ -345,7 +361,9 @@ namespace Seidon
         e.Destroy();
         e.Unbind();
 
+        consolePanel.Destroy();
         editorResourceManager.Destroy();
+        soloud.deinit();
 	}
 
     void Editor::DrawCubeColliders(Renderer& renderer)

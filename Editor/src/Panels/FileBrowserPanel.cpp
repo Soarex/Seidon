@@ -20,6 +20,7 @@ namespace Seidon
 		prefabIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/PrefabIcon.sdtex");
 		fontIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FontIcon.sdtex");
 		colliderIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex");
+		soundIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/SoundIcon.sdtex");
 
 		currentDirectory = assetsPath;
 		UpdateEntries();
@@ -232,6 +233,9 @@ namespace Seidon
 
 			else if (file.extension == ".sdcoll")
 				DrawColliderFile(file);
+
+			else if (file.extension == ".mp3" || file.extension == ".wav" || file.extension == ".ogg")
+				DrawSoundFile(file);
 
 			else
 				DrawGenericFile(file);
@@ -686,6 +690,24 @@ namespace Seidon
 		{
 			const std::string& itemPath = file.path;
 			ImGui::SetDragDropPayload("FILE_BROWSER_COLLIDER", itemPath.c_str(), itemPath.length() + 1);
+			ImGui::EndDragDropSource();
+		}
+
+		ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+		ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+		ImGui::TextWrapped(file.name.c_str());
+		ImGui::NextColumn();
+	}
+
+	void FileBrowserPanel::DrawSoundFile(FileEntry& file)
+	{
+		ImGui::ImageButton((ImTextureID)soundIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
+
+		if (ImGui::BeginDragDropSource())
+		{
+			const std::string& itemPath = file.path;
+			ImGui::SetDragDropPayload("FILE_BROWSER_SOUND", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
 

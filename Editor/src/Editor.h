@@ -6,6 +6,7 @@
 #include "Panels/SystemsPanel.h"
 #include "Panels/FileBrowserPanel.h"
 #include "Panels/AnimationPanel.h"
+#include "Panels/ConsolePanel.h"
 #include "EditorAction.h"
 #include "SelectedItem.h"
 #include "Dockspace.h"
@@ -35,6 +36,7 @@ namespace Seidon
         FileBrowserPanel fileBrowserPanel;
         AnimationPanel animationPanel;
         SystemsPanel systemsPanel;
+        ConsolePanel consolePanel;
         Dockspace dockspace;
         Extension e;
 

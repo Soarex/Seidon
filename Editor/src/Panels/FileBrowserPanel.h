@@ -38,6 +38,7 @@ namespace Seidon
 		Texture* prefabIcon;
 		Texture* fontIcon;
 		Texture* colliderIcon;
+		Texture* soundIcon;
 		Texture* backIcon;
 
 		std::vector<DirectoryEntry> currentDirectories;
@@ -74,6 +75,7 @@ namespace Seidon
 		void DrawShaderFile(FileEntry& file);
 		void DrawFontFile(FileEntry& file);
 		void DrawColliderFile(FileEntry& file);
+		void DrawSoundFile(FileEntry& file);
 		void DrawGenericFile(FileEntry& file);
 	};
 }

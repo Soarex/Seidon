@@ -407,7 +407,7 @@ namespace Seidon
         }
         else
         {
-            std::cout << "Failed to load texture " << path << std::endl;
+            std::cerr << "Failed to load texture " << path << std::endl;
             return false;
         }
 
@@ -463,7 +463,7 @@ namespace Seidon
                 }
                 else
                 {
-                    std::cout << "Failed to load texture " << path << std::endl;
+                    std::cerr << "Failed to load texture " << path << std::endl;
                 }
             }
         );

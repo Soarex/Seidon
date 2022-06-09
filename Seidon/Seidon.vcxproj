@@ -123,7 +123,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WITH_WINMM;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
@@ -152,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;NOMINMAX;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;WITH_WINMM;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -227,6 +227,76 @@
     <ClCompile Include="src\Vendor\Imgui\imgui_stdlib.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_tables.cpp" />
     <ClCompile Include="src\Vendor\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\monotone\soloud_monotone.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\noise\soloud_noise.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\openmpt\soloud_openmpt.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\openmpt\soloud_openmpt_dll.c" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\sfxr\soloud_sfxr.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\speech\darray.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\speech\klatt.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\speech\resonator.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\speech\soloud_speech.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\speech\tts.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\tedsid\sid.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\tedsid\soloud_tedsid.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\tedsid\ted.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\vic\soloud_vic.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\vizsn\soloud_vizsn.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\wav\dr_impl.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\wav\soloud_wav.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\wav\soloud_wavstream.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\audiosource\wav\stb_vorbis.c" />
+    <ClCompile Include="src\Vendor\Soloud\backend\alsa\soloud_alsa.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\coreaudio\soloud_coreaudio.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\jack\soloud_jack.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\miniaudio\soloud_miniaudio.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\nosound\soloud_nosound.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\null\soloud_null.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\openal\soloud_openal.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\openal\soloud_openal_dll.c" />
+    <ClCompile Include="src\Vendor\Soloud\backend\opensles\soloud_opensles.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\oss\soloud_oss.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\portaudio\soloud_portaudio.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\portaudio\soloud_portaudio_dll.c" />
+    <ClCompile Include="src\Vendor\Soloud\backend\sdl2_static\soloud_sdl2_static.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\sdl\soloud_sdl1.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\sdl\soloud_sdl1_dll.c" />
+    <ClCompile Include="src\Vendor\Soloud\backend\sdl\soloud_sdl2.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\sdl\soloud_sdl2_dll.c" />
+    <ClCompile Include="src\Vendor\Soloud\backend\sdl_static\soloud_sdl_static.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\vita_homebrew\soloud_vita_homebrew.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\wasapi\soloud_wasapi.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\winmm\soloud_winmm.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\backend\xaudio2\soloud_xaudio2.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_audiosource.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_bus.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_3d.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_basicops.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_faderops.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_filterops.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_getters.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_setters.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_voicegroup.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_core_voiceops.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_fader.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_fft.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_fft_lut.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_file.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_filter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_misc.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_queue.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\core\soloud_thread.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_bassboostfilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_biquadresonantfilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_dcremovalfilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_echofilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_fftfilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_flangerfilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_freeverbfilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_lofifilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_robotizefilter.cpp" />
+    <ClCompile Include="src\Vendor\Soloud\filter\soloud_waveshaperfilter.cpp" />
     <ClCompile Include="src\Vendor\StbImage\stb_image.cpp" />
     <ClCompile Include="src\Graphics\Texture.cpp" />
     <ClCompile Include="src\Core\Window.cpp" />
@@ -407,6 +477,17 @@
     <ClInclude Include="src\Vendor\Imgui\imstb_rectpack.h" />
     <ClInclude Include="src\Vendor\Imgui\imstb_textedit.h" />
     <ClInclude Include="src\Vendor\Imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\speech\darray.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\speech\klatt.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\speech\resonator.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\speech\tts.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\tedsid\sid.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\tedsid\ted.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\wav\dr_flac.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\wav\dr_mp3.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\wav\dr_wav.h" />
+    <ClInclude Include="src\Vendor\Soloud\audiosource\wav\stb_vorbis.h" />
+    <ClInclude Include="src\Vendor\Soloud\backend\miniaudio\miniaudio.h" />
     <ClInclude Include="src\Vendor\StbImage\stb_image.h" />
     <ClInclude Include="src\Graphics\Texture.h" />
     <ClInclude Include="src\Core\Window.h" />
@@ -480,6 +561,7 @@
     <None Include="src\Shaders\LightCube.shader" />
     <None Include="src\Vendor\Physx\filebuf\include\PsAsciiConversion.inl" />
     <None Include="src\Vendor\Physx\filebuf\include\PsIOStream.inl" />
+    <None Include="src\Vendor\Soloud\audiosource\speech\Elements.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
