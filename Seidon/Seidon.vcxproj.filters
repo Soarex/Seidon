@@ -501,6 +501,15 @@
     <ClCompile Include="src\Vendor\Soloud\filter\soloud_waveshaperfilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Audio\Sound.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Audio\SoundApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Audio\SoundInstance.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Graphics\Shader.h">
@@ -1149,6 +1158,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Vendor\Soloud\backend\miniaudio\miniaudio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Audio\Sound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Audio\SoundApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Audio\SoundInstance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Audio\Audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

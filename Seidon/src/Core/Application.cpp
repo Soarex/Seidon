@@ -24,10 +24,12 @@ namespace Seidon
 		resourceManager = new ResourceManager();
 		workManager = new WorkManager();
 		physicsApi = new PhysicsApi();
+		soundApi = new SoundApi();
 
 		window->Init("Seidon Game");
 		inputManager->Init(window);
 		physicsApi->Init();
+		soundApi->Init();
 		resourceManager->Init();
 		workManager->Init();
 
@@ -149,6 +151,7 @@ namespace Seidon
 	{
 		window->BeginFrame();
 		inputManager->Update();
+		soundApi->Update();
 
 		Update();
 		sceneManager->UpdateActiveScene(window->GetDeltaTime());
@@ -159,8 +162,8 @@ namespace Seidon
 
 	void Application::AppDestroy()
 	{
-
 		Destroy();
+		soundApi->Destroy();
 		physicsApi->Destroy();
 		resourceManager->Destroy();
 		workManager->Destroy();
@@ -170,6 +173,8 @@ namespace Seidon
 		delete resourceManager;
 		delete workManager;
 		delete inputManager;
+		delete physicsApi;
+		delete soundApi;
 		instance = nullptr;
 	}
 

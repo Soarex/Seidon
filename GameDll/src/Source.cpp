@@ -81,7 +81,13 @@ class PlayerSystem : public Seidon::System
 {
 private:
     static constexpr float gravity = -9.81f;
+    Seidon::Sound sound;
 public:
+    void Init() override
+    {
+        sound.Load("Assets\\hit.wav");
+    }
+
     void Update(float deltaTime) override
     {
         auto players = scene->GetRegistry().group<PlayerComponent>(entt::get<Seidon::TransformComponent, Seidon::CharacterControllerComponent>);
@@ -175,11 +181,17 @@ public:
         glm::vec3 pos = t.position;
         pos += t.GetForwardDirection() * (t.scale.z + 0.1f);
 
-        if (!characterController.runtimeController.Raycast(pos, t.GetForwardDirection(), 10, res)) return;
+        if (!characterController.runtimeController.Raycast(pos, t.GetForwardDirection(), 100, res)) return;
 
         Seidon::Entity hitEntity = scene->GetEntityByEntityId(res.hitEntityId);
-        if (hitEntity.HasComponent<DamageableComponent>())
+        if (hitEntity.HasComponent<DamageableComponent>() && hitEntity.GetComponent<DamageableComponent>().hitFlashTime < 0.1)
+        {
             hitEntity.GetComponent<DamageableComponent>().hit = true;
+
+            Seidon::TransformComponent t1;
+            t1.SetFromMatrix(hitEntity.GetGlobalTransformMatrix());
+            sound.Play3d(t1.position);
+        }
     }
 };
 
@@ -223,28 +235,6 @@ private:
 public:
     void Update(float deltaTime) override
     {
-        scene->CreateGroupAndIterate<AttackerComponent>
-        (
-            Seidon::GetTypeList<Seidon::TransformComponent>,
-
-            [&](Seidon::EntityId id, AttackerComponent& s, Seidon::TransformComponent& t)
-            {
-                Seidon::Entity e = scene->GetEntityByEntityId(id);
-                s.a += 0.0000001;
-                Seidon::DynamicActor& actor = e.GetComponent<Seidon::DynamicRigidbodyComponent>().actor;
-
-                Seidon::RaycastResult res;
-                glm::vec3 pos = t.position;
-                pos.z += t.scale.z + 0.1f;
-
-                if (!actor.Raycast(pos, { 0, 0, 1 }, 10, res)) return;
-
-                Seidon::Entity hitEntity = scene->GetEntityByEntityId(res.hitEntityId);
-                if (hitEntity.HasComponent<DamageableComponent>())
-                    hitEntity.GetComponent<DamageableComponent>().hit = true;
-            }
-        );
-
         scene->CreateGroupAndIterate<DamageableComponent>
             (
                 Seidon::GetTypeList<Seidon::TransformComponent, Seidon::RenderComponent>,
@@ -269,7 +259,7 @@ public:
                     glm::vec3 tint = glm::mix(glm::vec3(1, 1, 1), glm::vec3(1, 0, 0), d.hitFlashTime);
                     r.materials[0]->ModifyProperty("Tint", tint);
 
-                    d.hitFlashTime = max(d.hitFlashTime - deltaTime, 0);
+                    d.hitFlashTime = glm::max<float>(d.hitFlashTime - deltaTime, 0);
                 }
         );
     }

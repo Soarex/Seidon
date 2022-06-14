@@ -136,6 +136,15 @@ namespace Seidon
 		else
 			camera = defaultCamera;
 
+		//TODO: Move to a better place
+		{
+			SoLoud::Soloud& soundEngine = *Application::Get()->GetSoundApi()->GetSoundEngine();
+			soundEngine.set3dListenerPosition(cameraTransform.position.x, cameraTransform.position.y, cameraTransform.position.z);
+
+			glm::vec3 listenerLookDirection = cameraTransform.GetForwardDirection();
+			soundEngine.set3dListenerAt(listenerLookDirection.x, listenerLookDirection.y, listenerLookDirection.z);
+		}
+
 		HdrCubemap* cubemap = resourceManager->GetAsset<HdrCubemap>("default_cubemap");
 		if (!cubemaps.empty())
 			cubemap = cubemaps.get<CubemapComponent>(cubemaps.front()).cubemap;

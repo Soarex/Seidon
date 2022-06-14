@@ -173,6 +173,9 @@
   <ItemGroup>
     <ClCompile Include="src\Animation\Animation.cpp" />
     <ClCompile Include="src\Animation\AnimationSystem.cpp" />
+    <ClCompile Include="src\Audio\Sound.cpp" />
+    <ClCompile Include="src\Audio\SoundApi.cpp" />
+    <ClCompile Include="src\Audio\SoundInstance.cpp" />
     <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Core\UUID.cpp" />
     <ClCompile Include="src\Debug\Debug.cpp" />
@@ -337,6 +340,10 @@
   <ItemGroup>
     <ClInclude Include="src\Animation\Animation.h" />
     <ClInclude Include="src\Animation\AnimationSystem.h" />
+    <ClInclude Include="src\Audio\Audio.h" />
+    <ClInclude Include="src\Audio\Sound.h" />
+    <ClInclude Include="src\Audio\SoundApi.h" />
+    <ClInclude Include="src\Audio\SoundInstance.h" />
     <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Core\Asset.h" />
     <ClInclude Include="src\Core\UUID.h" />

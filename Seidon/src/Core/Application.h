@@ -13,6 +13,7 @@
 #include "Ecs/Entity.h"
 
 #include "../Physics/PhysicsApi.h"
+#include "../Audio/SoundApi.h"
 
 #include <entt/entt.hpp>
 #include <unordered_map>
@@ -21,22 +22,6 @@ namespace Seidon
 {
 	class Application
 	{
-	public:
-		std::vector<SystemMetaType> registeredSystems;
-		std::unordered_map<std::string, int> registeredSystemsIndexToName;
-
-		std::vector<ComponentMetaType> registeredComponents;
-		std::unordered_map<std::string, int> registeredComponentsIndexToName;
-
-		static Application* instance;
-	protected:
-		Window* window;
-
-		SceneManager* sceneManager;
-		InputManager* inputManager;
-		ResourceManager* resourceManager;
-		WorkManager* workManager;
-		PhysicsApi* physicsApi;
 	public:
 		Application();
 		virtual ~Application();
@@ -56,70 +41,9 @@ namespace Seidon
 		inline WorkManager* GetWorkManager() { return workManager; }
 		inline SceneManager* GetSceneManager() { return sceneManager; }
 		inline PhysicsApi* GetPhysicsApi() { return physicsApi; }
+		inline SoundApi* GetSoundApi() { return soundApi; }
 
 		static inline Application* Get() { return instance; }
-
-	private:
-		template<typename Type>
-		static Type& GetComponent(Entity entity)
-		{
-			return entity.GetComponent<Type>();
-		}
-
-		template<typename Type>
-		static void* AddComponent(Entity entity)
-		{
-			return &entity.AddComponent<Type>();
-		}
-
-		template<typename Type>
-		static void RemoveComponent(Entity entity)
-		{
-			return entity.RemoveComponent<Type>();
-		}
-
-		template<typename Type>
-		static bool HasComponent(Entity entity)
-		{
-			return entity.HasComponent<Type>();
-		}
-
-		template<typename Type>
-		static void CopyComponent(Entity src, Entity dst)
-		{
-			auto& component = src.GetComponent<Type>();
-			dst.AddComponent<Type>(component);
-		}
-
-		template<typename Type>
-		static Type& AddSystem(Scene& scene)
-		{
-			return scene.AddSystem<Type>();
-		}
-
-		template<typename Type>
-		static bool HasSystem(Scene& scene)
-		{
-			return scene.HasSystem<Type>();
-		}
-
-		template<typename Type>
-		static Type& GetSystem(Scene& scene)
-		{
-			return scene.GetSystem<Type>();
-		}
-
-		template<typename Type>
-		static void DeleteSystem(Scene& scene)
-		{
-			scene.DeleteSystem<Type>();
-		}
-
-		template<typename Type>
-		static void CopySystem(Scene& src, Scene& dst)
-		{
-			dst.AddSystem<Type>(/*src.GetSystem<Type>()*/);
-		}
 
 	public:
 		template<typename Type>
@@ -220,6 +144,87 @@ namespace Seidon
 			//int index = std::distance(registeredSystems.begin(), std::find(registeredSystems.begin(), registeredSystems.end(), registeredSystemsByName[typeid(Type).name()]));
 			//registeredSystems.erase(registeredSystems.begin() + index);
 			registeredSystemsIndexToName.erase(typeid(Type).name());
+		}
+
+	protected:
+		Window* window;
+
+		SceneManager* sceneManager;
+		InputManager* inputManager;
+		ResourceManager* resourceManager;
+		WorkManager* workManager;
+		PhysicsApi* physicsApi;
+		SoundApi* soundApi;
+
+	public:
+		std::vector<SystemMetaType> registeredSystems;
+		std::unordered_map<std::string, int> registeredSystemsIndexToName;
+
+		std::vector<ComponentMetaType> registeredComponents;
+		std::unordered_map<std::string, int> registeredComponentsIndexToName;
+
+		static Application* instance;
+
+	private:
+		template<typename Type>
+		static Type& GetComponent(Entity entity)
+		{
+			return entity.GetComponent<Type>();
+		}
+
+		template<typename Type>
+		static void* AddComponent(Entity entity)
+		{
+			return &entity.AddComponent<Type>();
+		}
+
+		template<typename Type>
+		static void RemoveComponent(Entity entity)
+		{
+			return entity.RemoveComponent<Type>();
+		}
+
+		template<typename Type>
+		static bool HasComponent(Entity entity)
+		{
+			return entity.HasComponent<Type>();
+		}
+
+		template<typename Type>
+		static void CopyComponent(Entity src, Entity dst)
+		{
+			auto& component = src.GetComponent<Type>();
+			dst.AddComponent<Type>(component);
+		}
+
+		template<typename Type>
+		static Type& AddSystem(Scene& scene)
+		{
+			return scene.AddSystem<Type>();
+		}
+
+		template<typename Type>
+		static bool HasSystem(Scene& scene)
+		{
+			return scene.HasSystem<Type>();
+		}
+
+		template<typename Type>
+		static Type& GetSystem(Scene& scene)
+		{
+			return scene.GetSystem<Type>();
+		}
+
+		template<typename Type>
+		static void DeleteSystem(Scene& scene)
+		{
+			scene.DeleteSystem<Type>();
+		}
+
+		template<typename Type>
+		static void CopySystem(Scene& src, Scene& dst)
+		{
+			dst.AddSystem<Type>(/*src.GetSystem<Type>()*/);
 		}
 	};
 

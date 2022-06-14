@@ -10,26 +10,13 @@
 
 #include <Debug/Timer.h>
 
-#include <Soloud/soloud.h>
-#include <Soloud/soloud_speech.h>
-#include <Soloud/soloud_wav.h>
-
 namespace Seidon
 {
     Editor::Editor()
         : hierarchyPanel(selectedItem), inspectorPanel(selectedItem), fileBrowserPanel(selectedItem), animationPanel(selectedItem) {}
 
-    SoLoud::Soloud soloud;
-    SoLoud::Wav* sound;
     void Editor::Init()
 	{
-        sound = new SoLoud::Wav();
-        //sound->load("Assets/sound.ogg");
-        sound->setLooping(true);
-
-        soloud.init();
-
-        //soloud.play(*sound);
 
         int width, height, channelCount;
         unsigned char* data = stbi_load("Resources/ModelIcon.png", &width, &height, &channelCount, 0);
@@ -363,7 +350,6 @@ namespace Seidon
 
         consolePanel.Destroy();
         editorResourceManager.Destroy();
-        soloud.deinit();
 	}
 
     void Editor::DrawCubeColliders(Renderer& renderer)
