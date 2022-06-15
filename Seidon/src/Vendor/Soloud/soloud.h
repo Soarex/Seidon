@@ -21,7 +21,7 @@ freely, subject to the following restrictions:
    3. This notice may not be removed or altered from any source
    distribution.
 */
-
+#pragma once
 #ifndef SOLOUD_H
 #define SOLOUD_H
 

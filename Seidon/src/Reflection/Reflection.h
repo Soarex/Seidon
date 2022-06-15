@@ -1,5 +1,7 @@
 #pragma once
 #include "../Core/UUID.h"
+#include "../Audio/Sound.h"
+
 #include "../Graphics/Texture.h"
 #include "../Graphics/HdrCubemap.h"
 #include "../Graphics/Mesh.h"
@@ -56,7 +58,8 @@ namespace Seidon
 		ANIMATION,
 		SHADER,
 		FONT,
-		MESH_COLLIDER
+		MESH_COLLIDER,
+		SOUND
 	};
 
 	template<typename T, typename U> 
@@ -167,6 +170,9 @@ namespace Seidon
 
 			if (typeid(U).hash_code() == typeid(MeshCollider*).hash_code())
 				data.type = Types::MESH_COLLIDER;
+
+			if (typeid(U).hash_code() == typeid(Sound*).hash_code())
+				data.type = Types::SOUND;
 
 			members.push_back(data);
 			nameToMember[data.name] = data;

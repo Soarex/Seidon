@@ -863,6 +863,48 @@ namespace Seidon
 		return ChangeStatus::NO_CHANGE;
 	}
 
+	ChangeStatus DrawSoundControl(const std::string& label, Sound** sound, float size, Sound** oldValue)
+	{
+		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		bool changed = false;
+
+		ImGui::PushID(label.c_str());
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::Columns(2);
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SoundIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_SOUND"))
+			{
+				ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+				std::string path = (const char*)payload->Data;
+
+				if (oldValue) *oldValue = *sound;
+
+				*sound = resourceManager.GetOrLoadAsset<Sound>(path);
+
+				changed = true;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::NextColumn();
+
+		if (*sound) ImGui::Text((*sound)->name.c_str());
+
+		ImGui::Columns(1);
+		ImGui::PopID();
+
+		if (changed) return ChangeStatus::CHANGED;
+
+		return ChangeStatus::NO_CHANGE;
+	}
+
 	ChangeData DrawReflectedMember(void* object, MemberData& member)
 	{
 		ChangeData data;
@@ -1091,6 +1133,17 @@ namespace Seidon
 
 			memcpy(data.oldValue, &old, sizeof(MeshCollider*));
 			if (*c)memcpy(data.newValue, *c, sizeof(MeshCollider*));
+		}
+
+		if (member.type == Types::SOUND)
+		{
+			Sound** s = (Sound**)(obj + member.offset);
+			Sound* old;
+
+			data.status = DrawSoundControl(member.name.c_str(), s, 64.0f, &old);
+
+			memcpy(data.oldValue, &old, sizeof(Sound*));
+			if (*s)memcpy(data.newValue, *s, sizeof(Sound*));
 		}
 
 		return data;

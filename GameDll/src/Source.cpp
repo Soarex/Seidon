@@ -4,7 +4,7 @@
 struct PlayerComponent
 {
     float speed = 10;
-    float jumpHeight = 2;
+    float jumpHeight = 1;
     glm::vec3 velocity;
 };
 
@@ -17,6 +17,7 @@ struct UIComponent
 
 struct DamageableComponent
 {
+    Seidon::Sound* hitSound;
     Seidon::Material* m;
     Seidon::Material* old = nullptr;
     bool hit = false;
@@ -26,6 +27,7 @@ struct DamageableComponent
     DamageableComponent()
     {
         m = Seidon::Application::Get()->GetResourceManager()->GetAsset<Seidon::Material>("default_material");
+        hitSound = Seidon::Application::Get()->GetResourceManager()->GetAsset<Seidon::Sound>("empty_sound");
     }
 };
 
@@ -190,7 +192,7 @@ public:
 
             Seidon::TransformComponent t1;
             t1.SetFromMatrix(hitEntity.GetGlobalTransformMatrix());
-            sound.Play3d(t1.position);
+            hitEntity.GetComponent<DamageableComponent>().hitSound->Play3d(t1.position);
         }
     }
 };
@@ -277,7 +279,8 @@ void Init(Seidon::Application& app)
         .AddMember("Click Color", &UIComponent::clickColor, Seidon::Types::VECTOR3_COLOR);
 
     app.RegisterComponent<DamageableComponent>()
-        .AddMember("Material", &DamageableComponent::m);
+        .AddMember("Material", &DamageableComponent::m)
+        .AddMember("Hit Sound", &DamageableComponent::hitSound);
 
     app.RegisterComponent<AttackerComponent>();
 

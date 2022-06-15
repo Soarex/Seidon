@@ -141,7 +141,7 @@ namespace Seidon
 			SoLoud::Soloud& soundEngine = *Application::Get()->GetSoundApi()->GetSoundEngine();
 			soundEngine.set3dListenerPosition(cameraTransform.position.x, cameraTransform.position.y, cameraTransform.position.z);
 
-			glm::vec3 listenerLookDirection = cameraTransform.GetForwardDirection();
+			glm::vec3 listenerLookDirection = -cameraTransform.GetForwardDirection();
 			soundEngine.set3dListenerAt(listenerLookDirection.x, listenerLookDirection.y, listenerLookDirection.z);
 		}
 

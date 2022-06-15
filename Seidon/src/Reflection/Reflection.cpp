@@ -191,6 +191,13 @@ namespace Seidon
 				out.write((char*)&id, sizeof(UUID));
 				break;
 			}
+			case Types::SOUND:
+			{
+				Sound* item = *(Sound**)&data[m.offset];
+				UUID id = item->id;
+				out.write((char*)&id, sizeof(UUID));
+				break;
+			}
 			case Types::UNKNOWN:
 				break;
 			}
@@ -522,6 +529,20 @@ namespace Seidon
 				}
 				break;
 			}
+			case Types::SOUND:
+			{
+				UUID id;
+				in.read((char*)&id, sizeof(UUID));
+
+				if (resourceManager.IsAssetRegistered(id))
+					*(Sound**)&data[m.offset] = resourceManager.GetOrLoadAsset<Sound>(id);
+				else
+				{
+					std::cerr << "Error loading member " << m.name << " of " << name << ": Sound id not registered" << std::endl;
+					*(Sound**)&data[m.offset] = resourceManager.GetAsset<Sound>("empty_sound");
+				}
+				break;
+			}
 			case Types::UNKNOWN:
 				break;
 			}
@@ -601,6 +622,9 @@ namespace Seidon
 		if (type == Types::FONT)
 			return "Font";
 
+		if (type == Types::SOUND)
+			return "Sound";
+
 		return "Unknown";
 	}
 
@@ -674,6 +698,9 @@ namespace Seidon
 
 		if (string == "FONT")
 			return Types::FONT;
+
+		if (string == "SOUND")
+			return Types::SOUND;
 
 		return Types::UNKNOWN;
 	}

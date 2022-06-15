@@ -1,7 +1,5 @@
 #include "SoundApi.h"
 
-#include <Soloud/soloud.h>
-
 namespace Seidon
 {
 	void SoundApi::Init()
@@ -18,6 +16,7 @@ namespace Seidon
 
 	void SoundApi::Destroy()
 	{
+		engine->stopAll();
 		engine->deinit();
 
 		delete engine;

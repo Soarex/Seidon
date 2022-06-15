@@ -2,11 +2,14 @@
 
 #include "../Core/Application.h"
 
-#include <Soloud/soloud.h>
-#include <Soloud/soloud_wav.h>
-
 namespace Seidon
 {
+	Sound::Sound(UUID id)
+	{
+		this->id = id;
+		source = new SoLoud::Wav();
+	}
+
 	SoundInstance Sound::Play(float volume, float pan, bool paused)
 	{
 		SoundApi& api = *Application::Get()->GetSoundApi();
@@ -18,7 +21,8 @@ namespace Seidon
 		return res;
 	}
 
-	SoundInstance Sound::Play3d(const glm::vec3& position, const glm::vec3& velocity, float volume, bool paused)
+	SoundInstance Sound::Play3d(const glm::vec3& position, const glm::vec3& velocity, float volume, bool paused, AttenuationModes attenuationMode, 
+		float rollofFactor, float minDistance, float maxDistance)
 	{
 		SoundApi& api = *Application::Get()->GetSoundApi();
 
@@ -36,6 +40,9 @@ namespace Seidon
 			volume, 
 			paused
 		);
+
+		api.GetSoundEngine()->set3dSourceAttenuation(res.instanceHandle, (SoLoud::AudioSource::ATTENUATION_MODELS)attenuationMode, rollofFactor);
+		api.GetSoundEngine()->set3dSourceMinMaxDistance(res.instanceHandle, minDistance, maxDistance);
 
 		res.soundEngine = api.GetSoundEngine();
 
@@ -56,7 +63,7 @@ namespace Seidon
 	{
 		SoundApi& api = *Application::Get()->GetSoundApi();
 
-		source = new SoLoud::Wav();
 		source->load(path.c_str());
+		name = path;
 	}
 }

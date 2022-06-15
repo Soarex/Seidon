@@ -1,5 +1,7 @@
 #include "ResourceManager.h"
 
+#include "Audio/Sound.h"
+
 #include "Graphics/Material.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Mesh.h"
@@ -110,6 +112,10 @@ namespace Seidon
         QuadMesh quad;
         collider->CreateFromMesh(&quad);
         AddAsset("quad_mesh_collider", collider);
+
+        Sound* sound = new Sound(16);
+        sound->name = "empty_sound";
+        AddAsset("empty_sound", sound);
     }
 
     void ResourceManager::Destroy()

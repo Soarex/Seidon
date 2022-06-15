@@ -38,6 +38,7 @@ namespace Seidon
 	ChangeStatus DrawShaderControl(const std::string& label, Shader** shader, float size = 64, Shader** oldValue = nullptr);
 	ChangeStatus DrawFontControl(const std::string& label, Font** font, float size = 64, Font** oldValue = nullptr);
 	ChangeStatus DrawMeshColliderControl(const std::string& label, MeshCollider** collider, float size = 64, MeshCollider** oldValue = nullptr);
+	ChangeStatus DrawSoundControl(const std::string& label, Sound** sound, float size = 64, Sound** oldValue = nullptr);
 
 	ChangeData DrawReflectedMember(void* object, MemberData& member);
 	ChangeData DrawMetaType(void* object, MetaType& type);
