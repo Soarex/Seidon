@@ -1,20 +1,17 @@
 #pragma once
 #include <Seidon.h>
-#include "../SelectedItem.h"
+#include "Panel.h"
 
 namespace Seidon
 {
-	class HierarchyPanel
+	class HierarchyPanel : public Panel
 	{
 	public:
-		HierarchyPanel(SelectedItem& selectedItem) : selectedItem(selectedItem) {}
+		HierarchyPanel(Editor& editor) : Panel(editor) {}
 
-		void Init();
-		void Draw();
+		void Init() override;
+		void Draw() override;
 
-	private:
-		SelectedItem& selectedItem;
-	
 	private:
 		void DrawEntityNode(Entity& entity);
 		void DrawBoneNode(Entity& owningEntity, Armature& armature, std::vector<glm::mat4>& boneTransforms, int index);

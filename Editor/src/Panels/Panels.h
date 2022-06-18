@@ -1,0 +1,9 @@
+#pragma once
+#include "Panel.h"
+#include "AnimationPanel.h"
+#include "ConsolePanel.h"
+#include "FileBrowserPanel.h"
+#include "HierarchyPanel.h"
+#include "InspectorPanel.h"
+#include "SystemsPanel.h"
+#include "ViewportPanel.h"

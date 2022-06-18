@@ -60,7 +60,7 @@ vec3 CalculateSkyLuminanceRGB(in vec3 s, in vec3 e, in float t );
 
 void main()
 {
-	float azimuth = material.azimuth;
+	float azimuth = material.azimuth + radians(-90);
 	float inclination = material.inclination + radians(-90);
 	float turbidity = material.turbidity;
 	float intensity = material.intensity;

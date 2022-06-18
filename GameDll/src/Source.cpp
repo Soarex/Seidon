@@ -95,6 +95,10 @@ public:
         auto players = scene->GetRegistry().group<PlayerComponent>(entt::get<Seidon::TransformComponent, Seidon::CharacterControllerComponent>);
         auto cameras = scene->GetRegistry().view<Seidon::CameraComponent>();
 
+        char* string = nullptr;
+
+        //*string = 5;
+
         if (players.empty()) return;
         for (auto e : cameras)
         {
@@ -292,6 +296,11 @@ void Init(Seidon::Application& app)
 
 void Destroy(Seidon::Application& app)
 {
+    app.UnregisterComponent<PlayerComponent>();
+    app.UnregisterComponent<UIComponent>();
+    app.UnregisterComponent<DamageableComponent>();
+    app.UnregisterComponent<AttackerComponent>();
+
     app.UnregisterSystem<CameraSystem>();
     app.UnregisterSystem<PlayerSystem>();
     app.UnregisterSystem<UISystem>();

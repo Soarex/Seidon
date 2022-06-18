@@ -317,6 +317,8 @@ namespace Seidon
 		TransformComponent transform;
 		transform.SetFromMatrix(e.GetGlobalTransformMatrix());
 
+		transform.position += controller.offset;
+
 		PxCapsuleControllerDesc desc;
 		desc.setToDefault();
 		desc.height = controller.colliderHeight;

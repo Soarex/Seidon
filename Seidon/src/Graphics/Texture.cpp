@@ -375,12 +375,15 @@ namespace Seidon
         );
     }
 
-    bool Texture::Import(const std::string& path, bool gammaCorrection, ClampingMode clampingMode)
+    bool Texture::Import(const std::string& path, bool gammaCorrection, bool flip, ClampingMode clampingMode)
     {
         SD_ASSERT(!initialized, "Texture already initialized");
 
         this->path = path;
         gammaCorrected = gammaCorrection;
+
+        stbi_set_flip_vertically_on_load(flip);
+
         int width, height, channelCount;
         unsigned char* data = stbi_load(path.c_str(), &width, &height, &channelCount, 0);
 

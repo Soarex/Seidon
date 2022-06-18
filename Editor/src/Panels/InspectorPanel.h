@@ -1,19 +1,19 @@
 #pragma once
-#include <Seidon.h>
+#include "Panel.h"
 #include "../SelectedItem.h"
 #include "Utils/DrawFunctions.h"
 
+#include <Seidon.h>
+
 namespace Seidon
 {
-	class InspectorPanel
+	class InspectorPanel : public Panel
 	{
-	private:
-		SelectedItem& selectedItem;
 	public:
-		InspectorPanel(SelectedItem& selectedItem) : selectedItem(selectedItem) {}
+		InspectorPanel(Editor& editor) : Panel(editor) {}
 
-		void Init();
-		void Draw();
+		void Init() override;
+		void Draw() override;
 
 	private:
 		void DrawEntity(Entity e);

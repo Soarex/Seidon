@@ -427,6 +427,9 @@ namespace Seidon
     {
         Animation anim;
         anim.name = animation->mName.C_Str();
+
+        std::replace(anim.name.begin(), anim.name.end(), '|', '-');
+
         anim.duration = animation->mDuration;
         anim.ticksPerSecond = animation->mTicksPerSecond;
 
@@ -679,13 +682,13 @@ namespace Seidon
         return m;
     }
 
-    Texture* AssetImporter::ImportTexture(const std::string& path, bool gammaCorrection, ClampingMode clampingMode)
+    Texture* AssetImporter::ImportTexture(const std::string& path, bool gammaCorrection, bool flip, ClampingMode clampingMode)
     {
         if (importedTextures.count(path) > 0) return importedTextures[path];
 
         Texture* t = new Texture();
 
-        if (!t->Import(path, gammaCorrection, clampingMode))
+        if (!t->Import(path, gammaCorrection, flip, clampingMode))
         {
             //delete t;
             return nullptr;

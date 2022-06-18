@@ -6,8 +6,17 @@ namespace Seidon
 {
 	void MetaType::Save(std::ofstream& out, byte* data)
 	{
+		size_t nameSize = name.length() + 1;
+
+		out.write((char*)&nameSize, sizeof(size_t));
+		out.write(name.c_str(), nameSize * sizeof(char));
+
+		size_t memberCount = members.size();
+		out.write((char*)&memberCount, sizeof(size_t));
+
 		for (MemberData& m : members)
 		{
+			out.write((char*)&m.type, sizeof(Types));
 			switch (m.type)
 			{
 			case Types::ID:
@@ -207,8 +216,36 @@ namespace Seidon
 	void MetaType::Load(std::ifstream& in, byte* data)
 	{
 		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+
+		size_t nameSize = 0;
+		char buffer[512];
+
+		in.read((char*)&nameSize, sizeof(size_t));
+		in.read(buffer, nameSize * sizeof(char));
+
+		if (name != std::string(buffer))
+			std::cerr << "Save metatype name is different from current metatype name, data might not load correctly";
+
+		size_t memberCount = 0;
+		in.read((char*)&memberCount, sizeof(size_t));
+
+		if (members.size() != memberCount)
+		{
+			std::cerr << "Save metatype member count is different from current metatype member count, aborting data load";
+			return;
+		}
+
 		for (MemberData& m : members)
 		{
+			Types type;
+			in.read((char*)&type, sizeof(Types));
+
+			if (m.type != type)
+			{
+				std::cerr << "Save member type is different from current member, aborting data load";
+				return;
+			}
+
 			switch (m.type)
 			{
 			case Types::ID:

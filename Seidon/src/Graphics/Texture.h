@@ -65,7 +65,7 @@ namespace Seidon
         void Load(std::ifstream& in) override;
         void LoadAsync(const std::string& path);
 
-        bool Import(const std::string& path, bool gammaCorrection = true, ClampingMode clampingMode = ClampingMode::CLAMP);
+        bool Import(const std::string& path, bool gammaCorrection = true, bool flip = true, ClampingMode clampingMode = ClampingMode::CLAMP);
         void ImportAsync(const std::string& path, bool gammaCorrection = true);
 
         void Bind(unsigned int slot = 0) const;

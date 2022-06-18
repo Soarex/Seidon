@@ -64,6 +64,16 @@ namespace Seidon
 		}
 
 		template<typename Type>
+		void UnregisterComponent()
+		{
+			registeredComponents.erase(registeredComponents.begin() + registeredComponentsIndexToName[typeid(Type).name()]);
+			registeredComponentsIndexToName.erase(typeid(Type).name());
+
+			for (int i = 0; i < registeredComponents.size(); i++)
+				registeredComponentsIndexToName[registeredComponents[i].name] = i;
+		}
+
+		template<typename Type>
 		ComponentMetaType GetComponentMetaType()
 		{
 			return registeredComponents[registeredComponentsIndexToName.at(typeid(Type).name())];
@@ -141,9 +151,11 @@ namespace Seidon
 		template<typename Type>
 		void UnregisterSystem()
 		{
-			//int index = std::distance(registeredSystems.begin(), std::find(registeredSystems.begin(), registeredSystems.end(), registeredSystemsByName[typeid(Type).name()]));
-			//registeredSystems.erase(registeredSystems.begin() + index);
+			registeredSystems.erase(registeredSystems.begin() + registeredSystemsIndexToName[typeid(Type).name()]);
 			registeredSystemsIndexToName.erase(typeid(Type).name());
+
+			for (int i = 0; i < registeredSystems.size(); i++)
+				registeredSystemsIndexToName[registeredSystems[i].name] = i;
 		}
 
 	protected:

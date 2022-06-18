@@ -1,5 +1,8 @@
 #include "HierarchyPanel.h"
+#include "../Editor.h"
+
 #include <ostream>
+
 namespace Seidon
 {
 	void HierarchyPanel::Init()
@@ -29,7 +32,7 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		Application::Get()->GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityId)
+		editor.GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityId)
 			{
 				Scene* scene = Application::Get()->GetSceneManager()->GetActiveScene();
 				if (!scene->IsEntityIdValid(entityId)) return;
@@ -64,8 +67,8 @@ namespace Seidon
 			{
 				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
 
-				selectedItem.type = SelectedItemType::ENTITY;
-				selectedItem.entity = e;
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
 			}
 
 			if (ImGui::MenuItem("Create Mesh Entity"))
@@ -73,8 +76,8 @@ namespace Seidon
 				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
 				e.AddComponent<RenderComponent>();
 
-				selectedItem.type = SelectedItemType::ENTITY;
-				selectedItem.entity = e;
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
 			}
 
 			if (ImGui::MenuItem("Create Animated Mesh Entity"))
@@ -83,8 +86,8 @@ namespace Seidon
 				e.AddComponent<SkinnedRenderComponent>();
 				e.AddComponent<AnimationComponent>();
 
-				selectedItem.type = SelectedItemType::ENTITY;
-				selectedItem.entity = e;
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
 			}
 
 			ImGui::EndPopup();
@@ -101,7 +104,7 @@ namespace Seidon
 
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth;
 		
-		if (selectedItem.type == SelectedItemType::ENTITY && selectedItem.entity == entity)
+		if (editor.selectedItem.type == SelectedItemType::ENTITY && editor.selectedItem.entity == entity)
 			flags |= ImGuiTreeNodeFlags_Selected;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -129,8 +132,8 @@ namespace Seidon
 
 		if (ImGui::IsItemClicked())
 		{
-			selectedItem.type = SelectedItemType::ENTITY;
-			selectedItem.entity = entity;
+			editor.selectedItem.type = SelectedItemType::ENTITY;
+			editor.selectedItem.entity = entity;
 		}
 
 		ImGui::PopStyleVar();
@@ -164,11 +167,11 @@ namespace Seidon
 
 		if (entityDeleted)
 		{
-			if (selectedItem.type == SelectedItemType::ENTITY && (selectedItem.entity == entity || selectedItem.entity.IsDescendantOf(entity)))
-				selectedItem.type = SelectedItemType::NONE;
+			if (editor.selectedItem.type == SelectedItemType::ENTITY && (editor.selectedItem.entity == entity || editor.selectedItem.entity.IsDescendantOf(entity)))
+				editor.selectedItem.type = SelectedItemType::NONE;
 
-			if(selectedItem.type == SelectedItemType::BONE)
-				selectedItem.type = SelectedItemType::NONE;
+			if(editor.selectedItem.type == SelectedItemType::BONE)
+				editor.selectedItem.type = SelectedItemType::NONE;
 
 			Application::Get()->GetSceneManager()->GetActiveScene()->DestroyEntity(entity);
 		}
@@ -180,7 +183,7 @@ namespace Seidon
 	{
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-		if (selectedItem.type == SelectedItemType::BONE && selectedItem.boneData.armature->bones[selectedItem.boneData.id] == armature.bones[index])
+		if (editor.selectedItem.type == SelectedItemType::BONE && editor.selectedItem.boneData.armature->bones[editor.selectedItem.boneData.id] == armature.bones[index])
 			flags |= ImGuiTreeNodeFlags_Selected;
 
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
@@ -190,11 +193,11 @@ namespace Seidon
 
 		if (ImGui::IsItemClicked())
 		{
-			selectedItem.type = SelectedItemType::BONE;
-			selectedItem.boneData.id = index;
-			selectedItem.boneData.owningEntity = owningEntity;
-			selectedItem.boneData.armature = &armature;
-			selectedItem.boneData.transforms = &boneTransforms;
+			editor.selectedItem.type = SelectedItemType::BONE;
+			editor.selectedItem.boneData.id = index;
+			editor.selectedItem.boneData.owningEntity = owningEntity;
+			editor.selectedItem.boneData.armature = &armature;
+			editor.selectedItem.boneData.transforms = &boneTransforms;
 		}
 
 		if (open)

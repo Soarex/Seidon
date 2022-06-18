@@ -1,14 +1,10 @@
 #pragma once
 #include <Seidon.h>
 
-#include "Panels/InspectorPanel.h"
-#include "Panels/HierarchyPanel.h"
-#include "Panels/SystemsPanel.h"
-#include "Panels/FileBrowserPanel.h"
-#include "Panels/AnimationPanel.h"
-#include "Panels/ConsolePanel.h"
+#include "EditorWindow.h"
+#include "ProjectSelectionWindow.h"
+
 #include "EditorAction.h"
-#include "SelectedItem.h"
 #include "Dockspace.h"
 
 #include <ImGuizmo/ImGuizmo.h>
@@ -19,25 +15,22 @@ namespace Seidon
     class Editor : public Application
     {
     public:
+        Project* openProject = nullptr;
+
         EditorActionList actions;
         std::vector<EditorActionCallback> actionCallbacks;
 
+        ProjectSelectionWindow* projectSelectionWindow;
+        EditorWindow* editorWindow;
+        SelectedItem selectedItem;
         ResourceManager editorResourceManager;
         Scene* scene;
         Scene* runtimeScene;
-
-        SelectedItem selectedItem;
-
         Scene editorSystems;
         Scene runtimeSystems;
 
-        HierarchyPanel hierarchyPanel;
-        InspectorPanel inspectorPanel;
-        FileBrowserPanel fileBrowserPanel;
-        AnimationPanel animationPanel;
-        SystemsPanel systemsPanel;
-        ConsolePanel consolePanel;
         Dockspace dockspace;
+
         Extension e;
 
         RenderFunction drawColliders;
@@ -49,8 +42,6 @@ namespace Seidon
 
         bool isPlaying = false;
     public:
-        Editor();
-
         void Init() override;
         void Update() override;
         void Destroy() override;
@@ -63,5 +54,7 @@ namespace Seidon
         void DrawCharacterControllers(Renderer& renderer);
         void DrawGuizmos(Renderer& renderer);
         void DrawTransformGuizmos();
+
+        void ReloadDll();
     };
 }

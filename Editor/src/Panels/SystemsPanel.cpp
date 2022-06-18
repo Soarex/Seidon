@@ -18,19 +18,18 @@ namespace Seidon
             return;
         }
 
-        Editor* editor = (Editor*)Application::Get();
-		Scene* currentScene = Application::Get()->GetSceneManager()->GetActiveScene();
+		Scene* currentScene = editor.GetSceneManager()->GetActiveScene();
 
         Scene *runtimeSystems, *editorSystems;
-        if (!editor->isPlaying)
+        if (!editor.isPlaying)
         {
-            runtimeSystems = &editor->runtimeSystems;
+            runtimeSystems = &editor.runtimeSystems;
             editorSystems = currentScene;
         }
         else
         {
             runtimeSystems = currentScene;
-            editorSystems = editor->scene;
+            editorSystems = editor.scene;
         }
         
         ImGui::PushID("Scene Systems");

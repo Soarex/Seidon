@@ -1,15 +1,19 @@
 #pragma once
-#include <Seidon.h>
+#include "Panel.h"
 
+#include <Seidon.h>
 #include <sstream>
+
 namespace Seidon
 {
-	class ConsolePanel
+	class ConsolePanel : public Panel
 	{
 	public:
-		void Init();
-		void Draw();
-		void Destroy();
+		ConsolePanel(Editor& editor) : Panel(editor) {}
+
+		void Init() override;
+		void Draw() override;
+		void Destroy() override;
 
 		void Clear();
 	private:

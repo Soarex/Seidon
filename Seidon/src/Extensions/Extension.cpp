@@ -58,5 +58,7 @@ namespace Seidon
 		SD_ASSERT(bound, "Extension not bound"); 
 
 		DllDestroy(*Application::Get());
+
+		initialized = false;
 	}
 }

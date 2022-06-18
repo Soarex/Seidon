@@ -1,20 +1,18 @@
 #pragma once
 #include <Seidon.h>
-#include "../SelectedItem.h"
+#include "Panel.h"
 
 namespace Seidon
 {
-	class AnimationPanel
+	class AnimationPanel : public Panel
 	{
 	public:
-		AnimationPanel(SelectedItem& selectedItem) : selectedItem(selectedItem) {}
+		AnimationPanel(Editor& editor) : Panel(editor) {}
 
-		void Init();
-		void Draw();
+		void Init() override;
+		void Draw() override;
 		
 	private:
-		SelectedItem& selectedItem;
-
 		Animation* openedAnimation = nullptr;
 		Entity attachedEntity = {NullEntityId, nullptr};
 		

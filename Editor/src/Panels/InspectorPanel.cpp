@@ -15,14 +15,14 @@ namespace Seidon
             return;
         }
 
-		if (selectedItem.type == SelectedItemType::ENTITY)
-            DrawEntity(selectedItem.entity);
+		if (editor.selectedItem.type == SelectedItemType::ENTITY)
+            DrawEntity(editor.selectedItem.entity);
 
-        if (selectedItem.type == SelectedItemType::BONE)
-            DrawBone(selectedItem.boneData);
+        if (editor.selectedItem.type == SelectedItemType::BONE)
+            DrawBone(editor.selectedItem.boneData);
 
-        if (selectedItem.type == SelectedItemType::MATERIAL)
-            DrawMaterial(selectedItem.material);
+        if (editor.selectedItem.type == SelectedItemType::MATERIAL)
+            DrawMaterial(editor.selectedItem.material);
 		
 		ImGui::End();
 	}
@@ -45,7 +45,7 @@ namespace Seidon
         TransformComponent t;
         t.SetFromMatrix((*boneData.transforms)[boneData.id]);
 
-        MetaType type = Application::Get()->GetComponentMetaType<TransformComponent>();
+        MetaType type = editor.GetComponentMetaType<TransformComponent>();
 
         if(ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
             DrawMetaType(&t, type);
@@ -65,7 +65,7 @@ namespace Seidon
             name = std::string(buffer);
         ImGui::PopItemWidth();
 
-        std::vector<ComponentMetaType> components = Application::Get()->GetComponentMetaTypes();
+        std::vector<ComponentMetaType> components = editor.GetComponentMetaTypes();
 
         for (auto& metaType : components)
         {

@@ -8,9 +8,10 @@
 
 namespace Seidon
 {
-	Scene::Scene(const std::string& name)
-		: name(name)
+	Scene::Scene(const std::string& name, UUID id)
 	{
+		this->name = name;
+		this->id = id;
 	}
 
 
@@ -23,6 +24,12 @@ namespace Seidon
 	{
 	}
 
+	//LONG WINAPI ExceptionFilterFunction(struct _EXCEPTION_POINTERS* ExceptionInfo)
+	//{
+	//	std::cerr << "Exception during system execution" << std::endl;
+	//	throw "Error";
+	//}
+
 	void Scene::Update(float deltaTime)
 	{
 		CreateViewAndIterate<TransformComponent>
@@ -33,8 +40,19 @@ namespace Seidon
 			}
 		);
 
-		for (auto& [typeName, system] : systems)
-			system->SysUpdate(deltaTime);
+		//LPTOP_LEVEL_EXCEPTION_FILTER oldExceptionFilter = SetUnhandledExceptionFilter(&ExceptionFilterFunction);
+
+		//try
+		//{
+			for (auto& [typeName, system] : systems)
+				system->SysUpdate(deltaTime);
+		//}
+		//catch (...)
+		//{
+		//	std::cerr << "Caught" << std::endl;
+		//}
+
+		//SetUnhandledExceptionFilter(oldExceptionFilter);
 	}
 
 	void Scene::Save(std::ofstream& out)

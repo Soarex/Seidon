@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/UUID.h"
+#include "Core/Asset.h"
 #include "EnttWrappers.h"
 #include "System.h"
 
@@ -22,27 +22,18 @@ namespace Seidon
 	typedef std::function<void(EntityId)> ComponentCallback;
 	typedef std::vector<ComponentCallback>::iterator ComponentCallbackId;
 
-	class Scene
+	class Scene : public Asset
 	{
-	private:
-		UUID id;
-		std::string name;
-		entt::registry registry;
-
-		std::unordered_map<UUID, EntityId> idToEntityMap;
-
-		std::unordered_map<std::string, System*> systems;
-
-		std::unordered_map<std::string, std::vector<ComponentCallback>> componentAddedCallbacks;
-		std::unordered_map<std::string, std::vector<ComponentCallback>> componentRemovedCallbacks;
-
 	public:
-		Scene(const std::string& name = "Scene");
+		Scene(const std::string& name = "Scene", UUID id = UUID());
 		~Scene();
 
 		void Init();
 		void Update(float deltaTime);
 		void Destroy();
+
+		using Asset::Save;
+		using Asset::Load;
 
 		void Save(std::ofstream& out);
 		void Load(std::ifstream& in);
@@ -167,6 +158,16 @@ namespace Seidon
 		{
 			componentRemovedCallbacks[typeid(T).name()].erase(callbackId);
 		}
+
+		private:
+			entt::registry registry;
+
+			std::unordered_map<UUID, EntityId> idToEntityMap;
+
+			std::unordered_map<std::string, System*> systems;
+
+			std::unordered_map<std::string, std::vector<ComponentCallback>> componentAddedCallbacks;
+			std::unordered_map<std::string, std::vector<ComponentCallback>> componentRemovedCallbacks;
 
 		private:
 			template <typename T>

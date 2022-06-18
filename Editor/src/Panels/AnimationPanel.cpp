@@ -1,4 +1,6 @@
 #include "AnimationPanel.h"
+
+#include "../Editor.h"
 #include "Utils/Dialogs.h"
 
 #include <ImGui/imgui_neo_sequencer.h>
@@ -17,19 +19,19 @@ namespace Seidon
 			return;
 		}
 
-		Scene* activeScene = Application::Get()->GetSceneManager()->GetActiveScene();
+		Scene* activeScene = editor.GetSceneManager()->GetActiveScene();
 
 		if (ImGui::Button("Open"))
 		{
 			std::string filepath = LoadFile("Seidon Animation (*.sdanim)\0*.sdanim\0");
 			if (!filepath.empty())
-				openedAnimation = Application::Get()->GetResourceManager()->GetOrLoadAsset<Animation>(filepath);
+				openedAnimation = editor.GetResourceManager()->GetOrLoadAsset<Animation>(filepath);
 		}
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("Attach Entity") && selectedItem.type == SelectedItemType::ENTITY)
-			attachedEntity = selectedItem.entity;
+		if (ImGui::Button("Attach Entity") && editor.selectedItem.type == SelectedItemType::ENTITY)
+			attachedEntity = editor.selectedItem.entity;
 
 		ImGui::SameLine();
 

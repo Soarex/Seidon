@@ -1,6 +1,6 @@
 #pragma once
 #include <Seidon.h>
-#include "../SelectedItem.h"
+#include "Panel.h"
 
 #include <filesystem>
 #include <vector>
@@ -20,11 +20,14 @@ namespace Seidon
 		std::string extension;
 	};
 
-	class FileBrowserPanel
+	class FileBrowserPanel : public Panel
 	{
-	private:
-		SelectedItem& selectedItem;
+	public:
+		FileBrowserPanel(Editor& editor) : Panel(editor) {}
+		void Init() override;
+		void Draw() override;
 
+	private:
 		AssetImporter importer;
 
 		std::filesystem::path currentDirectory;
@@ -47,11 +50,6 @@ namespace Seidon
 
 		float padding = 32.0f;
 		float thumbnailSize = 90.0f;
-
-	public:
-		FileBrowserPanel(SelectedItem& selectedItem) : selectedItem(selectedItem) {}
-		void Init();
-		void Draw();
 
 	private:
 		void UpdateEntries();

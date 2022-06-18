@@ -4,8 +4,6 @@
 
 namespace Seidon
 {
-	extern const std::filesystem::path assetsPath = "Assets";
-
 	void FileBrowserPanel::Init()
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
@@ -22,13 +20,13 @@ namespace Seidon
 		colliderIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex");
 		soundIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/SoundIcon.sdtex");
 
-		currentDirectory = assetsPath;
+		currentDirectory = editor.openProject->assetsDirectory;
 		UpdateEntries();
 	}
 
 	void FileBrowserPanel::Draw()
 	{
-		ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+		ResourceManager& resourceManager = *editor.GetResourceManager();
 
 		if (!ImGui::Begin("File Browser"))
 		{
@@ -74,7 +72,7 @@ namespace Seidon
 
 		ImGui::Columns(columnCount, 0, false);
 
-		if (currentDirectory != std::filesystem::path(assetsPath))
+		if (currentDirectory != std::filesystem::path(((Editor*)Application::Get())->openProject->assetsDirectory))
 		{
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			if (ImGui::ImageButton((ImTextureID)backIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 }))
@@ -267,6 +265,11 @@ namespace Seidon
 			ImGui::SameLine();
 			ImGui::Checkbox("##Gamma correction", &gammaCorrection);
 
+			static bool flip;
+			ImGui::Text("Flip vertically: ");
+			ImGui::SameLine();
+			ImGui::Checkbox("##Flip vertically", &flip);
+
 			const char* clampModeNames[] = { "Repeat", "Clamp To Edge", "Clamp To Border" };
 			ClampingMode clampModes[] = { ClampingMode::REPEAT, ClampingMode::CLAMP, ClampingMode::BORDER };
 			static int selectedModeIndex = 0;
@@ -287,10 +290,8 @@ namespace Seidon
 
 			if (ImGui::Button("Import"))
 			{
-				importer.ImportTexture(file.path, gammaCorrection, clampModes[selectedModeIndex]);
+				importer.ImportTexture(file.path, gammaCorrection, flip, clampModes[selectedModeIndex]);
 				ImGui::CloseCurrentPopup();
-
-				UpdateEntries();
 			}
 
 			ImGui::SameLine();
@@ -325,8 +326,6 @@ namespace Seidon
 			{
 				importer.ImportModelFile(file.path);
 				ImGui::CloseCurrentPopup();
-
-				imported = true;
 			}
 
 			ImGui::SameLine();
@@ -339,8 +338,6 @@ namespace Seidon
 
 		ImGui::TextWrapped(file.name.c_str());
 		ImGui::NextColumn();
-
-		if(imported) UpdateEntries();
 	}
 
 	void FileBrowserPanel::DrawExternalFontFile(FileEntry& file)
@@ -363,7 +360,6 @@ namespace Seidon
 			{
 				delete importer.ImportFont(file.path);
 				ImGui::CloseCurrentPopup();
-				imported = true;
 			}
 
 			ImGui::SameLine();
@@ -376,8 +372,6 @@ namespace Seidon
 
 		ImGui::TextWrapped(file.name.c_str());
 		ImGui::NextColumn();
-
-		if (imported) UpdateEntries();
 	}
 
 	void FileBrowserPanel::DrawExternalCubemapFile(FileEntry& file)
@@ -399,8 +393,6 @@ namespace Seidon
 			{
 				delete importer.ImportCubemap(file.path);
 				ImGui::CloseCurrentPopup();
-
-				imported = true;
 			}
 
 			ImGui::SameLine();
@@ -413,8 +405,6 @@ namespace Seidon
 
 		ImGui::TextWrapped(file.name.c_str());
 		ImGui::NextColumn();
-
-		if (imported) UpdateEntries();
 	}
 
 	void FileBrowserPanel::DrawTextureFile(FileEntry& file)
@@ -482,8 +472,8 @@ namespace Seidon
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 		{
-			selectedItem.type = SelectedItemType::MATERIAL;
-			selectedItem.material = resourceManager.GetOrLoadAsset<Material>(file.path);
+			editor.selectedItem.type = SelectedItemType::MATERIAL;
+			editor.selectedItem.material = resourceManager.GetOrLoadAsset<Material>(file.path);
 		}
 
 		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))

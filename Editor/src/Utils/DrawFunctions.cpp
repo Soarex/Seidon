@@ -20,18 +20,23 @@ namespace Seidon
 		glm::vec3 old = values;
 
 		ImGui::PushID(label.c_str());
-		ImGui::PushItemWidth(-1);
-
-		ImGui::Columns(2);
-		ImGui::AlignTextToFramePadding();
-		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
-
-		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5 });
 
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, buttonSize.y), false, flags);
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+		ImGui::BeginChild("Controls", ImVec2(ImGui::GetContentRegionAvail().x, buttonSize.y), false, flags);
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5 });
+		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
@@ -103,10 +108,8 @@ namespace Seidon
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
+		ImGui::EndChild();
 
-		ImGui::Columns(1);
-
-		ImGui::PopItemWidth();
 		ImGui::PopID();
 
 		if (oldValue) *oldValue = oldValues[&values];
@@ -258,11 +261,18 @@ namespace Seidon
 
 		bool changed = false;
 
-		ImGui::PushItemWidth(-1);
-		ImGui::Columns(2);
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
+		
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
 
 		std::string s = std::to_string(value);
 		ImGui::InputText("##X", &s, ImGuiInputTextFlags_ReadOnly);
@@ -282,9 +292,8 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
 
-		ImGui::PopItemWidth();
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;

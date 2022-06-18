@@ -355,6 +355,7 @@ namespace Seidon
 
 	struct CharacterControllerComponent
 	{
+		glm::vec3 offset = glm::vec3(0);
 		float colliderHeight = 1;
 		float colliderRadius = 0.5f;
 		float contactOffset = 0.01f;

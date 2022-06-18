@@ -138,6 +138,7 @@ namespace Seidon
 		RegisterComponent<StaticRigidbodyComponent>();
 
 		RegisterComponent<CharacterControllerComponent>()
+			.AddMember("Offset", &CharacterControllerComponent::offset)
 			.AddMember("Collider Height", &CharacterControllerComponent::colliderHeight)
 			.AddMember("Collider Radius", &CharacterControllerComponent::colliderRadius)
 			.AddMember("Contact Offset", &CharacterControllerComponent::contactOffset)

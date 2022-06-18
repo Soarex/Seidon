@@ -1,16 +1,17 @@
 #pragma once
+#include "Panel.h"
+
 #include <Seidon.h>
 
 namespace Seidon
 {
-	class SystemsPanel
+	class SystemsPanel : public Panel
 	{
 	public:
-		SystemsPanel() = default;
+		SystemsPanel(Editor& editor) : Panel(editor) {}
 
-		void Init();
-		void Draw();
-
+		void Init() override;
+		void Draw() override;
 	private:
 		void DrawSystems(Scene* scene);
 	};
