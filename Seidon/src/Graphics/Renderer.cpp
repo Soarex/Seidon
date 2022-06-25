@@ -750,6 +750,8 @@ namespace Seidon
 		delete textShader;
 	}
 
+
+
 	void Renderer::DrawMeshes(int& offset, int& materialOffset, int& idOffset)
 	{
 		glBindVertexArray(vao);

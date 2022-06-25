@@ -153,6 +153,9 @@ namespace Seidon
 			out.write((char*)&size, sizeof(size_t));
 			out.write(metaType.name.c_str(), size * sizeof(char));
 
+			size_t metaTypeSize = metaType.GetSerializedDataSize((byte*)metaType.Get(*this));
+			out.write((char*)&metaTypeSize, sizeof(size_t));
+
 			size_t memberCount = metaType.members.size();
 			out.write((char*)&memberCount, sizeof(size_t));
 
@@ -181,9 +184,14 @@ namespace Seidon
 			in.read((char*)&size, sizeof(size_t));
 			in.read(buffer, size * sizeof(char));
 
+			size_t metaTypeSize = 0;
+			in.read((char*)&metaTypeSize, sizeof(size_t));
+
 			if (!Application::Get()->IsComponentRegistered(buffer))
 			{
 				std::cerr << "Serialized component '" << buffer << "' is not a registered component" << std::endl;
+
+				in.seekg(metaTypeSize + sizeof(size_t), std::ios::cur);
 				continue;
 			}
 

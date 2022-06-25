@@ -1,20 +1,25 @@
 #include "Extension.h"
+
+#include "../Utils/StringUtils.h"
 #include "../Debug/Debug.h"
 
 namespace Seidon
 {
-	void Extension::Bind(const std::wstring& path)
+	void Extension::Load(const std::string& path)
 	{
-		SD_ASSERT(!bound, "Extension already bound");
+		SD_ASSERT(!initialized, "Extension already initialized");
 
 		this->path = path;
-		handle = LoadLibrary(path.c_str());
+		this->name = GetNameFromPath(path);
 
-		
+		std::wstring widePath;
+		widePath.assign(path.begin(), path.end());
+
+		handle = LoadLibrary(widePath.c_str());
+
 		if (!handle)
 		{
-			std::cout << "Error while loading DLL ";
-			std::wcout << path << std::endl;
+			std::cout << "Error while loading DLL " << path << std::endl;
 			return;
 		}
 
@@ -26,26 +31,13 @@ namespace Seidon
 		
 		SD_ASSERT(DllDestroy, "Couldn't load extension function");
 
-		bound = true;
+		Init();
 	}
 
-	void Extension::Unbind()
-	{
-		SD_ASSERT(bound, "Extension not bound");
-
-		this->path = L"";
-		FreeLibrary(handle);
-
-		DllInit = nullptr;
-		DllDestroy = nullptr;
-
-		bound = false;
-	}
 
 	void Extension::Init()
 	{
 		SD_ASSERT(!initialized, "Extension already initialized");
-		SD_ASSERT(bound, "Extension not bound");
 
 		DllInit(*Application::Get());
 
@@ -55,9 +47,14 @@ namespace Seidon
 	void Extension::Destroy()
 	{
 		SD_ASSERT(initialized, "Extension not initialized");
-		SD_ASSERT(bound, "Extension not bound"); 
 
 		DllDestroy(*Application::Get());
+
+		this->path = "";
+		FreeLibrary(handle);
+
+		DllInit = nullptr;
+		DllDestroy = nullptr;
 
 		initialized = false;
 	}

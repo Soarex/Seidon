@@ -19,8 +19,6 @@ namespace Seidon
 			return;
 		}
 
-		Scene* activeScene = editor.GetSceneManager()->GetActiveScene();
-
 		if (ImGui::Button("Open"))
 		{
 			std::string filepath = LoadFile("Seidon Animation (*.sdanim)\0*.sdanim\0");
@@ -40,7 +38,7 @@ namespace Seidon
 		
 		ImGui::SameLine();
 
-		if (activeScene->IsEntityIdValid(attachedEntity.ID)) ImGui::Text(attachedEntity.GetName().c_str());
+		if (editor.openProject->loadedScene->IsEntityIdValid(attachedEntity.ID)) ImGui::Text(attachedEntity.GetName().c_str());
 		else ImGui::Text("No entity attached");
 
 		if (!openedAnimation)
@@ -91,7 +89,7 @@ namespace Seidon
 
 		ImGui::End();
 
-		if (activeScene->IsEntityIdValid(attachedEntity.ID)) UpdateAttachedEntity();
+		if (editor.openProject->loadedScene->IsEntityIdValid(attachedEntity.ID)) UpdateAttachedEntity();
 	}
 
 	void AnimationPanel::UpdateAttachedEntity()

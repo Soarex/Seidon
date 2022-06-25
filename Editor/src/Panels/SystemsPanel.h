@@ -13,6 +13,7 @@ namespace Seidon
 		void Init() override;
 		void Draw() override;
 	private:
-		void DrawSystems(Scene* scene);
+		void DrawSceneSystems(Scene* scene);
+		void DrawEditorSystems();
 	};
 }

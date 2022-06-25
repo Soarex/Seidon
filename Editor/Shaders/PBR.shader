@@ -9,10 +9,10 @@ Metallic : TEXTURE
 Ambient Occlusion : TEXTURE
 ~END LAYOUT
 
-#version 460 core
+#version 450 core
 #extension GL_ARB_bindless_texture : require
 
-#define MAX_CASCADE_COUNT 8
+#define MAX_CASCADE_COUNT 4
 
 layout(location = 0) in vec3 vertexPosition;
 layout(location = 1) in vec3 vertexNormal;
@@ -80,10 +80,10 @@ void main()
 
 
 ~FRAGMENT SHADER
-#version 460 core
+#version 450 core
 #extension GL_ARB_bindless_texture : require
 
-#define MAX_CASCADE_COUNT 8
+#define MAX_CASCADE_COUNT 4
 
 layout(location = 0) out vec4 fragmentColor;
 layout(location = 1) out int entityOutput;
@@ -123,13 +123,6 @@ struct CameraData
     mat4 projectionMatrix;
 };
 
-struct ShadowMappingData
-{
-    sampler2D shadowMaps[MAX_CASCADE_COUNT];
-    float cascadeFarPlaneDistances[MAX_CASCADE_COUNT + 1];
-    int cascadeCount;
-};
-
 struct IBLData
 {
     samplerCube irradianceMap;
@@ -137,10 +130,17 @@ struct IBLData
     sampler2D   BRDFLookupMap;
 };
 
+struct ShadowMappingData
+{
+    sampler2D shadowMaps[MAX_CASCADE_COUNT];
+    float cascadeFarPlaneDistances[MAX_CASCADE_COUNT + 1];
+    int cascadeCount;
+};
+
 uniform DirectionalLight directionalLight;
 uniform CameraData camera;
-uniform ShadowMappingData shadowMappingData;
 uniform IBLData iblData;
+uniform ShadowMappingData shadowMappingData;
 
 layout(std430, binding = 1) buffer textureBuffer
 {
@@ -159,7 +159,7 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 float distributionGGX(vec3 N, vec3 H, float roughness);
 float geometrySchlickGGX(float NdotV, float roughness);
 float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
-float shadowCalculation(float NdotL);
+float shadowCalculation();
 
 void main()
 {
@@ -168,7 +168,6 @@ void main()
     float metallic = texture(materials[fs_in.objectId].metallicMap, fs_in.UV).r;
     float roughness = texture(materials[fs_in.objectId].roughnessMap, fs_in.UV).r;
     float ao = texture(materials[fs_in.objectId].aoMap, fs_in.UV).r;
-
     vec3 normal = texture(materials[fs_in.objectId].normalMap, fs_in.UV).rgb;
     normal = normal * 2.0 - 1.0;
     vec3 N = normalize(fs_in.TBN * normal);
@@ -211,15 +210,16 @@ void main()
     vec3 irradiance = texture(iblData.irradianceMap, N).rgb;
     vec3 ambientDiffuse = irradiance * albedo;
 
-    const float MAX_REFLECTION_LOD = 6.0;
+    const float MAX_REFLECTION_LOD = 5.0;
     vec3 prefilteredColor = textureLod(iblData.prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
     vec2 envBRDF = texture(iblData.BRDFLookupMap, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 ambientSpecular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
 
     vec3 ambient = (kD * ambientDiffuse + ambientSpecular) * ao;
-    float shadow = shadowCalculation(NdotL);
+
+    float shadow = shadowCalculation();
+
     vec3 color = ambient + (1 - shadow) * Lo;
-    
     fragmentColor = vec4(color, 1.0f);
     entityOutput = entityIds[fs_in.objectId];
 }
@@ -269,7 +269,7 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-float shadowCalculation(float NdotL)
+float shadowCalculation()
 {
     int cascadeIndex = shadowMappingData.cascadeCount - 1;
     for (int i = 0; i < shadowMappingData.cascadeCount - 1; ++i)
@@ -289,8 +289,6 @@ float shadowCalculation(float NdotL)
     if (currentDepth > 1.0)
         return 0.0;
 
-    //float bias = max(0.05 * (1.0 - NdotL), 0.005);
-    //bias *= 1 / (shadowMappingData.cascadeFarPlaneDistances[cascadeIndex] * 0.5f);
 
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMappingData.shadowMaps[cascadeIndex], 0);

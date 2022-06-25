@@ -12,6 +12,12 @@ namespace Seidon
 
 	class System
 	{
+	public:
+		virtual ~System();
+		virtual void Init() {};
+		virtual void Update(float deltaTime) {};
+		virtual void Destroy() {};
+
 	protected:
 		bool initialized = false;
 
@@ -22,17 +28,14 @@ namespace Seidon
 		WorkManager* workManager;
 		SceneManager* sceneManager;
 
-	public:
-		virtual ~System();
-		virtual void Init() {};
-		virtual void Update(float deltaTime) {};
-		virtual void Destroy() {};
-
 	private:
 		void SysInit();
 		void SysUpdate(float deltaTime);
 		void SysDestroy();
 	public:
 		friend class Scene;
+
+		//TODO: Engine shouldn't know of Editor existence; 
+		friend class Project;
 	};
 }

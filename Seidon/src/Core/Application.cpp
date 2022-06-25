@@ -3,7 +3,6 @@
 #include "../Graphics/RenderSystem.h"
 #include "../Animation/AnimationSystem.h"
 #include "../Physics/PhysicSystem.h"
-#include "../Utils/FlyingCameraControlSystem.h"
 
 namespace Seidon
 {
@@ -34,10 +33,6 @@ namespace Seidon
 		workManager->Init();
 
 		RegisterSystem<RenderSystem>();
-
-		//RegisterSystem<FlyingCameraControlSystem>()
-		//	.AddMember("Mouse Sensitivity", &FlyingCameraControlSystem::mouseSensitivity)
-		//	.AddMember("Movement Speed", &FlyingCameraControlSystem::speed);
 
 		RegisterSystem<AnimationSystem>();
 		RegisterSystem<PhysicSystem>();

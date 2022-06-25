@@ -35,8 +35,8 @@ namespace Seidon
 		ImGui::SameLine();
 		ImGui::BeginChild("Controls", ImVec2(ImGui::GetContentRegionAvail().x, buttonSize.y), false, flags);
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5 });
-		ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 
+		float fieldWidth = ImGui::GetContentRegionAvail().x / 3 - buttonSize.x;
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
@@ -54,6 +54,8 @@ namespace Seidon
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
+		ImGui::PushItemWidth(fieldWidth);
 
 		changed |= ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
@@ -78,6 +80,8 @@ namespace Seidon
 
 		ImGui::SameLine();
 
+		ImGui::PushItemWidth(fieldWidth);
+
 		changed |= ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
 		if (ImGui::IsItemActivated()) updateOldValue = true;
@@ -100,6 +104,8 @@ namespace Seidon
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
+		ImGui::PushItemWidth(fieldWidth);
 		
 		changed |= ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
@@ -137,18 +143,23 @@ namespace Seidon
 		glm::vec3 old = values;
 
 		ImGui::PushID(label.c_str());
-		ImGui::PushItemWidth(-1);
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
+		
+		ImGui::EndChild();
 
-		ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+		ImGui::SameLine();
+		ImGui::BeginChild("Controls", ImVec2(ImGui::GetContentRegionAvail().x, lineHeight), false, flags);
+
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5 });
 
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		float fieldWidth = ImGui::GetContentRegionAvail().x / 3 - buttonSize.x * 4.0f / 3.0f;
 
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
@@ -165,6 +176,9 @@ namespace Seidon
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
+		ImGui::PushItemWidth(fieldWidth);
+
 		changed |= ImGui::DragInt("##R", &i[0], 1.0f, 0.0f, 255, "%3d");
 		values.x = i[0] / 255.0f;
 
@@ -189,6 +203,9 @@ namespace Seidon
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
+		ImGui::PushItemWidth(fieldWidth);
+
 		changed |= ImGui::DragInt("##G", &i[1], 1.0f, 0.0f, 255, "%3d");
 		values.y = i[1] / 255.0f;
 
@@ -213,6 +230,9 @@ namespace Seidon
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
+
+		ImGui::PushItemWidth(fieldWidth);
+
 		changed |= ImGui::DragInt("##B", &i[2], 1.0f, 0.0f, 255, "%3d");
 		values.z = i[2] / 255.0f;
 
@@ -222,10 +242,8 @@ namespace Seidon
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
-		if (ImGui::ColorButton("##ColorButton", { values.x, values.y, values.z, 1.0f }))
+		if (ImGui::ColorButton("##ColorButton", { values.x, values.y, values.z, 1.0f }, NULL, buttonSize))
 			ImGui::OpenPopup("ColorPicker");
-
-		ImGui::PopItemWidth();
 
 		if (ImGui::BeginPopup("ColorPicker"))
 		{
@@ -240,9 +258,9 @@ namespace Seidon
 		}
 
 		ImGui::PopStyleVar();
-		ImGui::Columns(1);
+		
+		ImGui::EndChild();
 
-		ImGui::PopItemWidth();
 		ImGui::PopID();
 
 		if (oldValue) *oldValue = oldValues[&values];
@@ -272,7 +290,9 @@ namespace Seidon
 
 		ImGui::SameLine();
 
-		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x, lineHeight), false, flags);
+
+		ImGui::PushItemWidth(-1);
 
 		std::string s = std::to_string(value);
 		ImGui::InputText("##X", &s, ImGuiInputTextFlags_ReadOnly);
@@ -292,6 +312,8 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
+		ImGui::PopItemWidth();
+
 		ImGui::EndChild();
 
 		ImGui::PopID();
@@ -307,12 +329,20 @@ namespace Seidon
 
 		ImGui::PushID(label.c_str());
 
-		ImGui::PushItemWidth(-1);
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
 
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x, lineHeight), false, flags);
+
+		ImGui::PushItemWidth(-1);
 		float old = value;
 
 		bool changed = ImGui::DragFloat("##X", &value, 0.1f, 0.0f, 0.0f, "%.2f");
@@ -321,9 +351,10 @@ namespace Seidon
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
 		if (ImGui::IsItemActivated()) oldValues[&value] = old;
 
-		ImGui::Columns(1);
 
 		ImGui::PopItemWidth();
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (oldValue) *oldValue = oldValues[&value];
@@ -340,11 +371,20 @@ namespace Seidon
 
 		ImGui::PushID(label.c_str());
 
-		ImGui::PushItemWidth(-1);
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
+		
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x, lineHeight), false, flags);
+
+		ImGui::PushItemWidth(-1);
 
 		float old = value;
 		bool changed = ImGui::SliderFloat("##X", &value, min, max, "%.2f");
@@ -353,9 +393,10 @@ namespace Seidon
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
 		if (ImGui::IsItemActivated()) oldValues[&value] = old;
 
-		ImGui::Columns(1);
-
 		ImGui::PopItemWidth();
+
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (oldValue) *oldValue = oldValues[&value];
@@ -370,18 +411,28 @@ namespace Seidon
 	{
 		ImGui::PushID(label.c_str());
 
-		ImGui::PushItemWidth(-1);
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
+		
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x, lineHeight), false, flags);
+
+		ImGui::PushItemWidth(-1);
 
 		if (oldValue) *oldValue = value;
 		bool changed = ImGui::Checkbox("##bool", &value);
 
-		ImGui::Columns(1);
-
 		ImGui::PopItemWidth();
+
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -395,11 +446,20 @@ namespace Seidon
 
 		ImGui::PushID(label.c_str());
 
-		ImGui::PushItemWidth(-1);
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
+		
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x, lineHeight), false, flags);
+
+		ImGui::PushItemWidth(-1);
 
 		float old = value;
 
@@ -409,9 +469,10 @@ namespace Seidon
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
 		if (ImGui::IsItemActivated()) oldValues[&value] = old;
 
-		ImGui::Columns(1);
-
 		ImGui::PopItemWidth();
+
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (oldValue) *oldValue = oldValues[&value];
@@ -429,11 +490,20 @@ namespace Seidon
 
 		ImGui::PushID(label.c_str());
 
-		ImGui::PushItemWidth(-1);
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, lineHeight), false, flags);
+
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
-		ImGui::NextColumn();
+		
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Control", ImVec2(ImGui::GetContentRegionAvail().x, lineHeight), false, flags);
+
+		ImGui::PushItemWidth(-1);
 
 		bool stoppedChanging = false;
 		bool changed = ImGui::InputText("##string", &value, ImGuiInputTextFlags_CtrlEnterForNewLine);
@@ -441,9 +511,10 @@ namespace Seidon
 		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
 		if (ImGui::IsItemActivated()) oldValues[&value] = old;
 
-		ImGui::Columns(1);
-
 		ImGui::PopItemWidth();
+
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (oldValue) *oldValue = oldValues[&value];
@@ -462,7 +533,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)(*texture)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -479,12 +552,17 @@ namespace Seidon
 
 			ImGui::EndDragDropTarget();
 		}
-		ImGui::NextColumn();
+
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		std::filesystem::path path = std::string((*texture)->path);
 		ImGui::Text(path.filename().string().c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -502,7 +580,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -520,12 +600,17 @@ namespace Seidon
 
 			ImGui::EndDragDropTarget();
 		}
-		ImGui::NextColumn();
+
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		std::filesystem::path path = std::string((*cubemap)->GetPath());
 		ImGui::Text(path.filename().string().c_str());
 		
-		ImGui::Columns(1);
+		ImGui::EndChild();
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -543,7 +628,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/ModelIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -562,11 +649,16 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		ImGui::Text((*mesh)->name.c_str());
 		
-		ImGui::Columns(1);
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -584,7 +676,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SkinnedMeshIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -603,11 +697,16 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		ImGui::Text((*mesh)->name.c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -627,7 +726,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MaterialIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		
 		if (ImGui::IsItemClicked() && clicked)
@@ -649,11 +750,13 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		ImGui::Text((*material)->name.c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
 
 		ImGui::PopID();
 		
@@ -717,7 +820,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/AnimationIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -736,11 +841,14 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		ImGui::Text((*animation)->name.c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -758,7 +866,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -776,11 +886,16 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		ImGui::Text((*shader)->name.c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -798,7 +913,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FontIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -818,11 +935,13 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		if(*font) ImGui::Text((*font)->GetName().c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -840,7 +959,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -860,11 +981,14 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		if (*collider) ImGui::Text((*collider)->name.c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
+
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;
@@ -882,7 +1006,9 @@ namespace Seidon
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text(label.c_str());
 
-		ImGui::Columns(2);
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
+
 		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SoundIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
@@ -902,11 +1028,13 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		ImGui::NextColumn();
+		ImGui::EndChild();
+		ImGui::SameLine();
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x, size), false, flags);
 
 		if (*sound) ImGui::Text((*sound)->name.c_str());
 
-		ImGui::Columns(1);
+		ImGui::EndChild();
 		ImGui::PopID();
 
 		if (changed) return ChangeStatus::CHANGED;

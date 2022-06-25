@@ -126,7 +126,7 @@ namespace Seidon
         assets.clear();
         nameToAssetId.clear();
         idToAssetPath.clear();
-
+        assetPathToId.clear();
     }
 
     void ResourceManager::Save(std::ofstream& out)
@@ -162,6 +162,7 @@ namespace Seidon
             std::string path = std::string(buffer);
 
             idToAssetPath[id] = path;
+            assetPathToId[path] = id;
         }
     }
 
@@ -180,5 +181,6 @@ namespace Seidon
         assets[asset->id] = asset;
         nameToAssetId[name] = asset->id;
         idToAssetPath[asset->id] = name;
+        assetPathToId[name] = asset->id;
     }
 }

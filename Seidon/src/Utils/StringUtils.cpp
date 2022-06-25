@@ -4,6 +4,12 @@
 
 namespace Seidon
 {
+	std::string GetNameFromPath(const std::string& source)
+	{
+		size_t separatorIndex = source.find_last_of('\\');
+		return source.substr(separatorIndex + 1, source.size() - separatorIndex);
+	}
+
 	std::string ChangeSuffix(const std::string& source, const std::string& newSuffix)
 	{
 		int i;

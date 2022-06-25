@@ -51,7 +51,7 @@ namespace Seidon
 
             Prefab p;
             p.MakeFromEntity(e);
-            p.Save("Assets\\" + e.GetName() + ".sdpref");
+            p.Save(directory + "\\" + e.GetName() + ".sdpref");
         }
 
         for (auto& m : importedMeshes)

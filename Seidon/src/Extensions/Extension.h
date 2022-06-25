@@ -1,4 +1,5 @@
 #pragma once
+#include "../Core/Asset.h"
 #include "Core/Application.h"
 
 #include <Windows.h>
@@ -8,22 +9,26 @@ namespace Seidon
 {
 	using DllFunction = void(*)(Application&);
 
-	class Extension
+	class Extension : public Asset
 	{
+	public:
+		void Destroy();
+
+		void Save(std::ofstream& out) {}
+		void Load(std::ifstream& in)  {}
+
+		void Save(const std::string& path) {}
+		void Load(const std::string& path);
+
 	private:
 		bool initialized = false;
-		bool bound;
+
 		HINSTANCE handle;
-		std::wstring path;
 
 		DllFunction DllInit;
 		DllFunction DllDestroy;
-
-	public:
-		void Bind(const std::wstring& path);
-		void Unbind();
-
+		
+	private:
 		void Init();
-		void Destroy();
 	};
 }

@@ -140,6 +140,7 @@ namespace Seidon
 			t.Add = (void* (*)(Scene&)) & Application::AddSystem<Type>;
 			t.Has = &Application::HasSystem<Type>;
 			t.Copy = &Application::CopySystem<Type>;
+			t.Instantiate = &Application::InstantiateSystem<Type>;
 
 
 			registeredSystems.push_back(t);
@@ -207,6 +208,12 @@ namespace Seidon
 		{
 			auto& component = src.GetComponent<Type>();
 			dst.AddComponent<Type>(component);
+		}
+
+		template<typename Type>
+		static System* InstantiateSystem()
+		{
+			return new Type();
 		}
 
 		template<typename Type>

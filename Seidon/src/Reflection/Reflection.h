@@ -190,6 +190,7 @@ namespace Seidon
 			data.type = typeOverride;
 
 			members.push_back(data);
+			nameToMember[data.name] = data;
 
 			return *this;
 		}
@@ -231,6 +232,7 @@ namespace Seidon
 		void CopyMember(const std::string& memberName, void* srcData, void* dstData);
 		void CopyMembers(void* srcData, void* dstData);
 		
+		size_t GetSerializedDataSize(byte* data);
 
 		void Save(std::ofstream& out, byte* data);
 		void Load(std::ifstream& in, byte* data);
@@ -266,6 +268,7 @@ namespace Seidon
 	};
 
 	class Scene;
+	class System;
 	struct SystemMetaType : public MetaType
 	{
 		void* (*Add)(Scene& scene);
@@ -273,5 +276,6 @@ namespace Seidon
 		void* (*Get)(Scene& scene);
 		bool  (*Has)(Scene& scene);
 		void  (*Copy)(Scene& src, Scene& dst);
+		System* (*Instantiate)();
 	};
 }

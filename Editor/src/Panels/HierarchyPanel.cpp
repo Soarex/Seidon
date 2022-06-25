@@ -32,9 +32,9 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		editor.GetSceneManager()->GetActiveScene()->GetRegistry().each([&](auto entityId)
+		editor.activeScene->GetRegistry().each([&](auto entityId)
 			{
-				Scene* scene = Application::Get()->GetSceneManager()->GetActiveScene();
+				Scene* scene = editor.activeScene;
 				if (!scene->IsEntityIdValid(entityId)) return;
 
 				Entity entity(entityId, scene);
@@ -63,32 +63,125 @@ namespace Seidon
 
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
-			if (ImGui::MenuItem("Create Empty Entity"))
+			if (ImGui::MenuItem("Add Empty Entity"))
 			{
-				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				Entity e = editor.activeScene->CreateEntity();
 
 				editor.selectedItem.type = SelectedItemType::ENTITY;
 				editor.selectedItem.entity = e;
 			}
 
-			if (ImGui::MenuItem("Create Mesh Entity"))
+			if (ImGui::MenuItem("Add Camera"))
 			{
-				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<CameraComponent>();
+
+				e.SetName("Camera");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
+			if (ImGui::MenuItem("Add Directonal Light"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<DirectionalLightComponent>();
+
+				e.SetName("Directional Light");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
+			if (ImGui::MenuItem("Add Skylight"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<ProceduralSkylightComponent>();
+
+				e.SetName("Skylight");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
+			if (ImGui::MenuItem("Add Mesh Entity"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
 				e.AddComponent<RenderComponent>();
 
+				e.SetName("Mesh");
+
 				editor.selectedItem.type = SelectedItemType::ENTITY;
 				editor.selectedItem.entity = e;
 			}
 
-			if (ImGui::MenuItem("Create Animated Mesh Entity"))
+			if (ImGui::MenuItem("Add Animated Mesh Entity"))
 			{
-				Entity e = Application::Get()->GetSceneManager()->GetActiveScene()->CreateEntity();
+				Entity e = editor.activeScene->CreateEntity();
 				e.AddComponent<SkinnedRenderComponent>();
 				e.AddComponent<AnimationComponent>();
 
+				e.SetName("Animated Mesh");
+
 				editor.selectedItem.type = SelectedItemType::ENTITY;
 				editor.selectedItem.entity = e;
 			}
+
+			if (ImGui::MenuItem("Add Text"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<TextRenderComponent>();
+
+				e.SetName("Text");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
+			if (ImGui::MenuItem("Add Sprite"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<SpriteRenderComponent>();
+
+				e.SetName("Sprite");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
+			if (ImGui::MenuItem("Add UI Anchor"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<UIAnchorComponent>();
+
+				e.SetName("UI Anchor");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
+			if (ImGui::MenuItem("Add UI Text"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<UITextComponent>();
+
+				e.SetName("UI Text");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
+			if (ImGui::MenuItem("Add UI Sprite"))
+			{
+				Entity e = editor.activeScene->CreateEntity();
+				e.AddComponent<UISpriteComponent>();
+
+				e.SetName("UI Sprite");
+
+				editor.selectedItem.type = SelectedItemType::ENTITY;
+				editor.selectedItem.entity = e;
+			}
+
 
 			ImGui::EndPopup();
 		}
@@ -173,7 +266,7 @@ namespace Seidon
 			if(editor.selectedItem.type == SelectedItemType::BONE)
 				editor.selectedItem.type = SelectedItemType::NONE;
 
-			Application::Get()->GetSceneManager()->GetActiveScene()->DestroyEntity(entity);
+			editor.activeScene->DestroyEntity(entity);
 		}
 
 		ImGui::PopStyleVar();

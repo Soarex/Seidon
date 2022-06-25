@@ -2,6 +2,7 @@
 #include "Panel.h"
 
 #include <Seidon.h>
+#include <ImGuizmo/ImGuizmo.h>
 
 namespace Seidon
 {
@@ -17,7 +18,11 @@ namespace Seidon
 	private:
 		BoundingBox viewportBounds;
 
+		int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+		bool local = false;
 	private:
 		void ProcessInput();
+
+		void DrawTransformGuizmos();
 	};
 }

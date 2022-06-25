@@ -42,28 +42,25 @@
     <ClInclude Include="src\Utils\DrawFunctions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Dockspace.h">
+    <ClInclude Include="src\Core\Dockspace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorAction.h">
+    <ClInclude Include="src\Core\EditorAction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorCameraControlSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SelectedItem.h">
+    <ClInclude Include="src\Core\SelectedItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Panels\ConsolePanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Project.h">
+    <ClInclude Include="src\Core\Project.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorWindow.h">
+    <ClInclude Include="src\Core\EditorWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Panels\Panel.h">
@@ -72,13 +69,19 @@
     <ClInclude Include="src\Panels\Panels.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ProjectSelectionWindow.h">
+    <ClInclude Include="src\Core\ProjectSelectionWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\EditorPreferences.h">
+    <ClInclude Include="src\Core\EditorPreferences.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Panels\ViewportPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Panels\StatisticsPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Systems\EditorCameraControlSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -114,34 +117,37 @@
     <ClCompile Include="src\Utils\DrawFunctions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Dockspace.cpp">
+    <ClCompile Include="src\Core\Dockspace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorAction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\EditorCameraControlSystem.cpp">
+    <ClCompile Include="src\Core\EditorAction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Panels\ConsolePanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Project.cpp">
+    <ClCompile Include="src\Core\Project.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorWindow.cpp">
+    <ClCompile Include="src\Core\EditorWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ProjectSelectionWindow.cpp">
+    <ClCompile Include="src\Core\ProjectSelectionWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\EditorPreferences.cpp">
+    <ClCompile Include="src\Core\EditorPreferences.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Panels\ViewportPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Panels\StatisticsPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Systems\EditorCameraControlSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

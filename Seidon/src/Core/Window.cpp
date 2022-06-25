@@ -118,6 +118,10 @@ namespace Seidon
 
         SD_ASSERT(gladLoadGLLoader((GLADloadproc)glfwGetProcAddress), "Failed to initialize GLAD");
 
+        if (!GLAD_GL_ARB_bindless_texture) 
+            std::cerr << "Bindless Textures not supported" << std::endl;
+        
+
         glfwSetWindowSizeCallback(handle, WindowSizeCallback);
         glfwSetKeyCallback(handle, KeyboardCallback);
         glfwSetCursorPosCallback(handle, CursorCallback);

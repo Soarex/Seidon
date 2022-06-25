@@ -6,7 +6,7 @@ namespace Seidon
 {
 	void FileBrowserPanel::Init()
 	{
-		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
+		ResourceManager& resourceManager = editor.editorResourceManager;
 
 		backIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/BackIcon.sdtex");
 		fileIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex");
@@ -34,8 +34,12 @@ namespace Seidon
 			return;
 		}
 
+		static bool openPopup;
 		if (ImGui::BeginPopupContextWindow(0, 1, false))
 		{
+			if (ImGui::MenuItem("Create New Directory"))
+				openPopup = true;
+		
 			if (ImGui::MenuItem("Create New Material"))
 			{
 				Material m;
@@ -57,8 +61,48 @@ namespace Seidon
 				UpdateEntries();
 			}
 
+			if (ImGui::MenuItem("Update Asset Registry"))
+				UpdateRegistry(editor.openProject->assetsDirectory);
+
 			if (ImGui::MenuItem("Refresh"))
 				UpdateEntries();
+
+
+			ImGui::EndPopup();
+		}
+
+		if (openPopup)
+			ImGui::OpenPopup("Create Directory");
+
+		if (ImGui::BeginPopupModal("Create Directory", 0, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Name: ");
+			ImGui::SameLine();
+
+			static char buffer[512];
+			ImGui::InputText("##Name", buffer, 512);
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			float size = ImGui::CalcTextSize("Create").x + style.FramePadding.x * 2.0f + ImGui::CalcTextSize("Close").x + style.FramePadding.x * 2.0f;
+
+			float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+			if (ImGui::Button("Create"))
+			{
+				std::filesystem::create_directory(currentDirectory / std::string(buffer));
+				UpdateEntries();
+				ImGui::CloseCurrentPopup();
+				openPopup = false;
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Close"))
+			{
+				ImGui::CloseCurrentPopup();
+				openPopup = false;
+			}
 
 			ImGui::EndPopup();
 		}
@@ -72,7 +116,7 @@ namespace Seidon
 
 		ImGui::Columns(columnCount, 0, false);
 
-		if (currentDirectory != std::filesystem::path(((Editor*)Application::Get())->openProject->assetsDirectory))
+		if (currentDirectory != std::filesystem::path(editor.openProject->assetsDirectory))
 		{
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			if (ImGui::ImageButton((ImTextureID)backIcon->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 }))
@@ -81,19 +125,34 @@ namespace Seidon
 				UpdateEntries();
 			}
 
+					
 			if (ImGui::BeginDragDropTarget())
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_MATERIAL"))
+				const char* payloadNames[] =
 				{
-					std::filesystem::path currentPath = (const char*)payload->Data;
-					std::filesystem::path newPath = currentDirectory.parent_path() / currentPath.filename();
+					"FILE_BROWSER_MATERIAL",
+					"FILE_BROWSER_MESH",
+					"FILE_BROWSER_SKINNED_MESH",
+					"FILE_BROWSER_TEXTURE",
+					"FILE_BROWSER_FONT",
+					"FILE_BROWSER_SCENE",
+					"FILE_BROWSER_SHADER",
+					"FILE_BROWSER_CUBEMAP",
+					"FILE_BROWSER_COLLIDER",
+					"FILE_BROWSER_SOUND",
+					"FILE_BROWSER_ANIMATION"
+				};
 
-					std::filesystem::rename(currentPath, newPath);
+				for (const char* payloadName : payloadNames)
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(payloadName))
+					{
+						std::filesystem::path currentPath = (const char*)payload->Data;
+						std::filesystem::path newPath = currentDirectory.parent_path() / currentPath.filename();
 
-					ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
+						MoveAsset(currentPath.string(), newPath.string());
 
-					UpdateEntries();
-				}
+						UpdateEntries();
+					}
 
 				ImGui::EndDragDropTarget();
 			}
@@ -139,6 +198,41 @@ namespace Seidon
 		}
 	}
 
+	void FileBrowserPanel::UpdateRegistry(const std::string& directoryPath)
+	{
+		for (auto& entry : std::filesystem::directory_iterator(directoryPath))
+		{
+			if (entry.is_directory())
+			{
+				UpdateRegistry(entry.path().string());
+				continue;
+			}
+
+			std::string fileExtension = entry.path().extension().string();
+
+			if (fileExtension == ".sdmesh" || fileExtension == ".sdskmesh" || fileExtension == ".sdtex" || fileExtension == ".sdmat"
+				|| fileExtension == ".sdhdr" || fileExtension == ".sdanim" || fileExtension == ".sdfont" || fileExtension == ".sdcoll")
+			{
+				std::ifstream in(entry.path().string(), std::ios::binary | std::ios::in);
+
+				UUID id;
+				in.read((char*)&id, sizeof(UUID));
+
+				editor.GetResourceManager()->RegisterAssetId(id, entry.path().string());
+			}
+		}
+	}
+
+	void FileBrowserPanel::MoveAsset(const std::string& from, const std::string& to)
+	{
+		std::filesystem::rename(from, to);
+
+		ResourceManager& resourceManager = *editor.GetResourceManager();
+
+		if (resourceManager.IsAssetRegistered(from))
+			resourceManager.RegisterAssetId(resourceManager.GetAssetId(from), to);
+	}
+
 	void FileBrowserPanel::DrawDirectories()
 	{
 		for (DirectoryEntry& directory : currentDirectories)
@@ -157,16 +251,31 @@ namespace Seidon
 
 			if (ImGui::BeginDragDropTarget())
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("FILE_BROWSER_MATERIAL"))
+				const char* payloadNames[] =
 				{
-					std::filesystem::path currentPath = (const char*)payload->Data;
-					std::filesystem::path newPath = currentDirectory / directory.name / currentPath.filename();
+					"FILE_BROWSER_MATERIAL",
+					"FILE_BROWSER_MESH",
+					"FILE_BROWSER_SKINNED_MESH",
+					"FILE_BROWSER_TEXTURE",
+					"FILE_BROWSER_FONT",
+					"FILE_BROWSER_SCENE",
+					"FILE_BROWSER_SHADER",
+					"FILE_BROWSER_CUBEMAP",
+					"FILE_BROWSER_COLLIDER",
+					"FILE_BROWSER_SOUND",
+					"FILE_BROWSER_ANIMATION"
+				};
 
-					std::filesystem::rename(currentPath, newPath);
+				for(const char* payloadName : payloadNames)
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(payloadName))
+					{
+						std::filesystem::path currentPath = (const char*)payload->Data;
+						std::filesystem::path newPath = currentDirectory / directory.name / currentPath.filename();
 
-					ResourceManager& resourceManager = *Application::Get()->GetResourceManager();
-					UpdateEntries();
-				}
+						MoveAsset(currentPath.string(), newPath.string());
+
+						UpdateEntries();
+					}
 
 				ImGui::EndDragDropTarget();
 			}

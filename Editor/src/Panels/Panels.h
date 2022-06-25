@@ -6,4 +6,5 @@
 #include "HierarchyPanel.h"
 #include "InspectorPanel.h"
 #include "SystemsPanel.h"
+#include "StatisticsPanel.h"
 #include "ViewportPanel.h"

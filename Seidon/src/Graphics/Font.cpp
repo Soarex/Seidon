@@ -143,7 +143,7 @@ namespace Seidon
         msdf_atlas::ImmediateAtlasGenerator<
             float,
             3,
-            &msdf_atlas::msdfGenerator,
+            msdf_atlas::msdfGenerator,
             msdf_atlas::BitmapAtlasStorage<msdf_atlas::byte, 3>
         > generator(width, height);
 

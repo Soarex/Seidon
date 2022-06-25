@@ -1,6 +1,6 @@
 #pragma once
 #include "Panel.h"
-#include "../SelectedItem.h"
+#include "../Core/SelectedItem.h"
 #include "Utils/DrawFunctions.h"
 
 #include <Seidon.h>

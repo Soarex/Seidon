@@ -53,6 +53,9 @@ namespace Seidon
 
 	private:
 		void UpdateEntries();
+		void UpdateRegistry(const std::string& directoryPath);
+
+		void MoveAsset(const std::string& from, const std::string& to);
 
 		void DrawDirectories();
 		void DrawFiles();

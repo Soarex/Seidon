@@ -60,9 +60,6 @@
     <ClCompile Include="src\Core\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Utils\FlyingCameraControlSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Vendor\Imgui\imgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -576,9 +573,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Ecs\System.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Utils\FlyingCameraControlSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Vendor\Imgui\imconfig.h">

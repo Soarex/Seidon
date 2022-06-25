@@ -588,6 +588,94 @@ namespace Seidon
 		if (OnChange) OnChange(data);
 	}
 
+	size_t MetaType::GetSerializedDataSize(byte* data)
+	{
+		size_t res = 0;
+
+		res += sizeof(size_t); // Name Size
+		res += (name.size() + 1) * sizeof(char); // Name
+		res += sizeof(size_t); // Member Count
+
+		for (MemberData& m : members)
+		{
+			res += sizeof(Types); // Type
+
+			switch (m.type)
+			{
+			case Types::ID:
+			{
+				res += sizeof(UUID); // Item
+				break;
+			}
+			case Types::ID_VECTOR:
+			{
+				std::vector<UUID>* item = (std::vector<UUID>*) & data[m.offset];
+
+				res += sizeof(size_t); // Size
+				res += item->size() * sizeof(UUID); // Items
+				break;
+			}
+			case Types::STRING:
+			{
+				std::string* item = (std::string*)&data[m.offset];
+				size_t size = item->length() + 1;
+
+				res += sizeof(size_t); // Size
+				res += size * sizeof(char); // String
+				break;
+			}
+			case Types::FLOAT: case Types::FLOAT_NORMALIZED: case Types::FLOAT_ANGLE:
+			{
+				res += sizeof(float); // Item
+				break;
+			}
+			case Types::INT:
+			{
+				res += sizeof(int); // Item
+				break;
+			}
+			case Types::BOOL:
+			{
+				res += sizeof(bool); // Item
+				break;
+			}
+			case Types::VECTOR2: case Types::VECTOR2_ANGLES:
+			{
+				res += sizeof(glm::vec2); // Item
+				break;
+			}
+			case Types::VECTOR3: case Types::VECTOR3_ANGLES: case Types::VECTOR3_COLOR:
+			{
+				res += sizeof(glm::vec3); // Item
+				break;
+			}
+			case Types::VECTOR4: case Types::VECTOR4_COLOR:
+			{
+				res += sizeof(glm::vec4); // Item
+				break;
+			}
+			case Types::TEXTURE: case Types::MESH: case Types::SKINNED_MESH: case Types::MATERIAL: case Types::CUBEMAP: case Types::ANIMATION:
+			case Types::SHADER: case Types::FONT: case Types::MESH_COLLIDER: case Types::SOUND:
+			{
+				res += sizeof(UUID); // Item
+				break;
+			}
+			case Types::TEXTURE_VECTOR: case Types::MESH_VECTOR: case Types::SKINNED_MESH_VECTOR: case Types::MATERIAL_VECTOR:
+			{
+				std::vector<Texture*>* item = (std::vector<Texture*>*) & data[m.offset];
+
+				res += sizeof(size_t); // Size
+				res += item->size() * sizeof(UUID); // Items
+				break;
+			}
+			case Types::UNKNOWN:
+				break;
+			}
+		}
+
+		return res;
+	}
+
 	std::string MetaType::TypeToString(Types type)
 	{
 		if (type == Types::INT)

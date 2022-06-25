@@ -1,13 +1,11 @@
 #pragma once
 #include <Seidon.h>
 
-#include "EditorWindow.h"
-#include "ProjectSelectionWindow.h"
+#include "Core/EditorWindow.h"
+#include "Core/ProjectSelectionWindow.h"
 
-#include "EditorAction.h"
-#include "Dockspace.h"
-
-#include <ImGuizmo/ImGuizmo.h>
+#include "Core/EditorAction.h"
+#include "Core/Dockspace.h"
 
 namespace Seidon
 {
@@ -16,45 +14,36 @@ namespace Seidon
     {
     public:
         Project* openProject = nullptr;
-
-        EditorActionList actions;
-        std::vector<EditorActionCallback> actionCallbacks;
+        Scene* activeScene;
 
         ProjectSelectionWindow* projectSelectionWindow;
         EditorWindow* editorWindow;
         SelectedItem selectedItem;
         ResourceManager editorResourceManager;
-        Scene* scene;
-        Scene* runtimeScene;
-        Scene editorSystems;
-        Scene runtimeSystems;
 
-        Dockspace dockspace;
-
-        Extension e;
-
-        RenderFunction drawColliders;
-        bool colliderRenderingEnabled = false;
-
-        int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
-        BoundingBox viewBounds;
-        bool local = false;
+        EditorActionList actions;
+        std::vector<EditorActionCallback> actionCallbacks;
 
         bool isPlaying = false;
+
+        bool switchProject = false;
+        Project* projectToSwitch = nullptr;
+
     public:
         void Init() override;
         void Update() override;
         void Destroy() override;
 
+        void Play();
+        void Stop();
+
+        void SwitchProject(Project* project);
+        void SwitchActiveScene(Scene* scene);
+
         void OnEditorAction(EditorAction* action);
         void AddEditorActionCallback(const EditorActionCallback& callback);
-    private:
-        void DrawCubeColliders(Renderer& renderer);
-        void DrawMeshColliders(Renderer& renderer);
-        void DrawCharacterControllers(Renderer& renderer);
-        void DrawGuizmos(Renderer& renderer);
-        void DrawTransformGuizmos();
 
-        void ReloadDll();
+    private:
+        void UpdateEditorSystems();
     };
 }

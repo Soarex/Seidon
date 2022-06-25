@@ -32,7 +32,7 @@ namespace Seidon
 
 		hdrFramebuffer.Create();
 		hdrFramebuffer.SetColorTexture(hdrMap);
-		//hdrFramebuffer.SetColorTexture(entityMap, 1);
+		hdrFramebuffer.SetColorTexture(entityMap, 1);
 		hdrFramebuffer.SetDepthStencilRenderBuffer(hdrDepthStencilBuffer);
 
 		int shadowSamplers[CASCADE_COUNT];
@@ -50,25 +50,6 @@ namespace Seidon
 		renderFramebuffer.Create();
 		renderFramebuffer.SetColorTexture(renderTarget);
 		renderFramebuffer.SetDepthStencilRenderBuffer(renderDepthStencilBuffer);
-
-		shader = resourceManager->GetAsset<Shader>("default_skinned_shader");
-		shader->Use();
-
-		shader->SetInt("iblData.irradianceMap", 5);
-		shader->SetInt("iblData.prefilterMap", 6);
-		shader->SetInt("iblData.BRDFLookupMap", 7);
-
-		shader->SetInts("shadowMappingData.shadowMaps", shadowSamplers, CASCADE_COUNT);
-
-		shader = resourceManager->GetAsset<Shader>("default_shader");
-		shader->Use();
-
-		shader->SetInt("iblData.irradianceMap", 5);
-		shader->SetInt("iblData.prefilterMap", 6);
-		shader->SetInt("iblData.BRDFLookupMap", 7);
-
-		shader->SetInts("shadowMappingData.shadowMaps", shadowSamplers, CASCADE_COUNT);
-
 
 		depthShader->Load("Shaders/ShadowPass.shader");
 		skinnedDepthShader->Load("Shaders/ShadowPass-Skinned.sdshader");
@@ -126,15 +107,17 @@ namespace Seidon
 		else
 			light.color = glm::vec3(0, 0, 0);
 
-		CameraComponent camera;
+		CameraComponent* cameraPointer;
 		TransformComponent cameraTransform;
 		if (!cameras.empty())
 		{
-			camera = cameras.get<CameraComponent>(cameras.front());
+			cameraPointer = &cameras.get<CameraComponent>(cameras.front());
 			cameraTransform = cameras.get<TransformComponent>(cameras.front());
 		}
 		else
-			camera = defaultCamera;
+			cameraPointer = &defaultCamera;
+
+		CameraComponent& camera = *cameraPointer;
 
 		//TODO: Move to a better place
 		{
