@@ -1,7 +1,7 @@
 #pragma once
 
 
-#ifndef NDEBUG
+#ifdef SD_DEBUG
 #include <stdlib.h>
 #include <iostream>
 #include <glad/glad.h>

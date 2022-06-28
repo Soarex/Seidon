@@ -5,10 +5,10 @@ namespace Seidon
 	void ConsolePanel::Init()
 	{
 		oldOutStream = std::cout.rdbuf();
-		//std::cout.rdbuf(outStream.rdbuf());
+		std::cout.rdbuf(outStream.rdbuf());
 
 		oldErrorStream = std::cerr.rdbuf();
-		//std::cerr.rdbuf(errorStream.rdbuf());
+		std::cerr.rdbuf(errorStream.rdbuf());
 	}
 
 	void ConsolePanel::Draw()

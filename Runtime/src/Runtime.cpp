@@ -7,7 +7,6 @@ namespace Seidon
 	{
 	private:
 		Entity selectedEntity;
-		Extension e;
 	public:
 		void Init() override
 		{
@@ -18,9 +17,6 @@ namespace Seidon
 
 			std::ifstream in("Assets/ResourceRegistry.sdreg", std::ios::in | std::ios::binary);
 			resourceManager->Load(in);
-
-			e.Bind(L"Assets/scripts.dll");
-			e.Init();
 
 			Scene* scene = new Scene();
 
@@ -36,7 +32,6 @@ namespace Seidon
 
 		void Destroy() override
 		{
-			e.Destroy();
 		}
 	};
 

@@ -296,7 +296,6 @@ void Init(Seidon::Application& app)
 
 void Destroy(Seidon::Application& app)
 {
-    std::cout << "Called" << std::endl;
     app.UnregisterComponent<PlayerComponent>();
     app.UnregisterComponent<UIComponent>();
     app.UnregisterComponent<DamageableComponent>();

@@ -115,6 +115,21 @@ namespace Seidon
         openProject->loadedScene = scene;
         activeScene = scene;
 
+        ReloadEditorSystems();
+
+        selectedItem.type = SelectedItemType::NONE;
+    }
+
+    void Editor::ReloadActiveScene()
+    {
+        std::string path = resourceManager->GetAssetPath(activeScene->id);
+
+        activeScene->Destroy();
+        activeScene->Load(path);
+    }
+
+    void Editor::ReloadEditorSystems()
+    {
         std::vector<SystemMetaType> systemMetaTypes;
 
         for (auto& [name, system] : openProject->editorSystems)
@@ -125,8 +140,28 @@ namespace Seidon
             openProject->RemoveEditorSystem(metaType);
             openProject->AddEditorSystem(metaType);
         }
+    }
 
-        selectedItem.type = SelectedItemType::NONE;
+    void Editor::ReloadExtensions()
+    {
+        for (Extension* e : openProject->loadedExtensions)
+        {
+            std::string path = resourceManager->GetAssetPath(e->id);
+            std::string hotswapPath = e->path;
+
+            e->Destroy();
+
+            std::filesystem::copy_file(path, hotswapPath, std::filesystem::copy_options::overwrite_existing);
+
+            e->Load(hotswapPath);
+        }
+    }
+
+    void Editor::ReloadExtensionsAndSystems()
+    {
+        ReloadExtensions();
+        ReloadEditorSystems();
+        ReloadActiveScene();
     }
 
     void Editor::UpdateEditorSystems()

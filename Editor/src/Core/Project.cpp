@@ -108,14 +108,26 @@ namespace Seidon
 
 			if (!Application::Get()->GetResourceManager()->IsAssetRegistered(id))
 			{
-				std::cerr << "Error loading extension " << extensionNode["Name"].as<std::string>() << std::endl;
+				std::cerr << "Error loading extension " << extensionNode["Name"].as<std::string>() << ", id not registered" << std::endl;
 				continue;
 			}
 			
 			std::string extensionPath = Application::Get()->GetResourceManager()->GetAssetPath(id);
+
+			if (!std::filesystem::exists(extensionPath))
+			{
+				std::cerr << "Error loading extension " << extensionNode["Name"].as<std::string>() << ", file not found" << std::endl;
+				continue;
+			}
 			
+			std::string hotswapPath = rootDirectory
+				+ "\\Temp\\Hotswap\\" + GetNameFromPath(extensionPath);
+
+			std::filesystem::copy_file(extensionPath, hotswapPath, std::filesystem::copy_options::overwrite_existing);
+
+
 			Extension* extension = new Extension();
-			extension->Load(extensionPath);
+			extension->Load(hotswapPath);
 			extension->id = id;
 
 			loadedExtensions.push_back(extension);

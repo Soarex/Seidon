@@ -4,6 +4,7 @@
 #include "../Panels/Panels.h"
 
 #include "../Systems/EditorCameraControlSystem.h"
+#include "../Utils/StringUtils.h"
 #include "../Utils/Dialogs.h"
 
 namespace Seidon
@@ -59,6 +60,12 @@ namespace Seidon
         if (inputManager.GetKeyPressed(GET_KEYCODE(ESCAPE)))
             editor.GetWindow()->ToggleMouseCursor();
 
+        if (inputManager.GetKeyDown(GET_KEYCODE(LEFT_CONTROL)) && inputManager.GetKeyPressed(GET_KEYCODE(B)))
+            editor.ReloadExtensions();
+
+        if (inputManager.GetKeyDown(GET_KEYCODE(LEFT_CONTROL)) && inputManager.GetKeyDown(GET_KEYCODE(LEFT_SHIFT)) && inputManager.GetKeyPressed(GET_KEYCODE(B)))
+            editor.ReloadExtensionsAndSystems();
+
         if (inputManager.GetKeyDown(GET_KEYCODE(LEFT_CONTROL)) && inputManager.GetKeyPressed(GET_KEYCODE(S)))
             SaveSceneAndProject();
 
@@ -103,7 +110,12 @@ namespace Seidon
             {
                 if (ImGui::MenuItem("Extension Registry"))
                     openRegistry = true;
-                    
+
+                if (ImGui::MenuItem("Quick Reload", "Ctrl+B"))
+                    editor.ReloadExtensions();
+
+                if (ImGui::MenuItem("Full Reload", "Ctrl+Shift+B"))
+                    editor.ReloadExtensionsAndSystems();
 
                 ImGui::EndMenu();
             }
@@ -188,8 +200,33 @@ namespace Seidon
 
             ImGui::BeginChild("Extension List", { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y * 0.70f });
 
+            int i = 0;
+            int toDelete = -1;
             for (Extension* extension : editor.openProject->loadedExtensions)
-                ImGui::Text(extension->name.c_str());
+            {
+                ImGui::Selectable(extension->name.c_str());          
+
+                if (ImGui::BeginPopupContextItem())
+                {
+                    if (ImGui::Button("Unload"))
+                    {
+                        toDelete = i;
+                    }
+                    ImGui::EndPopup();
+                }
+
+                i++;
+            }
+
+            if (toDelete != -1)
+            {
+                editor.openProject->loadedExtensions[toDelete]->Destroy();
+                delete editor.openProject->loadedExtensions[toDelete];
+
+                editor.openProject->loadedExtensions.erase(editor.openProject->loadedExtensions.begin() + toDelete);
+                editor.ReloadEditorSystems();
+                editor.ReloadActiveScene();
+            }
 
             ImGui::EndChild();
             
@@ -205,9 +242,32 @@ namespace Seidon
             {
                 std::string path = LoadFile("Seidon Extension (*.dll)\0*.dll\0");
 
-                Extension* extension = editor.GetResourceManager()->LoadAsset<Extension>(path);
+                std::string hotswapPath = editor.openProject->rootDirectory
+                    + "\\Temp\\Hotswap\\" + GetNameFromPath(path);
 
-                editor.openProject->loadedExtensions.push_back(extension);
+                bool success = false;
+                try
+                {
+                    std::filesystem::copy_file(path, hotswapPath, std::filesystem::copy_options::overwrite_existing);
+                    success = true;
+                }
+                catch (...)
+                {
+                    std::cerr << "Could not load extension" << std::endl;
+                }
+
+                if (success)
+                {
+                    Extension* extension = new Extension();
+                    extension->Load(hotswapPath);
+
+                    if (editor.GetResourceManager()->IsAssetRegistered(path))
+                        extension->id = editor.GetResourceManager()->GetAssetId(path);
+
+                    editor.GetResourceManager()->RegisterAssetId(extension->id, path);
+
+                    editor.openProject->loadedExtensions.push_back(extension);
+                }
             }
 
             ImGui::Separator();

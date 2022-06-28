@@ -151,6 +151,8 @@ namespace Seidon
 		if (filepath == "") return nullptr;
 
 		std::filesystem::create_directory(filepath);
+		std::filesystem::create_directory(filepath + "\\Temp");
+		std::filesystem::create_directory(filepath + "\\Temp\\Hotswap");
 		std::filesystem::create_directory(filepath + "\\Assets");
 		std::filesystem::create_directory(filepath + "\\Assets\\Scenes");
 

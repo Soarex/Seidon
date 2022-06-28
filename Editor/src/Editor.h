@@ -40,6 +40,11 @@ namespace Seidon
         void SwitchProject(Project* project);
         void SwitchActiveScene(Scene* scene);
 
+        void ReloadEditorSystems();
+        void ReloadExtensions();
+        void ReloadActiveScene();
+        void ReloadExtensionsAndSystems();
+
         void OnEditorAction(EditorAction* action);
         void AddEditorActionCallback(const EditorActionCallback& callback);
 
