@@ -104,27 +104,80 @@ namespace Seidon
 				editor.selectedItem.entity = e;
 			}
 
-			if (ImGui::MenuItem("Add Mesh Entity"))
+			if (ImGui::BeginMenu("3D Shapes"))
 			{
-				Entity e = editor.activeScene->CreateEntity();
-				e.AddComponent<RenderComponent>();
+				if (ImGui::MenuItem("Add Cube"))
+				{
+					Entity e = editor.activeScene->CreateEntity();
+					RenderComponent& r = e.AddComponent<RenderComponent>();
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Cube.sdmesh"));
 
-				e.SetName("Mesh");
+					e.SetName("Cube");
 
-				editor.selectedItem.type = SelectedItemType::ENTITY;
-				editor.selectedItem.entity = e;
-			}
+					editor.selectedItem.type = SelectedItemType::ENTITY;
+					editor.selectedItem.entity = e;
+				}
 
-			if (ImGui::MenuItem("Add Animated Mesh Entity"))
-			{
-				Entity e = editor.activeScene->CreateEntity();
-				e.AddComponent<SkinnedRenderComponent>();
-				e.AddComponent<AnimationComponent>();
+				if (ImGui::MenuItem("Add Sphere"))
+				{
+					Entity e = editor.activeScene->CreateEntity();
+					RenderComponent& r = e.AddComponent<RenderComponent>();
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Sphere.sdmesh"));
 
-				e.SetName("Animated Mesh");
+					e.SetName("Sphere");
 
-				editor.selectedItem.type = SelectedItemType::ENTITY;
-				editor.selectedItem.entity = e;
+					editor.selectedItem.type = SelectedItemType::ENTITY;
+					editor.selectedItem.entity = e;
+				}
+
+				if (ImGui::MenuItem("Add Cylinder"))
+				{
+					Entity e = editor.activeScene->CreateEntity();
+					RenderComponent& r = e.AddComponent<RenderComponent>();
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Cylinder.sdmesh"));
+
+					e.SetName("Cylinder");
+
+					editor.selectedItem.type = SelectedItemType::ENTITY;
+					editor.selectedItem.entity = e;
+				}
+
+				if (ImGui::MenuItem("Add Plane"))
+				{
+					Entity e = editor.activeScene->CreateEntity();
+					RenderComponent& r = e.AddComponent<RenderComponent>();
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Plane.sdmesh"));
+
+					e.SetName("Plane");
+
+					editor.selectedItem.type = SelectedItemType::ENTITY;
+					editor.selectedItem.entity = e;
+				}
+
+				if (ImGui::MenuItem("Add Empty Mesh"))
+				{
+					Entity e = editor.activeScene->CreateEntity();
+					e.AddComponent<RenderComponent>();
+
+					e.SetName("Mesh");
+
+					editor.selectedItem.type = SelectedItemType::ENTITY;
+					editor.selectedItem.entity = e;
+				}
+
+				if (ImGui::MenuItem("Add Empty Animated Mesh"))
+				{
+					Entity e = editor.activeScene->CreateEntity();
+					e.AddComponent<SkinnedRenderComponent>();
+					e.AddComponent<AnimationComponent>();
+
+					e.SetName("Animated Mesh");
+
+					editor.selectedItem.type = SelectedItemType::ENTITY;
+					editor.selectedItem.entity = e;
+				}
+
+				ImGui::EndMenu();
 			}
 
 			if (ImGui::MenuItem("Add Text"))
@@ -223,7 +276,7 @@ namespace Seidon
 			ImGui::EndDragDropTarget();
 		}
 
-		if (ImGui::IsItemClicked())
+		if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 		{
 			editor.selectedItem.type = SelectedItemType::ENTITY;
 			editor.selectedItem.entity = entity;

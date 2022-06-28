@@ -7,6 +7,19 @@ namespace Seidon
 	void ViewportPanel::Init()
 	{
         editor.GetInputManager()->ListenToCursor(false);
+
+        if (editor.openProject->HasEditorSystem<RenderSystem>())
+        {
+            RenderSystem& renderSystem = *editor.openProject->GetEditorSystem<RenderSystem>();
+            renderSystem.AddMainRenderPassFunction([&](Renderer& renderer)
+            {
+                if (!colliderRenderingEnabled) return;
+
+                DrawCubeColliders(renderer);
+                DrawMeshColliders(renderer);
+                DrawCharacterControllers(renderer);
+            });
+        }
 	}
 
 	void ViewportPanel::Draw()
@@ -22,8 +35,8 @@ namespace Seidon
         inputManager.BlockInput(!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered());
 
 
-        if (ImGui::Button("Colliders"));
-            //colliderRenderingEnabled = !colliderRenderingEnabled;
+        if (ImGui::Button("Colliders"))
+            colliderRenderingEnabled = !colliderRenderingEnabled;
 
         ImGui::SameLine();
 
@@ -275,5 +288,95 @@ namespace Seidon
                 (*selectedItem.boneData.transforms)[selectedItem.boneData.id] = glm::inverse(parentTransformWorldSpace) * glm::inverse(selectedItem.boneData.owningEntity.GetGlobalTransformMatrix()) * t.GetTransformMatrix();
             }
         }
+    }
+
+    void ViewportPanel::DrawCubeColliders(Renderer& renderer)
+    {
+        editor.openProject->loadedScene->CreateGroupAndIterate<CubeColliderComponent>
+            (
+                GetTypeList<TransformComponent>,
+                [&](EntityId id, CubeColliderComponent& c, TransformComponent& t)
+                {
+                    TransformComponent globalTransform;
+                    globalTransform.SetFromMatrix(editor.openProject->loadedScene->GetEntityByEntityId(id).GetGlobalTransformMatrix());
+
+                    TransformComponent t1;
+                    t1.position = globalTransform.position + c.offset;
+                    t1.rotation = globalTransform.rotation;
+
+                    float bias = 0.005f;
+                    t1.scale = globalTransform.scale * c.halfExtents * 2.0f + glm::vec3(bias);
+
+                    auto m = editor.editorResourceManager.GetOrLoadAsset<Mesh>("Resources\\Cube.sdmesh");
+                    renderer.SubmitMeshWireframe(editor.editorResourceManager.GetOrLoadAsset<Mesh>("Resources\\Cube.sdmesh"), glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+                }
+        );
+    }
+
+    void ViewportPanel::DrawMeshColliders(Renderer& renderer)
+    {
+        editor.openProject->loadedScene->CreateGroupAndIterate<MeshColliderComponent>
+            (
+                GetTypeList<TransformComponent>,
+                [&](EntityId id, MeshColliderComponent& c, TransformComponent& t)
+                {
+                    Entity e = editor.openProject->loadedScene->GetEntityByEntityId(id);
+
+                    if (!e.HasComponent<RenderComponent>()) return;
+
+                    TransformComponent globalTransform;
+                    globalTransform.SetFromMatrix(e.GetGlobalTransformMatrix());
+
+                    TransformComponent t1;
+                    t1.position = globalTransform.position;
+                    t1.rotation = globalTransform.rotation;
+
+                    float bias = 0.005f;
+                    t1.scale = t.scale + glm::vec3(bias);
+
+                    auto m = editor.editorResourceManager.GetOrLoadAsset<Mesh>("Resources\\Cube.sdmesh");
+                    renderer.SubmitMeshWireframe(e.GetComponent<RenderComponent>().mesh, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+                }
+        );
+    }
+
+    void ViewportPanel::DrawCharacterControllers(Renderer& renderer)
+    {
+        editor.openProject->loadedScene->CreateGroupAndIterate<CharacterControllerComponent>
+        (
+            GetTypeList<TransformComponent>,
+            [&](EntityId id, CharacterControllerComponent& c, TransformComponent& t)
+            {
+                TransformComponent globalTransform;
+                globalTransform.SetFromMatrix(editor.openProject->loadedScene->GetEntityByEntityId(id).GetGlobalTransformMatrix());
+
+                TransformComponent t1;
+                t1.position = globalTransform.position;
+
+                float bias = 0.005f;
+                t1.scale = { c.colliderRadius * 2, c.colliderHeight, c.colliderRadius * 2 };
+                t1.scale += glm::vec3(bias);
+
+                Mesh* semisphere = editor.editorResourceManager.GetOrLoadAsset<Mesh>("Resources\\UncappedSemisphere.sdmesh");
+                Mesh* cylinder = editor.editorResourceManager.GetOrLoadAsset<Mesh>("Resources\\UncappedCylinder.sdmesh");
+
+                renderer.SubmitMeshWireframe(cylinder, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+
+                t1.scale.y = t1.scale.x;
+                t1.position.y += c.colliderHeight / 2;
+
+                renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+
+                t1.position.y -= c.colliderHeight;
+                t1.rotation.x = glm::radians(180.0f);
+
+                renderer.SubmitMeshWireframe(semisphere, glm::vec3(0, 1, 0), t1.GetTransformMatrix());
+
+                t1.position.y -= c.contactOffset / 2 + 1 * c.colliderRadius;
+                t1.scale.y = c.contactOffset;
+
+                renderer.SubmitMeshWireframe(cylinder, glm::vec3(1, 1, 1), t1.GetTransformMatrix());
+            }
+        );
     }
 }

@@ -43,6 +43,7 @@ namespace Seidon
 	void ConsolePanel::Destroy()
 	{
 		std::cout.rdbuf(oldOutStream);
+		std::cerr.rdbuf(oldErrorStream);
 	}
 
 }

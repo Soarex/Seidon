@@ -155,7 +155,7 @@ namespace Seidon
                 Prefab p;
                 p.MakeFromEntity(e);
 
-                p.Save("Assets\\" + std::string(buffer) + ".sdpref");
+                p.Save(editor.openProject->assetsDirectory + std::string(buffer) + ".sdpref");
                 ImGui::CloseCurrentPopup();
             }
 

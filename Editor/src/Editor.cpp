@@ -87,6 +87,8 @@ namespace Seidon
 
         sceneManager->SetActiveScene(activeScene);
 
+        selectedItem.type = SelectedItemType::NONE;
+
         isPlaying = true;
     }
 
@@ -99,6 +101,7 @@ namespace Seidon
 
         activeScene = openProject->loadedScene;
 
+        selectedItem.type = SelectedItemType::NONE;
         isPlaying = false;
     }
 

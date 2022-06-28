@@ -18,11 +18,16 @@ namespace Seidon
 	private:
 		BoundingBox viewportBounds;
 
+		bool colliderRenderingEnabled = false;
+
 		int guizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 		bool local = false;
 	private:
 		void ProcessInput();
 
 		void DrawTransformGuizmos();
+		void DrawCubeColliders(Renderer& renderer);
+		void DrawMeshColliders(Renderer& renderer);
+		void DrawCharacterControllers(Renderer& renderer);
 	};
 }
