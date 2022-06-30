@@ -44,7 +44,7 @@ namespace Seidon
 	void Prefab::Load(const std::string& path)
 	{
 		std::ifstream in(path, std::ios::in | std::ios::binary);
-
+		
 		in.read((char*)&rootEntityId, sizeof(UUID));
 		prefabScene.Load(in);
 	}

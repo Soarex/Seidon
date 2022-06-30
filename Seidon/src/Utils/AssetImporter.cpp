@@ -62,8 +62,6 @@ namespace Seidon
 
         for (auto& m : importedMeshes)
         {
-            std::cout << directory + "\\" + m->name + ".sdmesh" << " -> " << relativeDirectory + "\\" + m->name + ".sdmesh" << std::endl;
-
             m->Save(directory + "\\" + m->name + ".sdmesh");
 
             Application::Get()->GetResourceManager()->RegisterAsset(m, relativeDirectory + "\\" + m->name + ".sdmesh");

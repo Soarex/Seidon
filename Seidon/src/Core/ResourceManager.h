@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <utility>
 #include <filesystem>
-#include <iostream >
 
 namespace Seidon
 {

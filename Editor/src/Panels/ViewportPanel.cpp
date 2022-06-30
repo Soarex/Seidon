@@ -134,7 +134,7 @@ namespace Seidon
                 std::string path = (const char*)payload->Data;
 
                 Scene* scene = new Scene();
-                scene->Load(path);
+                scene->Load(editor.GetResourceManager()->RelativeToAbsolutePath(path));
 
                 editor.GetResourceManager()->RegisterAsset(scene, path);
 
@@ -146,7 +146,7 @@ namespace Seidon
                 std::string path = (const char*)payload->Data;
 
                 Prefab p;
-                p.Load(path);
+                p.Load(editor.GetResourceManager()->RelativeToAbsolutePath(path));
 
                 editor.selectedItem.type = SelectedItemType::ENTITY;
                 editor.selectedItem.entity = editor.activeScene->InstantiatePrefab(p);
