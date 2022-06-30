@@ -12,16 +12,22 @@ namespace Seidon
     void AssetImporter::ImportModelFile(const std::string& path)
 	{
         std::string directory;
+        std::string relativeDirectory;
 
-        const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+        std::string absolutePath = Application::Get()->GetResourceManager()->RelativeToAbsolutePath(path);
+
+        const aiScene* scene = importer.ReadFile(absolutePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
             std::cerr << "ERROR::ASSIMP::" << importer.GetErrorString() << std::endl;
 
-        directory = path.substr(0, path.find_last_of('\\'));
+        directory = absolutePath.substr(0, absolutePath.find_last_of('\\'));
+        relativeDirectory = Application::Get()->GetResourceManager()->AbsoluteToRelativePath(directory);
+
+        std::cout << directory << " " << relativeDirectory << std::endl;
 
         for (int i = 0; i < scene->mNumMaterials; i++)
-            ImportMaterial(scene->mMaterials[i], directory);
+            ImportMaterial(scene->mMaterials[i], relativeDirectory);
         
         std::vector<aiNode*> meshRootNodes;
         std::vector<aiNode*> armatureRootNodes;
@@ -56,11 +62,11 @@ namespace Seidon
 
         for (auto& m : importedMeshes)
         {
-            std::string path = directory + "\\" + m->name + ".sdmesh";
+            std::cout << directory + "\\" + m->name + ".sdmesh" << " -> " << relativeDirectory + "\\" + m->name + ".sdmesh" << std::endl;
 
-            m->Save(path);
+            m->Save(directory + "\\" + m->name + ".sdmesh");
 
-            Application::Get()->GetResourceManager()->RegisterAsset(m, path);
+            Application::Get()->GetResourceManager()->RegisterAsset(m, relativeDirectory + "\\" + m->name + ".sdmesh");
 
             MeshCollider* collider = new MeshCollider();
 
@@ -68,9 +74,8 @@ namespace Seidon
 
             collider->name = m->name;
 
-            path = directory + "\\" + m->name + ".sdcoll";
-            collider->Save(path);
-            Application::Get()->GetResourceManager()->RegisterAsset(collider, path);
+            collider->Save(directory + "\\" + m->name + ".sdcoll");
+            Application::Get()->GetResourceManager()->RegisterAsset(collider, relativeDirectory + "\\" + m->name + ".sdcoll");
 
             delete collider;
             delete m;
@@ -87,12 +92,9 @@ namespace Seidon
                         v.weights /= weightSum;
                 }
             
-            std::string path = directory + "\\" + m->name + ".sdskmesh";
-
-            std::ofstream out(path, std::ios::out | std::ios::binary);
-
-            m->Save(out);
-            Application::Get()->GetResourceManager()->RegisterAsset(m, path);
+            m->Save(directory + "\\" + m->name + ".sdskmesh");
+   
+            Application::Get()->GetResourceManager()->RegisterAsset(m, relativeDirectory + "\\" + m->name + ".sdskmesh");
             delete m;
         }
 
@@ -506,31 +508,11 @@ namespace Seidon
             anim.channels.push_back(channel);
         }
 
-        /*
-        std::vector<bool> foundIds;
-        foundIds.resize(armature->bones.size());
-
-        for (AnimationChannel& channel : anim.channels)
-            foundIds[channel.boneId] = true;
-
-        for (int i = 0; i < foundIds.size(); i++)
-            if (!foundIds[i])
-            {
-                AnimationChannel c;
-                c.boneId = i;
-                c.boneName = "";
-
-                c.positionKeys.push_back(PositionKey());
-                c.rotationKeys.push_back(RotationKey());
-                c.scalingKeys.push_back(ScalingKey());
-
-                anim.channels.push_back(c);
-            }
-        */
         std::sort(anim.channels.begin(), anim.channels.end(), [](AnimationChannel& a, AnimationChannel& b) { return a.boneId < b.boneId; });
         anim.Save(directory + "\\" + anim.name + ".sdanim");
 
-        Application::Get()->GetResourceManager()->RegisterAsset(&anim, directory + "\\" + anim.name + ".sdanim");
+        std::string relativeDirectory = Application::Get()->GetResourceManager()->AbsoluteToRelativePath(directory);
+        Application::Get()->GetResourceManager()->RegisterAsset(&anim, relativeDirectory + "\\" + anim.name + ".sdanim");
     }
     
     void AssetImporter::ProcessBones(aiNode* node, const aiScene* scene, Armature& armature, int parentId)
@@ -675,7 +657,6 @@ namespace Seidon
             *((Texture**)ptr) = resourceManager.GetAsset<Texture>("ao_default");
             ptr += sizeof(Texture*);
         }
-
         Application::Get()->GetResourceManager()->RegisterAsset(m, directory + "\\" + m->name + ".sdmat");
 
         importedMaterials[m->name] = m;
@@ -688,14 +669,17 @@ namespace Seidon
 
         Texture* t = new Texture();
 
-        if (!t->Import(path, gammaCorrection, flip, clampingMode))
+        std::string absolutePath = Application::Get()->GetResourceManager()->RelativeToAbsolutePath(path);
+
+        if (!t->Import(absolutePath, gammaCorrection, flip, clampingMode))
         {
             //delete t;
             return nullptr;
         }
 
         t->path = ChangeSuffix(path, ".sdtex");
-        t->Save(t->path);
+
+        t->Save(ChangeSuffix(absolutePath, ".sdtex"));
 
         Application::Get()->GetResourceManager()->RegisterAsset(t, t->path);
 
@@ -706,9 +690,12 @@ namespace Seidon
     HdrCubemap* AssetImporter::ImportCubemap(const std::string& path)
     {
         HdrCubemap* c = new HdrCubemap();
-        c->LoadFromEquirectangularMap(path);
+        std::string absolutePath = Application::Get()->GetResourceManager()->RelativeToAbsolutePath(path);
+
+        c->LoadFromEquirectangularMap(absolutePath);
+
         c->name = ChangeSuffix(path, ".sdhdr");
-        c->Save(c->name);
+        c->Save(ChangeSuffix(absolutePath, ".sdhdr"));
 
         Application::Get()->GetResourceManager()->RegisterAsset(c, c->name);
 
@@ -718,11 +705,13 @@ namespace Seidon
     Font* AssetImporter::ImportFont(const std::string& path)
     {
         Font* f = new Font();
-        f->Import(path);
+        std::string absolutePath = Application::Get()->GetResourceManager()->RelativeToAbsolutePath(path);
+
+        f->Import(absolutePath);
+
         f->name = ChangeSuffix(path, ".sdfont");
 
-        std::ofstream out(f->GetName(), std::ios::out | std::ios::binary);
-        f->Save(out);
+        f->Save(ChangeSuffix(absolutePath, ".sdfont"));
 
         Application::Get()->GetResourceManager()->RegisterAsset(f, f->GetName());
         return f;

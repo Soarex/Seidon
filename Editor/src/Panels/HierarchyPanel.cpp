@@ -110,7 +110,7 @@ namespace Seidon
 				{
 					Entity e = editor.activeScene->CreateEntity();
 					RenderComponent& r = e.AddComponent<RenderComponent>();
-					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Cube.sdmesh"));
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resources\\Cube.sdmesh"));
 
 					e.SetName("Cube");
 
@@ -122,7 +122,7 @@ namespace Seidon
 				{
 					Entity e = editor.activeScene->CreateEntity();
 					RenderComponent& r = e.AddComponent<RenderComponent>();
-					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Sphere.sdmesh"));
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resources\\Sphere.sdmesh"));
 
 					e.SetName("Sphere");
 
@@ -134,7 +134,7 @@ namespace Seidon
 				{
 					Entity e = editor.activeScene->CreateEntity();
 					RenderComponent& r = e.AddComponent<RenderComponent>();
-					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Cylinder.sdmesh"));
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resources\\Cylinder.sdmesh"));
 
 					e.SetName("Cylinder");
 
@@ -146,7 +146,7 @@ namespace Seidon
 				{
 					Entity e = editor.activeScene->CreateEntity();
 					RenderComponent& r = e.AddComponent<RenderComponent>();
-					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resource\\Plane.sdmesh"));
+					r.SetMesh(editor.GetResourceManager()->GetOrLoadAsset<Mesh>("Resources\\Plane.sdmesh"));
 
 					e.SetName("Plane");
 

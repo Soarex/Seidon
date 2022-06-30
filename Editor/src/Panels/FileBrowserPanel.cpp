@@ -8,17 +8,18 @@ namespace Seidon
 	{
 		ResourceManager& resourceManager = editor.editorResourceManager;
 
-		backIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/BackIcon.sdtex");
-		fileIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex");
-		folderIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FolderIcon.sdtex");
-		modelIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/ModelIcon.sdtex");
-		materialIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/MaterialIcon.sdtex");
-		animationIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/AnimationIcon.sdtex");
-		skinnedMeshIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/SkinnedMeshIcon.sdtex");
-		prefabIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/PrefabIcon.sdtex");
-		fontIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/FontIcon.sdtex");
-		colliderIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex");
-		soundIcon = resourceManager.GetOrLoadAsset<Texture>("Resources/SoundIcon.sdtex");
+		std::string currentPath = std::filesystem::current_path().string();
+		backIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/BackIcon.sdtex", true);
+		fileIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/FileIcon.sdtex", true);
+		folderIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/FolderIcon.sdtex", true);
+		modelIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/ModelIcon.sdtex", true);
+		materialIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/MaterialIcon.sdtex", true);
+		animationIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/AnimationIcon.sdtex", true);
+		skinnedMeshIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/SkinnedMeshIcon.sdtex", true);
+		prefabIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/PrefabIcon.sdtex", true);
+		fontIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/FontIcon.sdtex", true);
+		colliderIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/MeshColliderIcon.sdtex", true);
+		soundIcon = resourceManager.GetOrLoadAsset<Texture>(currentPath + "/Resources/SoundIcon.sdtex", true);
 
 		currentDirectory = editor.openProject->assetsDirectory;
 		UpdateEntries();
@@ -399,7 +400,7 @@ namespace Seidon
 
 			if (ImGui::Button("Import"))
 			{
-				importer.ImportTexture(file.path, gammaCorrection, flip, clampModes[selectedModeIndex]);
+				importer.ImportTexture(editor.GetResourceManager()->AbsoluteToRelativePath(file.path), gammaCorrection, flip, clampModes[selectedModeIndex]);
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -433,7 +434,7 @@ namespace Seidon
 
 			if (ImGui::Button("Import"))
 			{
-				importer.ImportModelFile(file.path);
+				importer.ImportModelFile(editor.GetResourceManager()->AbsoluteToRelativePath(file.path));
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -467,7 +468,7 @@ namespace Seidon
 
 			if (ImGui::Button("Import"))
 			{
-				delete importer.ImportFont(file.path);
+				delete importer.ImportFont(editor.GetResourceManager()->AbsoluteToRelativePath(file.path));
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -500,7 +501,7 @@ namespace Seidon
 
 			if (ImGui::Button("Import"))
 			{
-				delete importer.ImportCubemap(file.path);
+				delete importer.ImportCubemap(editor.GetResourceManager()->AbsoluteToRelativePath(file.path));
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -520,12 +521,12 @@ namespace Seidon
 	{
 		ResourceManager& resourceManager = ((Editor*)Application::Get())->editorResourceManager;
 
-		Texture* t = resourceManager.GetOrLoadAsset<Texture>(file.path);
+		Texture* t = resourceManager.GetOrLoadAsset<Texture>(file.path, true);
 		ImGui::ImageButton((ImTextureID)t->GetRenderId(), { thumbnailSize, thumbnailSize }, { 0, 1 }, { 1, 0 });
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_TEXTURE", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -543,7 +544,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_MESH", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -561,7 +562,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_SKINNED_MESH", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -590,21 +591,11 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_MATERIAL", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
-		/*
-		if (ImGui::BeginPopupContextItem())
-		{
-			if (ImGui::Selectable("Rename ###Test"))
-			{
-				ImGui::OpenPopup("RenameP");
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::EndPopup();
-		}
-		*/
+
 		if (ImGui::BeginPopupModal("Rename", 0, ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			ImGui::AlignTextToFramePadding();
@@ -647,7 +638,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_ANIMATION", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -665,7 +656,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_CUBEMAP", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -683,7 +674,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_SCENE", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -704,7 +695,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_PREFAB", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -751,7 +742,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_SHADER", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -769,7 +760,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_FONT", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -787,7 +778,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_COLLIDER", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}
@@ -805,7 +796,7 @@ namespace Seidon
 
 		if (ImGui::BeginDragDropSource())
 		{
-			const std::string& itemPath = file.path;
+			const std::string& itemPath = editor.GetResourceManager()->AbsoluteToRelativePath(file.path);
 			ImGui::SetDragDropPayload("FILE_BROWSER_SOUND", itemPath.c_str(), itemPath.length() + 1);
 			ImGui::EndDragDropSource();
 		}

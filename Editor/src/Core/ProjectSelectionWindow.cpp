@@ -165,6 +165,8 @@ namespace Seidon
 		p->rootDirectory = filepath;
 		p->assetsDirectory = filepath + "\\Assets";
 
+		editor.GetResourceManager()->SetAssetDirectory(p->assetsDirectory);
+
 		Scene* scene = new Scene("Default Scene");
 		scene->AddSystem<RenderSystem>();
 		scene->AddSystem<PhysicSystem>();

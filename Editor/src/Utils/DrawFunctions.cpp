@@ -583,7 +583,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -631,7 +631,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/ModelIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/ModelIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -679,7 +679,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SkinnedMeshIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SkinnedMeshIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -729,7 +729,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MaterialIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MaterialIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 		
 		if (ImGui::IsItemClicked() && clicked)
 			*clicked = true;
@@ -787,7 +787,7 @@ namespace Seidon
 						break;
 
 					case Types::TEXTURE:
-						*(Texture**)(material->data + m.offset) = resourceManager.GetOrLoadAsset<Texture>("albedo_default");
+						*(Texture**)(material->data + m.offset) = resourceManager.GetOrLoadAsset<Texture>("albedo_default", true);
 						break;
 					}
 
@@ -823,7 +823,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/AnimationIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/AnimationIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -869,7 +869,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FileIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -916,7 +916,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FontIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/FontIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -962,7 +962,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/MeshColliderIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -1009,7 +1009,7 @@ namespace Seidon
 		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 		ImGui::BeginChild("Image", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, size), false, flags);
 
-		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SoundIcon.sdtex")->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::Image((ImTextureID)resourceManager.GetOrLoadAsset<Texture>("Resources/SoundIcon.sdtex", true)->GetRenderId(), ImVec2{ size, size }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 		if (ImGui::BeginDragDropTarget())
 		{

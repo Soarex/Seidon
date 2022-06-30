@@ -85,7 +85,8 @@ namespace Seidon
 
         m = new Material(12);
         m->name = "Preetham Sky Material";
-        m->shader = GetOrLoadAsset<Shader>("Shaders/PreethamSky.sdshader");
+
+        m->shader = LoadAsset<Shader>(std::filesystem::current_path().string() + "\\Shaders\\PreethamSky.sdshader", UUID(), true);
         m->ModifyProperty("Turbidity", 2.0f);
         m->ModifyProperty("Azimuth", 0.0f);
         m->ModifyProperty("Inclination", glm::radians(45.0f));
@@ -164,6 +165,20 @@ namespace Seidon
             idToAssetPath[id] = path;
             assetPathToId[path] = id;
         }
+    }
+
+    std::string ResourceManager::AbsoluteToRelativePath(const std::string& absolutePath) 
+    { 
+        std::string res = std::filesystem::relative(absolutePath, assetDirectory).string();
+        
+        if (res == ".") res = "";
+
+        return res; 
+    }
+
+    std::string ResourceManager::RelativeToAbsolutePath(const std::string& relativePath) 
+    { 
+        return assetDirectory + "\\" + relativePath; 
     }
 
     std::vector<Asset*> ResourceManager::GetAssets()

@@ -100,7 +100,10 @@ namespace Seidon
 		{
 			std::ifstream in(assetsDirectory + "\\ResourceRegistry.sdreg", std::ios::in | std::ios::binary);
 			Application::Get()->GetResourceManager()->Load(in);
+
 		}
+
+		Application::Get()->GetResourceManager()->SetAssetDirectory(assetsDirectory);
 
 		for (YAML::Node extensionNode : data["Extensions"])
 		{

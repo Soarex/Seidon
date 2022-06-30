@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 #include <utility>
+#include <filesystem>
+#include <iostream >
 
 namespace Seidon
 {
@@ -16,12 +18,26 @@ namespace Seidon
 		void Save(std::ofstream& out);
 		void Load(std::ifstream& in);
 
+		void SetAssetDirectory(const std::string& path) { assetDirectory = path; }
+		std::string GetAssetDirectory() { return assetDirectory; }
+
+		std::string AbsoluteToRelativePath(const std::string& absolutePath);
+		std::string RelativeToAbsolutePath(const std::string& relativePath);
+
 		template<typename T>
-		T* LoadAsset(const std::string& path, UUID id = UUID())
+		T* LoadAsset(const std::string& path, UUID id = UUID(), bool absolute = false)
 		{
 			T* asset = new T();
 			asset->id = id;
-			asset->Load(path);
+
+			std::string absolutePath;
+
+			if (absolute)
+				absolutePath = path;
+			else
+				absolutePath = RelativeToAbsolutePath(path);
+
+			asset->Load(absolutePath);
 
 			AddAsset(path, asset);
 
@@ -37,7 +53,11 @@ namespace Seidon
 
 			T* asset = new T();
 			asset->id = id;
-			asset->Load(path);
+
+			if (path[1] == ':')
+				asset->Load(path);
+			else
+				asset->Load(RelativeToAbsolutePath(path));
 
 			AddAsset(path, asset);
 
@@ -45,11 +65,11 @@ namespace Seidon
 		}
 
 		template<typename T>
-		T* GetOrLoadAsset(const std::string& name)
+		T* GetOrLoadAsset(const std::string& name, bool absolute = false)
 		{
 			if (nameToAssetId.count(name) > 0) return (T*)assets[nameToAssetId[name]];
 
-			return LoadAsset<T>(name);
+			return LoadAsset<T>(name, UUID(), absolute);
 		}
 
 		template<typename T>
@@ -82,10 +102,11 @@ namespace Seidon
 		std::vector<Asset*>	GetAssets();
 
 	private:
-
 		std::unordered_map<UUID, Asset*> assets;
 		std::unordered_map<std::string, UUID> nameToAssetId;
 		std::unordered_map<UUID, std::string> idToAssetPath;
 		std::unordered_map<std::string, UUID> assetPathToId;
+
+		std::string assetDirectory = "";
 	};
 }
