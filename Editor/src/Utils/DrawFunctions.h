@@ -20,6 +20,7 @@ namespace Seidon
 		byte newValue[50];
 	};
 
+	ChangeStatus DrawVec2Control(const std::string& label, glm::vec2& values, float resetValue = 0.0f, glm::vec2* oldValue = nullptr);
 	ChangeStatus DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, glm::vec3* oldValue = nullptr);
 	ChangeStatus DrawColorControl(const std::string& label, glm::vec3& values, float resetValue = 0.0f, glm::vec3* oldValue = nullptr);
 	ChangeStatus DrawIdControl(const std::string& label, UUID& value, UUID* oldValue = nullptr);

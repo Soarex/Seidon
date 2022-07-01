@@ -6,6 +6,103 @@
 
 namespace Seidon
 {
+	ChangeStatus DrawVec2Control(const std::string& label, glm::vec2& values, float resetValue, glm::vec2* oldValue)
+	{
+		static std::unordered_map<glm::vec2*, glm::vec2> oldValues;
+
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		bool updateOldValue = false;
+		bool changed = false;
+		bool stoppedChanging = false;
+
+		glm::vec2 old = values;
+
+		ImGui::PushID(label.c_str());
+
+		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+		ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		ImGui::BeginChild("Text", ImVec2(ImGui::GetContentRegionAvail().x * 0.33f, buttonSize.y), false, flags);
+
+		ImGui::AlignTextToFramePadding();
+		ImGui::Text(label.c_str());
+
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+		ImGui::BeginChild("Controls", ImVec2(ImGui::GetContentRegionAvail().x, buttonSize.y), false, flags);
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5 });
+
+		float fieldWidth = ImGui::GetContentRegionAvail().x / 2 - buttonSize.x;
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.9f, 0.2f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.8f, 0.1f, 0.15f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("X", buttonSize))
+		{
+			values.x = resetValue;
+			changed = true;
+			stoppedChanging = true;
+			updateOldValue = true;
+		}
+
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+
+		ImGui::PushItemWidth(fieldWidth);
+
+		changed |= ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+		if (ImGui::IsItemActivated()) updateOldValue = true;
+
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.3f, 0.8f, 0.3f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.2f, 0.7f, 0.2f, 1.0f });
+		ImGui::PushFont(boldFont);
+		if (ImGui::Button("Y", buttonSize))
+		{
+			values.y = resetValue;
+			changed = true;
+			stoppedChanging = true;
+			updateOldValue = true;
+		}
+		ImGui::PopFont();
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+
+		ImGui::PushItemWidth(fieldWidth);
+
+		changed |= ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		if (ImGui::IsItemDeactivatedAfterEdit()) stoppedChanging = true;
+		if (ImGui::IsItemActivated()) updateOldValue = true;
+
+		ImGui::PopItemWidth();
+
+		ImGui::PopStyleVar();
+		ImGui::EndChild();
+
+		ImGui::PopID();
+
+		if (oldValue) *oldValue = oldValues[&values];
+
+		if (stoppedChanging) return ChangeStatus::CHANGED;
+		if (changed) return ChangeStatus::CHANGING;
+
+		if (updateOldValue) oldValues[&values] = old;
+
+		return ChangeStatus::NO_CHANGE;
+	}
+
 	ChangeStatus DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, glm::vec3* oldValue)
 	{
 		static std::unordered_map<glm::vec3*, glm::vec3> oldValues;
@@ -782,6 +879,10 @@ namespace Seidon
 				for (MemberData& m : material->shader->GetBufferLayout()->members)
 					switch (m.type)
 					{
+					case Types::VECTOR2:
+						*(glm::vec2*)(material->data + m.offset) = glm::vec2(1);
+						break;
+
 					case Types::VECTOR3_COLOR: 
 						*(glm::vec3*)(material->data + m.offset) = glm::vec3(1);
 						break;
@@ -803,7 +904,10 @@ namespace Seidon
 			float offset = (ImGui::GetContentRegionAvail().x - size) * 0.5;
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
 			if (ImGui::Button("Save"))
-				material->Save(Application::Get()->GetResourceManager()->GetAssetPath(material->id));
+			{
+				std::string relativePath = Application::Get()->GetResourceManager()->GetAssetPath(material->id);
+				material->Save(Application::Get()->GetResourceManager()->RelativeToAbsolutePath(relativePath));
+			}
 		
 			}
 			ImGui::End();
@@ -1118,6 +1222,15 @@ namespace Seidon
 			size = ((std::string*)(obj + member.offset))->size() + 1;
 			memcpy(data.newValue, &size, sizeof(int));
 			memcpy(data.newValue + sizeof(int), ((std::string*)(obj + member.offset))->c_str(), size);
+		}
+
+		if (member.type == Types::VECTOR2)
+		{
+			glm::vec2 old;
+			data.status = DrawVec2Control(member.name.c_str(), *(glm::vec2*)(obj + member.offset), 0.0f, &old);
+
+			memcpy(data.oldValue, &old, sizeof(glm::vec2));
+			memcpy(data.newValue, (glm::vec2*)(obj + member.offset), sizeof(glm::vec2));
 		}
 
 		if (member.type == Types::VECTOR3)

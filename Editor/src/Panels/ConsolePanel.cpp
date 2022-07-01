@@ -1,14 +1,11 @@
 #include "ConsolePanel.h"
+#include "../Editor.h"
 
 namespace Seidon
 {
 	void ConsolePanel::Init()
 	{
-		oldOutStream = std::cout.rdbuf();
-		std::cout.rdbuf(outStream.rdbuf());
-
-		oldErrorStream = std::cerr.rdbuf();
-		std::cerr.rdbuf(errorStream.rdbuf());
+		
 	}
 
 	void ConsolePanel::Draw()
@@ -22,28 +19,27 @@ namespace Seidon
 		if (ImGui::Button("Clear")) Clear();
 
 		ImGui::PushStyleColor(ImGuiCol_Text, errorTextColor);
-		ImGui::Text(errorStream.str().c_str());
+		ImGui::Text(editor.errorStream.str().c_str());
 		ImGui::PopStyleColor();
 
 		ImGui::PushStyleColor(ImGuiCol_Text, infoTextColor);
-		ImGui::Text(outStream.str().c_str());
+		ImGui::Text(editor.outStream.str().c_str());
 		ImGui::PopStyleColor();
 		ImGui::End();
 	}
 
 	void ConsolePanel::Clear()
 	{
-		outStream.str("");
-		outStream.clear();
+		editor.outStream.str("");
+		editor.outStream.clear();
 
-		errorStream.str("");
-		errorStream.clear();
+		editor.errorStream.str("");
+		editor.errorStream.clear();
 	}
 
 	void ConsolePanel::Destroy()
 	{
-		std::cout.rdbuf(oldOutStream);
-		std::cerr.rdbuf(oldErrorStream);
+		
 	}
 
 }

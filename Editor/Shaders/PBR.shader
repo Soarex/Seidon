@@ -1,6 +1,7 @@
 ~VERTEX SHADER
 
 ~BEGIN LAYOUT
+UV Scale : VECTOR2
 Tint : VECTOR3_COLOR
 Albedo : TEXTURE
 Normal : TEXTURE
@@ -108,6 +109,7 @@ struct DirectionalLight
 
 struct Material
 {
+    vec2 uvScale;
     vec3 tint;
     sampler2D albedoMap;
     sampler2D normalMap;
@@ -163,12 +165,14 @@ float shadowCalculation();
 
 void main()
 {
+    vec2 uv = fs_in.UV * materials[fs_in.objectId].uvScale;
     vec3 tint = materials[fs_in.objectId].tint;
-    vec3 albedo = texture(materials[fs_in.objectId].albedoMap, fs_in.UV).rgb * tint;
-    float metallic = texture(materials[fs_in.objectId].metallicMap, fs_in.UV).r;
-    float roughness = texture(materials[fs_in.objectId].roughnessMap, fs_in.UV).r;
-    float ao = texture(materials[fs_in.objectId].aoMap, fs_in.UV).r;
-    vec3 normal = texture(materials[fs_in.objectId].normalMap, fs_in.UV).rgb;
+    vec3 albedo = texture(materials[fs_in.objectId].albedoMap, uv).rgb * tint;
+    float metallic = texture(materials[fs_in.objectId].metallicMap, uv).r;
+    float roughness = texture(materials[fs_in.objectId].roughnessMap, uv).r;
+    float ao = texture(materials[fs_in.objectId].aoMap, uv).r;
+
+    vec3 normal = texture(materials[fs_in.objectId].normalMap, uv).rgb;
     normal = normal * 2.0 - 1.0;
     vec3 N = normalize(fs_in.TBN * normal);
 

@@ -1051,8 +1051,8 @@ namespace Seidon
 			{
 				*(glm::vec2*)(shaderData + offset) = *(glm::vec2*)(material->data + m.offset);
 
-				offset += sizeof(glm::vec2);
-				alignment = std::max<int>(alignment, sizeof(glm::vec2));
+				offset += sizeof(glm::vec4);
+				alignment = std::max<int>(alignment, sizeof(glm::vec4));
 				break;
 			}
 			case Types::VECTOR3_COLOR: case Types::VECTOR3: case Types::VECTOR3_ANGLES:

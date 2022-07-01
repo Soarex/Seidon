@@ -97,6 +97,12 @@ namespace Seidon
                 offset += member.size;
                 break;
 
+            case Types::VECTOR2:
+                member.size = sizeof(glm::vec2);
+                member.offset = offset;
+                offset += member.size;
+                break;
+
             case Types::VECTOR3_COLOR: case Types::VECTOR3_ANGLES:
                 member.size = sizeof(glm::vec3);
                 member.offset = offset;

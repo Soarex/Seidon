@@ -57,7 +57,7 @@ namespace Seidon
 
 				m.Save(currentDirectory.string() + "\\" + m.name + ".sdmat");
 
-				resourceManager.RegisterAsset(&m, currentDirectory.string() + "\\" + m.name + ".sdmat");
+				resourceManager.RegisterAsset(&m, resourceManager.AbsoluteToRelativePath(currentDirectory.string() + "\\" + m.name + ".sdmat"));
 
 				UpdateEntries();
 			}

@@ -16,31 +16,15 @@ namespace Seidon
 		name = "";
 		shader = resourceManager.GetAsset<Shader>("default_shader");
 		
-		byte* ptr = data;
+		MetaType* layout = shader->GetBufferLayout();
 
-		*((glm::vec3*)ptr) = glm::vec3(1);
-		ptr += sizeof(glm::vec3);
-
-		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("albedo_default");
-		ptr += sizeof(Texture*);
-
-		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("normal_default");
-		ptr += sizeof(Texture*);
-
-		//*((float*)ptr) = 0.0f;
-		//ptr += sizeof(float);
-
-		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("roughness_default");
-		ptr += sizeof(Texture*);
-
-		//*((float*)ptr) = 0.0f;
-		//ptr += sizeof(float);
-
-		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("metallic_default");
-		ptr += sizeof(Texture*);
-
-		*((Texture**)ptr) = resourceManager.GetAsset<Texture>("ao_default");
-		ptr += sizeof(Texture*);
+		layout->ModifyMember<glm::vec2>("UV Scale", data, glm::vec2(1));
+		layout->ModifyMember<glm::vec3>("Tint", data, glm::vec3(1));
+		layout->ModifyMember<Texture*>("Albedo", data, resourceManager.GetAsset<Texture>("albedo_default"));
+		layout->ModifyMember<Texture*>("Normal", data, resourceManager.GetAsset<Texture>("normal_default"));
+		layout->ModifyMember<Texture*>("Roughness", data, resourceManager.GetAsset<Texture>("roughness_default"));
+		layout->ModifyMember<Texture*>("Metallic", data, resourceManager.GetAsset<Texture>("metallic_default"));
+		layout->ModifyMember<Texture*>("Ambient Occlusion", data, resourceManager.GetAsset<Texture>("ao_default"));
 	}
 
 	void Material::Save(std::ofstream& out)

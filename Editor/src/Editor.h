@@ -7,6 +7,8 @@
 #include "Core/EditorAction.h"
 #include "Core/Dockspace.h"
 
+#include <sstream>
+
 namespace Seidon
 {
     using EditorActionCallback = std::function<void(EditorAction&)>;
@@ -28,6 +30,12 @@ namespace Seidon
 
         bool switchProject = false;
         Project* projectToSwitch = nullptr;
+
+        std::ostringstream outStream;
+        std::streambuf* oldOutStream;
+
+        std::ostringstream errorStream;
+        std::streambuf* oldErrorStream;
 
     public:
         void Init() override;

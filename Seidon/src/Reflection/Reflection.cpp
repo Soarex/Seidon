@@ -224,14 +224,14 @@ namespace Seidon
 		in.read(buffer, nameSize * sizeof(char));
 
 		if (name != std::string(buffer))
-			std::cerr << "Save metatype name is different from current metatype name, data might not load correctly";
+			std::cerr << "Save metatype name is different from current metatype name, data might not load correctly" << std::endl;
 
 		size_t memberCount = 0;
 		in.read((char*)&memberCount, sizeof(size_t));
 
 		if (members.size() != memberCount)
 		{
-			std::cerr << "Save metatype member count is different from current metatype member count, aborting data load";
+			std::cerr << "Save metatype member count is different from current metatype member count, aborting data load" << std::endl;
 			return;
 		}
 
@@ -242,7 +242,7 @@ namespace Seidon
 
 			if (m.type != type)
 			{
-				std::cerr << "Save member type is different from current member, aborting data load";
+				std::cerr << "Save member type is different from current member, aborting data load" << std::endl;
 				return;
 			}
 

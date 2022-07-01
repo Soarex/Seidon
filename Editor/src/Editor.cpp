@@ -11,6 +11,12 @@ namespace Seidon
 {
     void Editor::Init()
 	{
+        oldOutStream = std::cout.rdbuf();
+        std::cout.rdbuf(outStream.rdbuf());
+
+        oldErrorStream = std::cerr.rdbuf();
+        std::cerr.rdbuf(errorStream.rdbuf());
+
         int width, height, channelCount;
         unsigned char* data = stbi_load("Resources/ModelIcon.png", &width, &height, &channelCount, 0);
         window->SetIcon(data, width, height);
@@ -76,6 +82,9 @@ namespace Seidon
         editorWindow->Destroy();
 
         editorResourceManager.Destroy();
+
+        std::cout.rdbuf(oldOutStream);
+        std::cerr.rdbuf(oldErrorStream);
 	}
 
     void Editor::Play()
